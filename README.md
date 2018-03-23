@@ -1,9 +1,9 @@
 
 # metadata tool
 
-[![Build Status](https://circleci.com/gh/symphonyoss/ssf-metadata.png?circle-token=:circle-token)](https://circleci.com/gh/symphonyoss/ssf-metadata)
+[![Build Status](https://circleci.com/gh/finos/metadata-tool.png?circle-token=:circle-token)](https://circleci.com/gh/finos/metadata-tool)
 
-An easily extensible command line tool for performing various tasks with Symphony Software Foundation metadata.
+An easily extensible command line tool for performing various tasks with FINOS Foundation metadata.
 
 ## Installation
 
@@ -14,7 +14,7 @@ For now the metadata tool is available in source form only, so fire up your favo
 metadata tool is configured via a single [EDN](https://github.com/edn-format/edn) file that's specified on the command
 line.  This configuration file contains credentials for GitHub and JIRA.
 
-See [the sample `config.edn` file](https://github.com/symphonyoss/ssf-metadata/blob/master/tools/metadata-tool/resources/config.edn) for details.
+See [the sample `config.edn` file](https://github.com/finos/metadata-tool/blob/master/tools/metadata-tool/resources/config.edn) for details.
 
 This file is loaded using the [aero](https://github.com/juxt/aero) library, which offers quite a bit
 of flexibility around how values are specified in the file (they can be read from environment variables,
@@ -43,13 +43,13 @@ $ lein run -- -c <path to EDN configuration file> -d <path to ssf-metadata> tool
 
 ## Developer Information
 
-[GitHub project](https://github.com/symphonyoss/ssf-metadata)
+[GitHub project](https://github.com/finos/metadata-tool)
 
-[Bug Tracker](https://github.com/symphonyoss/ssf-metadata/issues)
+[Bug Tracker](https://github.com/finos/metadata-tool/issues)
 
 ## License
 
-Copyright © 2017 Symphony Software Foundation
+Copyright © 2017 FINOS Foundation
 
 Distributed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
