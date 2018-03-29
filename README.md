@@ -14,7 +14,7 @@ For now the metadata tool is available in source form only, so fire up your favo
 metadata tool is configured via a single [EDN](https://github.com/edn-format/edn) file that's specified on the command
 line.  This configuration file contains credentials for GitHub and JIRA.
 
-See [the sample `config.edn` file](https://github.com/finos/metadata-tool/blob/master/tools/metadata-tool/resources/config.edn) for details.
+See [the sample `config.edn` file](https://github.com/finos/metadata-tool/blob/master/resources/config.edn) for details.
 
 This file is loaded using the [aero](https://github.com/juxt/aero) library, which offers quite a bit
 of flexibility around how values are specified in the file (they can be read from environment variables,
