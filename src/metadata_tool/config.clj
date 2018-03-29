@@ -27,9 +27,9 @@
           :start (mnt/args))
 
 (defstate temp-directory
-          :start (let [result      (if (s/blank? (:temp-directory config))
+          :start (let [result      (if (s/blank? (:temp-dir config))
                                      (System/getProperty "java.io.tmpdir")
-                                     (:temp-directory config))
+                                     (:temp-dir config))
                        result-as-f (io/file result)]
                    (if (.exists result-as-f)
                      (if (.isDirectory result-as-f)
@@ -39,5 +39,5 @@
                        (throw (Exception. (str "Temp directory " result " is not a directory."))))
                      (throw (Exception. (str "Temp directory " result " does not exist."))))))
 
-(defstate not-a-project-list
-		  :start (list "Foundation Infrastructure" "Documentation and Examples"))
+;(defstate not-a-project-list
+;		  :start (list "Foundation Infrastructure" "Documentation and Examples"))
