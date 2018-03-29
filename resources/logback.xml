@@ -23,6 +23,7 @@
 
   <logger name="org.apache"  level="ERROR" />
   <logger name="org.eclipse" level="ERROR" />
+  <logger name="freemarker"  level="ERROR" />
 
   <root level="DEBUG">
     <appender-ref ref="FILE" />

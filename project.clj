@@ -1,5 +1,6 @@
 ;
 ; Copyright © 2017 FINOS Foundation
+; SPDX-License-Identifier: Apache-2.0
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
 ; you may not use this file except in compliance with the License.
@@ -28,22 +29,23 @@
                           [lein-licenses "0.2.2"]
                         ]
   :dependencies         [
-                          [org.clojure/clojure            "1.9.0"]
-                          [org.clojure/tools.cli          "0.3.5"]
-                          [org.clojure/tools.logging      "0.4.0"]
-                          [ch.qos.logback/logback-classic "1.2.3"]
-                          [org.slf4j/jcl-over-slf4j       "1.7.25"]
-                          [org.slf4j/log4j-over-slf4j     "1.7.25"]
-                          [org.slf4j/jul-to-slf4j         "1.7.25"]
-                          [cheshire                       "5.8.0"]
-                          [aero                           "1.1.3"]
-                          [mount                          "0.1.12"]
-                          [hiccup                         "1.0.5"]
-                          [metosin/scjsv                  "0.4.1"]
-                          [clj-jgit                       "0.8.10" :exclusions [org.apache.httpcomponents/httpclient]]
-                          [irresponsible/tentacles        "0.6.1"]
-                          [cc.qbits/spandex               "0.6.2" :exclusions [commons-logging org.apache.httpcomponents/httpcore-nio]]
-                          [com.draines/postal             "2.0.2" :exclusions [commons-codec]]
+                          [org.clojure/clojure                   "1.9.0"]
+                          [org.clojure/tools.cli                 "0.3.5"]
+                          [org.clojure/tools.logging             "0.4.0"]
+                          [ch.qos.logback/logback-classic        "1.2.3"]
+                          [org.slf4j/jcl-over-slf4j              "1.7.25"]
+                          [org.slf4j/log4j-over-slf4j            "1.7.25"]
+                          [org.slf4j/jul-to-slf4j                "1.7.25"]
+                          [cheshire                              "5.8.0"]
+                          [aero                                  "1.1.3"]
+                          [mount                                 "0.1.12"]
+                          [hiccup                                "1.0.5"]
+                          [com.github.grinnbearit/freemarker-clj "-SNAPSHOT"]
+                          [metosin/scjsv                         "0.4.1"]
+                          [clj-jgit                              "0.8.10" :exclusions [org.apache.httpcomponents/httpclient]]
+                          [irresponsible/tentacles               "0.6.1"]
+                          [cc.qbits/spandex                      "0.6.2" :exclusions [commons-logging org.apache.httpcomponents/httpcore-nio]]
+                          [com.draines/postal                    "2.0.2" :exclusions [commons-codec]]
                         ]
   :managed-dependencies [
                           ; The following dependencies are inherited but have conflicting or old versions, so we "pin" the versions here

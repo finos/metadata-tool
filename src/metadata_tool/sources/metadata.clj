@@ -1,5 +1,6 @@
 ;
 ; Copyright © 2017 FINOS Foundation
+; SPDX-License-Identifier: Apache-2.0
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
 ; you may not use this file except in compliance with the License.
@@ -126,10 +127,24 @@
     (assoc (read-metadata-file (str people-metadata-directory "/" person-id "/" person-filename))
            :person-id person-id)))
 
+(defn person-metadata-with-organizations
+  "Person metadata of the given person-id, with affiliations expanded to include full organization metadata."
+  [person-id]
+  (if-let [person (person-metadata person-id)]
+    (if-let [affiliations (:affiliations person)]
+      (assoc person
+             :affiliations (seq (map #(assoc % :organization (organization-metadata (:organization-id %))) affiliations)))
+      person)))
+
 (defn people-metadata
   "A seq containing the metadata of all people, sorted by full-name."
   []
   (sort-by :full-name (remove nil? (map person-metadata people))))
+
+(defn people-metadata-with-organizations
+  "A seq containing the metadata of all people, sorted by full-name."
+  []
+  (sort-by :full-name (remove nil? (map person-metadata-with-organizations people))))
 
 (defn- person-metadata-by-github-id-fn
   [github-id]
