@@ -32,6 +32,23 @@
             ))
 
 
+(defn list-schemas
+  []
+  (doall (map pp/pprint sch/schema-ids)))
+
+(defn list-people-with-clas
+  []
+  (doall (map #(pp/pprint (:full-name %)) (md/people-with-clas))))
+
+
+
+
+
+
+
+
+
+
 (comment
 ; ---- PRIVATE UTILITY FNs ----
 (defn- print-project-leads
@@ -176,9 +193,6 @@
 
 ; ---- Public FNs ----
 
-(defn list-schemas
-  []
-  (doall (map pp/pprint sch/schema-ids)))
 
 
 (comment

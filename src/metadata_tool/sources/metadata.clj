@@ -19,6 +19,8 @@
             [clojure.java.io               :as io]
             [mount.core                    :as mnt :refer [defstate]]
             [cheshire.core                 :as ch]
+            [clj-time.core                 :as tm]
+            [clj-time.format               :as tf]
             [metadata-tool.config          :as cfg]
             [metadata-tool.sources.github  :as gh]
             [metadata-tool.sources.schemas :as sch]))
@@ -61,9 +63,9 @@
                      (accept [this f]
                        (.isDirectory f))))))
 
-(defstate organizations :start (doall (map #(.getName ^java.io.File %) (list-subdirs (io/file organization-metadata-directory)))))
-(defstate people        :start (doall (map #(.getName ^java.io.File %) (list-subdirs (io/file people-metadata-directory)))))
-(defstate programs      :start (doall (map #(.getName ^java.io.File %) (list-subdirs (io/file program-metadata-directory)))))
+(defstate organizations :start (doall (sort (map #(.getName ^java.io.File %) (list-subdirs (io/file organization-metadata-directory))))))
+(defstate people        :start (doall (sort (map #(.getName ^java.io.File %) (list-subdirs (io/file people-metadata-directory))))))
+(defstate programs      :start (doall (sort (map #(.getName ^java.io.File %) (list-subdirs (io/file program-metadata-directory))))))
 
 (defn- clojurise-json-key
   "Converts nasty JSON String keys (e.g. \"fullName\") to nice Clojure keys (e.g. :full-name)."
@@ -108,28 +110,31 @@
 (defn organization-metadata
   "Organization metadata of the given organization-id, or nil if there is none."
   [organization-id]
-  (assoc (read-metadata-file (str organization-metadata-directory "/" organization-id "/" organization-filename))
-         :organization-id organization-id))
+  (if organization-id
+    (assoc (read-metadata-file (str organization-metadata-directory "/" organization-id "/" organization-filename))
+           :organization-id organization-id)))
 
 (defn organizations-metadata
   "A seq containing the metadata of all organizations."
   []
-  (map organization-metadata organizations))
+  (remove nil? (map organization-metadata organizations)))
 
 (defn person-metadata
   "Person metadata of the given person-id, or nil if there is none."
   [person-id]
-  (assoc (read-metadata-file (str people-metadata-directory "/" person-id "/" person-filename))
-         :person-id person-id))
+  (if person-id
+    (assoc (read-metadata-file (str people-metadata-directory "/" person-id "/" person-filename))
+           :person-id person-id)))
 
 (defn people-metadata
   "A seq containing the metadata of all people."
   []
-  (map person-metadata people))
+  (remove nil? (map person-metadata people)))
 
 (defn- person-metadata-by-github-id-fn
   [github-id]
-  (first (filter #(some #{github-id} (:github-user-ids %)) (people-metadata))))
+  (if github-id
+    (first (filter #(some #{github-id} (:github-user-ids %)) (people-metadata)))))
 (def person-metadata-by-github-id
   "Person metadata of the given GitHub user id, or nil if there is none."
   (memoize person-metadata-by-github-id-fn))
@@ -165,14 +170,15 @@
 (defn program-metadata
   "Program metadata of the given program-id, or nil if there is none."
   [program-id]
-  (assoc (read-metadata-file (str program-metadata-directory "/" program-id "/" program-filename))
-         :program-id program-id
-         :projects   (remove nil? (program-projects-metadata program-id))))
+  (if program-id
+    (assoc (read-metadata-file (str program-metadata-directory "/" program-id "/" program-filename))
+           :program-id program-id
+           :projects   (remove nil? (program-projects-metadata program-id)))))
 
 (defn programs-metadata
   "A seq containing the metadata of all programs."
   []
-  (map program-metadata programs))
+  (remove nil? (map program-metadata programs)))
 
 (defn projects-metadata
   "A seq containing the metadata of all projects, regardless of program."
@@ -183,3 +189,49 @@
   "A seq containing the metadata of all repositories, regardless of program or project."
   []
   (remove nil? (map :repositories (projects-metadata))))
+
+(defn- current?
+  "True if the given 'date range' map (with a :start-date and/or :end-date key) is current i.e. spans today."
+  [m]
+  (if m
+    (let [today      (tf/unparse (tf/formatters :date) (tm/now))
+          start-date (:start-date m)
+          end-date   (:end-date   m)]
+      (and (or (nil? start-date) (neg? (compare start-date today)))
+           (or (nil? end-date)   (neg? (compare today end-date)))))))
+
+(defn current-approved-contributors
+  "A seq of person metadata for the *currently* approved contributors for the given organization-id, or nil if there are none."
+  [organization-id]
+  (if-let [organization-metadata (organization-metadata organization-id)]
+    (if-let [current-contributors (seq (filter current? (:approved-contributors organization-metadata)))]
+      (map #(person-metadata (:person-id %)) current-contributors))))
+
+(defn current-affiliations
+  "A seq of organization metadata the given person-id is *currently* affiliated with, or nil if there are none."
+  [person-id]
+  (if-let [person-metadata (person-metadata person-id)]
+    (if-let [current-affiliations (seq (filter current? (:affiliations person-metadata)))]
+      (map #(organization-metadata (:organization-id %)) current-affiliations))))
+
+(defn has-icla?
+  [person-id]
+  (boolean (:has-icla (person-metadata person-id))))
+
+(defn has-ccla?
+  [person-id]
+  (if-let [current-affiliations-with-cclas (seq (filter :has-ccla (current-affiliations person-id)))]
+    (let [current-approved-contributors (mapcat #(current-approved-contributors (:organization-id %)) current-affiliations-with-cclas)]
+      (or (empty? current-approved-contributors)
+          (some #{person-id} (map :person-id current-approved-contributors))))
+    false))
+
+(defn has-cla?
+  [person-id]
+  (or (has-icla? person-id)
+      (has-ccla? person-id)))
+
+(defn people-with-clas
+  "A seq of person metadata for all people who currently have CLAs with the Foundation."
+  []
+  (map person-metadata (filter has-cla? people)))

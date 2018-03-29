@@ -43,6 +43,7 @@
     "check-local"                                         tch/check-local
     "check"                                               tch/check
     "list-schemas"                                        tls/list-schemas
+    "list-clas"                                           tls/list-people-with-clas
 ;    "check-bitergia-projects"                             tch/check-bitergia-projects
 ;    "list-projects"                                       tls/list-projects
 ;    "list-project-leads"                                  tls/list-project-leads

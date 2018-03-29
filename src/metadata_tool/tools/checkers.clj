@@ -34,6 +34,46 @@
   []
   (md/validate-metadata))
 
+(defn- check-current-affiliations
+  []
+  (doall
+    (map #(if (empty? (md/current-affiliations %))
+            (println "⚠️ Person" % "has no current affiliations."))
+         md/people)))
+
+(defn check-local
+  "Performs comprehensive checking of files locally on disk (no API calls out to GitHub, JIRA, etc.)."
+  []
+  (check-syntax)
+  (check-current-affiliations)
+;  (check-references)
+;  (check-email-addresses)
+;  (check-github-ids)
+;  (check-project-lifecycle-states)
+)
+
+(defn check
+  "Performs comprehensive checks, including API calls out to GitHub, JIRA, and Bitergia (which may be rate limited)."
+  []
+  (check-local)
+;  (check-project-leads)
+;  (check-github-ids)
+;  (check-contribs)
+;  (check-bitergia-projects)
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
 (comment
 (defn- check-parent-folder-name
   [^java.io.File file expected-name type]
@@ -151,14 +191,6 @@
     (map #(if (empty? (gh/project-lead-names %)) (println "⚠️ Repository" % "has no admins, or they haven't accepted their invitations yet."))
          (gh/repo-names))))
 
-(defn- check-affiliations
-  []
-  (let [user-jsons (map #(ch/parse-string (slurp %)) md/people-metadata-files)]
-    (doall
-      (map #(if (empty? (get % "affiliations"))
-              (println "⚠️ User" (get % "fullName") "has no affiliations"))
-           user-jsons))))
-
 (defn- check-email-addresses
   []
   (let [user-jsons        (map #(ch/parse-string (slurp %)) md/people-metadata-files)
@@ -192,29 +224,5 @@
                 (sort (remove #(some #{%} projects-from-bitergia-git) projects-from-metadata))))
     (doall (map #(println "⚠️ Project" % "is missing from Bitergia github index (this is expected if its repositories have never had any issues or PRs).")
                 (sort (remove #(some #{%} projects-from-bitergia-github) projects-from-metadata))))))
-)
-
-; ---- TOOL FNs ----
-; Remember to add any new tool fns to the "tools" map down below, otherwise they won't be visible
-
-(defn check-local
-  "Performs comprehensive checking of files locally on disk (no API calls out to GitHub, JIRA, etc.)."
-  []
-  (check-syntax)
-;  (check-references)
-;  (check-affiliations)
-;  (check-email-addresses)
-;  (check-github-ids)
-;  (check-project-lifecycle-states)
-)
-
-(defn check
-  "Performs comprehensive checks, including API calls out to GitHub, JIRA, and Bitergia (which may be rate limited)."
-  []
-  (check-local)
-;  (check-project-leads)
-;  (check-github-ids)
-;  (check-contribs)
-;  (check-bitergia-projects)
 )
 
