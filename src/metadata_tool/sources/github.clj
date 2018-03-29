@@ -49,14 +49,20 @@
 (defstate opts
           :start {:all-pages true :per-page 100 :auth auth :user-agent (str org-name " metadata tool")})
 
+(defstate github-revision
+          :start (:github-revision cfg/config))
+
 (defstate metadata-directory
           :start (let [result (str cfg/temp-directory
                                    (if (not (s/ends-with? cfg/temp-directory "/")) "/")
-                                   "finos-metadata-" (java.util.UUID/randomUUID))]
-                   (log/debug "Checking out metadata to" result)
-                   (git/with-credentials ^String username
-                                         ^String password
-                                         (git/git-clone (str "https://github.com/" org-name "/" metadata-repo-name) result))
+                                   "finos-metadata-" (java.util.UUID/randomUUID))
+                       _      (log/debug "Cloning metadata repository to" result)
+                       repo   (git/with-credentials ^String username
+                                                    ^String password
+                                                    (git/git-clone (str "https://github.com/" org-name "/" metadata-repo-name) result))]
+                   (when-not (s/blank? github-revision)
+                     (log/debug "Checking out revision" github-revision)
+                     (git/git-checkout repo github-revision))
                    (rm-rf (io/file (str result "/.git/")))    ; De-gitify the local clone so we can't accidentally mess with it
                    result)
           :stop  (do

@@ -1,19 +1,24 @@
 {
+  :temp-dir #env TEMP_DIR
+
   :github
   {
     :username #env GITHUB_USER
     :password #env GITHUB_PASSWORD
   }
+
   :jira
   {
     :username #env JIRA_USER
     :password #env JIRA_PASSWORD
   }
+
   :bitergia
   {
     :username #env BITERGIA_USER
     :password #env BITERGIA_PASSWORD
   }
+
   :email
   {
     :host               #or [#env SMTP_SERVER "smtp.gmail.com"]

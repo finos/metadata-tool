@@ -26,13 +26,11 @@
   (:gen-class))
 
 (def ^:private cli-opts
-  [["-c" "--config-file FILE" "Path to configuration file (defaults to 'config.edn' in the classpath)"
-    :validate [#(.exists (io/file %)) "Must exist"
-               #(.isFile (io/file %)) "Must be a file"]]
-   ["-t" "--temp-directory DIR" "Temporary directory in which to checkout metadata (defaults to value of java.io.tmpdir property)"
-    :default  (System/getProperty "java.io.tmpdir")
-    :validate [#(.exists      (io/file %)) "Must exist"
-               #(.isDirectory (io/file %)) "Must be a directory"]]
+  [["-c" "--config-file FILE" "Path to configuration file (optional, defaults to 'config.edn' in the classpath)"
+    :validate [#(.exists  (io/file %)) "Must exist"
+               #(.isFile  (io/file %)) "Must be a file"
+               #(.canRead (io/file %)) "Must be readable"]]
+   ["-r" "--github-revision REVISION" "GitHub revision of the metadata repository to checkout and use (optional, defaults to latest)"]
    ["-h" "--help"]])
 
 (defn- usage
@@ -72,7 +70,7 @@
         :else              (mnt/with-args (assoc (if-let [config-file (:config-file options)]
                                                    (a/read-config config-file)
                                                    (a/read-config (io/resource "config.edn")))
-                                                 :temp-directory (:temp-directory options))))
+                                                 :github-revision (:github-revision options))))
       (if (every? (set c/tool-names) (map s/lower-case arguments))
         (try
           (mnt/start)

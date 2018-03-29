@@ -31,8 +31,8 @@ Runs one or more metadata tools.
 Usage: metadata-tool [options] tool [tool] ...
 
 Options:
-  -c, --config-file FILE                                                      Path to configuration file (defaults to 'config.edn' in the classpath)
-  -t, --temp-directory DIR  <default value of java.io.tmpdir on your system>  Temporary directory in which to checkout metadata (defaults to value of java.io.tmpdir property)
+  -c, --config-file FILE          Path to configuration file (optional, defaults to 'config.edn' in the classpath)
+  -r, --github-revision REVISION  GitHub revision of the metadata repository to checkout and use (optional, defaults to latest)
   -h, --help
 
 Available tools:

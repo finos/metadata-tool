@@ -88,7 +88,7 @@
 (defn- validate-metadata-file
   "Validates the given metadata file against the given schema-type, automatically determining which version the metadata file is."
   [schema-type ^java.io.File file]
-  (log/debug "Validating" schema-type "metadata file" (.getCanonicalPath file))
+;  (log/debug "Validating" schema-type "metadata file" (.getCanonicalPath file))
   (try
     (let [json-string      (slurp file)
           json             (ch/parse-string json-string clojurise-json-key)

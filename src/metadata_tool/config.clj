@@ -15,7 +15,9 @@
 ;
 
 (ns metadata-tool.config
-  (:require [mount.core :as mnt :refer [defstate]]))
+  (:require [clojure.string  :as s]
+            [clojure.java.io :as io]
+            [mount.core      :as mnt :refer [defstate]]))
 
 ; Because java.util.logging is a hot mess
 (org.slf4j.bridge.SLF4JBridgeHandler/removeHandlersForRootLogger)
@@ -25,7 +27,17 @@
           :start (mnt/args))
 
 (defstate temp-directory
-          :start (:temp-directory config))
+          :start (let [result      (if (s/blank? (:temp-directory config))
+                                     (System/getProperty "java.io.tmpdir")
+                                     (:temp-directory config))
+                       result-as-f (io/file result)]
+                   (if (.exists result-as-f)
+                     (if (.isDirectory result-as-f)
+                       (if (.canWrite result-as-f)
+                         result
+                         (throw (Exception. (str "Temp directory " result " is not writable."))))
+                       (throw (Exception. (str "Temp directory " result " is not a directory."))))
+                     (throw (Exception. (str "Temp directory " result " does not exist."))))))
 
 (defstate not-a-project-list
 		  :start (list "Foundation Infrastructure" "Documentation and Examples"))
