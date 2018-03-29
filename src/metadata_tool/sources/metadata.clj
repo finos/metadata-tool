@@ -88,7 +88,7 @@
 (defn- validate-metadata-file
   "Validates the given metadata file against the given schema-type, automatically determining which version the metadata file is."
   [schema-type ^java.io.File file]
-;  (log/debug "Validating" schema-type "metadata file" (.getCanonicalPath file))
+  (log/debug "Validating" schema-type "metadata file" (.getCanonicalPath file))
   (try
     (let [json-string      (slurp file)
           json             (ch/parse-string json-string clojurise-json-key)
@@ -96,7 +96,7 @@
           schema-id        [schema-type metadata-version]]
       (if metadata-version
         (sch/validate-json schema-id json-string)
-        (throw (Exception. (str "Unable to read metadataVersion property from " (.getCanonicalPath file))))))))
+        (throw (Exception. (str "No metadataVersion property in " (.getCanonicalPath file))))))))
 
 (defn- validate-metadata-files
   [schema-type files]
@@ -115,9 +115,9 @@
            :organization-id organization-id)))
 
 (defn organizations-metadata
-  "A seq containing the metadata of all organizations."
+  "A seq containing the metadata of all organizations, sorted by organization-name."
   []
-  (remove nil? (map organization-metadata organizations)))
+  (sort-by :organization-name (remove nil? (map organization-metadata organizations))))
 
 (defn person-metadata
   "Person metadata of the given person-id, or nil if there is none."
@@ -127,9 +127,9 @@
            :person-id person-id)))
 
 (defn people-metadata
-  "A seq containing the metadata of all people."
+  "A seq containing the metadata of all people, sorted by full-name."
   []
-  (remove nil? (map person-metadata people)))
+  (sort-by :full-name (remove nil? (map person-metadata people))))
 
 (defn- person-metadata-by-github-id-fn
   [github-id]

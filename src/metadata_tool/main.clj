@@ -61,6 +61,7 @@
 
 (defn -main
   [& args]
+  (log/debug "metadata-tool started")
   (try
     (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-opts)]
       (cond
@@ -71,15 +72,18 @@
                                                    (a/read-config config-file)
                                                    (a/read-config (io/resource "config.edn")))
                                                  :github-revision (:github-revision options))))
-      (if (every? (set c/tool-names) (map s/lower-case arguments))
-        (try
-          (mnt/start)
-          (doall (map c/run-tool arguments))
-          (finally
-            (mnt/stop)))
-        (exit 1 (str "Unknown tool - available tools are:\n\t" (s/join "\n\t" c/tool-names)))))
+      (let [tools-to-run (map s/lower-case arguments)]
+        (if (every? (set c/tool-names) tools-to-run)
+          (try
+            (log/debug "Running tools" (s/join ", " tools-to-run))
+            (mnt/start)
+            (doall (map c/run-tool arguments))
+            (finally
+              (mnt/stop)))
+          (exit 1 (str "Unknown tool - available tools are:\n\t" (s/join "\n\t" c/tool-names))))))
     (catch Exception e
       (st/print-cause-trace e)
       (flush)
       (exit 2)))
+  (log/debug "metadata-tool finished successfully")
   (exit 0))
