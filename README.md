@@ -31,14 +31,14 @@ Runs one or more metadata tools.
 Usage: metadata-tool [options] tool ...
 
 Options:
-  -c, --config-file FILE               Path to configuration file (defaults to 'config.edn' in the classpath)
-  -d, --metadata-directory DIR  ../..  Path of ssf-metadata directory
+  -c, --config-file FILE                                                      Path to configuration file (defaults to 'config.edn' in the classpath)
+  -t, --temp-directory DIR  <default value of java.io.tmpdir on your system>  Temporary directory in which to checkout metadata (defaults to value of java.io.tmpdir property)
   -h, --help
 
 Available tools:
 <list of currently available tools is displayed here - this list will change as new tools are developed>
-$ lein run -- -c <path to EDN configuration file> tool ...
-$ lein run -- -c <path to EDN configuration file> -d <path to ssf-metadata> tool ...
+$ lein run -- -c <path to EDN configuration file> tool [tool] ...
+$ lein run -- -c <path to EDN configuration file> -t <path of desired temp directory> tool [tool] ...
 ```
 
 ## Developer Information

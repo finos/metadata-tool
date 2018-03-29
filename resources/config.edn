@@ -1,0 +1,27 @@
+{
+  :github
+  {
+    :username #env GITHUB_USER
+    :password #env GITHUB_PASSWORD
+  }
+  :jira
+  {
+    :username #env JIRA_USER
+    :password #env JIRA_PASSWORD
+  }
+  :bitergia
+  {
+    :username #env BITERGIA_USER
+    :password #env BITERGIA_PASSWORD
+  }
+  :email
+  {
+    :host               #or [#env SMTP_SERVER "smtp.gmail.com"]
+    :ssl                #or [#env SMTP_USE_SSL true]
+    :user               #env SMTP_USER
+    :pass               #env SMTP_PASSWORD
+    :esco-email-address #env ESCO_EMAIL_ADDRESS
+; The following could be used instead, but it makes it easier to accidentally spam the ESCo alias
+;    :esco-email-address #or [#env ESCO_EMAIL_ADDRESS "esco@symphony.foundation"]
+  }
+}
