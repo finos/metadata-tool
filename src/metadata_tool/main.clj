@@ -56,10 +56,9 @@
 (defn- exit
   ([status-code] (exit status-code nil))
   ([status-code message]
-   (if (not (s/blank? message))
-     (do
-       (println message)
-       (flush)))
+   (when (not (s/blank? message))
+     (println message)
+     (flush))
    (System/exit status-code)))
 
 (defn -main

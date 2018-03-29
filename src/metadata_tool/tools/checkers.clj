@@ -20,7 +20,6 @@
             [clojure.tools.logging          :as log]
             [clojure.java.io                :as io]
             [mount.core                     :as mnt :refer [defstate]]
-            [cheshire.core                  :as ch]
             [clj-time.core                  :as tm]
             [clj-time.format                :as tf]
             [metadata-tool.utils            :as u]
@@ -41,15 +40,43 @@
             (println "⚠️ Person" % "has no current affiliations."))
          md/people)))
 
+(defn- check-duplicate-email-addresses
+  []
+  (let [email-frequencies (frequencies (mapcat :email-addresses (md/people-metadata)))
+        duplicate-emails  (filter #(> (get email-frequencies %) 1) (keys email-frequencies))]
+    (doall
+      (map #(println "❌ Email" % "appears more than once.") duplicate-emails))))
+
+(defn- check-duplicate-github-ids
+  []
+  (let [github-id-frequencies (frequencies (mapcat :github-user-ids (md/people-metadata)))
+        duplicate-github-ids  (filter #(> (get github-id-frequencies %) 1) (keys github-id-frequencies))]
+    (doall
+      (map #(println "❌ GitHub user id" % "appears more than once.") duplicate-github-ids))))
+
+(defn- check-affiliation-references
+  []
+  (let [affiliation-org-ids          (mapcat #(:organization-id (:affiliations %)) (md/people-metadata))
+        invalid-affiliations-org-ids (filter #(nil? (md/organization-metadata %)) affiliation-org-ids)]
+    (doall
+      (map #(println "❌ Organization id" % "(used in an affiliation) doesn't have metadata.") invalid-affiliations-org-ids))))
+
+(defn- check-approved-contributor-references
+  []
+  (let [approved-contributor-person-ids         (mapcat #(:person-id (:approved-contributors %)) (md/organizations-metadata))
+        invalid-approved-contributor-person-ids (filter #(nil? (md/person-metadata %)) approved-contributor-person-ids)]
+    (doall
+      (map #(println "❌ Person id" % " (used in an approved contributor) doesn't have metadata.") invalid-approved-contributor-person-ids))))
+
 (defn check-local
   "Performs comprehensive checking of files locally on disk (no API calls out to GitHub, JIRA, etc.)."
   []
   (check-syntax)
   (check-current-affiliations)
-;  (check-references)
-;  (check-email-addresses)
-;  (check-github-ids)
-;  (check-project-lifecycle-states)
+  (check-duplicate-email-addresses)
+  (check-duplicate-github-ids)
+  (check-affiliation-references)
+  (check-approved-contributor-references)
 )
 
 (defn check
@@ -57,7 +84,6 @@
   []
   (check-local)
 ;  (check-project-leads)
-;  (check-github-ids)
 ;  (check-contribs)
 ;  (check-bitergia-projects)
 )
