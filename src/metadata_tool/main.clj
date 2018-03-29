@@ -41,7 +41,7 @@
     \newline
     ["Runs one or more metadata tools."
      ""
-     "Usage: metadata-tool [options] tool ..."
+     "Usage: metadata-tool [options] tool [tool] ..."
      ""
      "Options:"
      options-summary

@@ -28,7 +28,7 @@ For now, the metadata tool should be run via Leiningen:
 $ lein run -- -h
 Runs one or more metadata tools.
 
-Usage: metadata-tool [options] tool ...
+Usage: metadata-tool [options] tool [tool] ...
 
 Options:
   -c, --config-file FILE                                                      Path to configuration file (defaults to 'config.edn' in the classpath)
