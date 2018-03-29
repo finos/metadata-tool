@@ -221,9 +221,11 @@
 (defn has-ccla?
   [person-id]
   (if-let [current-affiliations-with-cclas (seq (filter :has-ccla (current-affiliations person-id)))]
-    (let [current-approved-contributors (mapcat #(current-approved-contributors (:organization-id %)) current-affiliations-with-cclas)]
+    (let [current-approved-contributors (map :person-id
+                                             (mapcat #(current-approved-contributors (:organization-id %))
+                                                     current-affiliations-with-cclas))]
       (or (empty? current-approved-contributors)
-          (some #{person-id} (map :person-id current-approved-contributors))))
+          (boolean (some #{person-id} current-approved-contributors))))
     false))
 
 (defn has-cla?

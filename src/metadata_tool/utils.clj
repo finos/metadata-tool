@@ -28,6 +28,14 @@
             [metadata-tool.sources.schemas  :as sch]
             [metadata-tool.sources.metadata :as md]))
 
+(defn println-stderr
+  "Exactly like clojure.core/println, but output goes to stderr."
+  [& args]
+  (binding [*out* *err*]
+    (println (s/join " " args)))
+  nil)
+
+(comment
 (defn is-project
   [project]
   (let [project-name (get project "projectName")]
@@ -69,13 +77,6 @@
   ([formatter]
    (tf/unparse formatter (tm/now))))
 
-(defn println-stderr
-  "Exactly like clojure.core/println, but output goes to stderr."
-  [& args]
-  (binding [*out* *err*]
-    (println (s/join " " args)))
-  nil)
-
 (defn user-as-string
   "Returns an email-compatible string representation of a user JSON structure, in the format \"full name (first-github-id)\" <first@email.address>."
   ([user-json] (user-as-string user-json true))
@@ -92,7 +93,6 @@
        (when-not (s/blank? result)
          result)))))
 
-(comment
 (defn get-project-name
   "Return the name of the project, given a repository JSON structure."
   [repo-json]

@@ -31,7 +31,7 @@
             [metadata-tool.sources.metadata :as md]
             [metadata-tool.tools.checkers   :as tch]
             [metadata-tool.tools.listers    :as tls]
-;            [metadata-tool.tools.generators :as tgn]
+            [metadata-tool.tools.generators :as tgn]
 ;            [metadata-tool.tools.reports    :as trp]
             ))
 
@@ -58,7 +58,7 @@
 ;    "gen-bitergia-project-file"                           tgn/gen-bitergia-project-file
 ;    "gen-project-metadata"                                tgn/gen-project-metadata
 ;    "gen-project-meta-for-website"                        tgn/gen-project-meta-for-website
-;    "gen-clabot-whitelist"                                tgn/gen-clabot-whitelist
+    "gen-clabot-whitelist"                                tgn/gen-clabot-whitelist
 ;    "email-inactive-projects-report"                      trp/email-inactive-projects-report
 ;    "email-active-projects-with-unactioned-prs-report"    trp/email-active-projects-with-unactioned-prs-report
 ;    "email-active-projects-with-unactioned-issues-report" trp/email-active-projects-with-unactioned-issues-report
