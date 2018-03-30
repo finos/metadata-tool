@@ -45,29 +45,31 @@
   []
   (let [email-frequencies (frequencies (mapcat :email-addresses (md/people-metadata)))
         duplicate-emails  (filter #(> (get email-frequencies %) 1) (keys email-frequencies))]
-    (doall
-      (map #(println "❌ Email" % "appears more than once.") duplicate-emails))))
+    (doall (map #(println "❌ Email" % "appears more than once.") duplicate-emails))))
 
 (defn- check-duplicate-github-ids
   []
   (let [github-id-frequencies (frequencies (mapcat :github-user-ids (md/people-metadata)))
         duplicate-github-ids  (filter #(> (get github-id-frequencies %) 1) (keys github-id-frequencies))]
-    (doall
-      (map #(println "❌ GitHub user id" % "appears more than once.") duplicate-github-ids))))
+    (doall (map #(println "❌ GitHub user id" % "appears more than once.") duplicate-github-ids))))
 
 (defn- check-affiliation-references
   []
   (let [affiliation-org-ids          (mapcat #(:organization-id (:affiliations %)) (md/people-metadata))
         invalid-affiliations-org-ids (filter #(nil? (md/organization-metadata %)) affiliation-org-ids)]
-    (doall
-      (map #(println "❌ Organization id" % "(used in an affiliation) doesn't have metadata.") invalid-affiliations-org-ids))))
+    (doall (map #(println "❌ Organization id" % "(used in an affiliation) doesn't have metadata.") invalid-affiliations-org-ids))))
 
 (defn- check-approved-contributor-references
   []
   (let [approved-contributor-person-ids         (mapcat #(:person-id (:approved-contributors %)) (md/organizations-metadata))
         invalid-approved-contributor-person-ids (filter #(nil? (md/person-metadata %)) approved-contributor-person-ids)]
-    (doall
-      (map #(println "❌ Person id" % " (used in an approved contributor) doesn't have metadata.") invalid-approved-contributor-person-ids))))
+    (doall (map #(println "❌ Person id" % " (used in an approved contributor) doesn't have metadata.") invalid-approved-contributor-person-ids))))
+
+(defn- check-pmc-lead-references
+  []
+  (let [pmc-lead-person-ids         (map :pmc-lead (md/programs-metadata))
+        invalid-pmc-lead-person-ids (filter #(nil? (md/person-metadata %)) pmc-lead-person-ids)]
+    (doall (map #(println "❌ Person id" % " (a PMC lead) doesn't have metadata.") invalid-pmc-lead-person-ids))))
 
 (defn check-local
   "Performs comprehensive checking of files locally on disk (no API calls out to GitHub, JIRA, etc.)."
@@ -78,7 +80,7 @@
   (check-duplicate-github-ids)
   (check-affiliation-references)
   (check-approved-contributor-references)
-)
+  (check-pmc-lead-references))
 
 (defn check
   "Performs comprehensive checks, including API calls out to GitHub, JIRA, and Bitergia (which may be rate limited)."

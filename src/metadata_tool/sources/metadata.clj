@@ -124,8 +124,9 @@
   "Person metadata of the given person-id, or nil if there is none."
   [person-id]
   (if person-id
-    (assoc (read-metadata-file (str people-metadata-directory "/" person-id "/" person-filename))
-           :person-id person-id)))
+    (if-let [person-metadata (read-metadata-file (str people-metadata-directory "/" person-id "/" person-filename))]
+      (assoc person-metadata
+             :person-id person-id))))
 
 (defn person-metadata-with-organizations
   "Person metadata of the given person-id, with affiliations expanded to include full organization metadata."
@@ -162,14 +163,16 @@
 (defn- program-project-repos-metadata
   "A seq of the metadata of all repositories in the given program & project."
   [program project]
-  (let [program-id (:program-id program)
-        project-id (:project-id project)]
-    (map #(assoc (read-metadata-file-fn (str program-metadata-directory "/" program-id "/" program-id "/" % "/" repository-filename))
-                 :program-id    program-id
-                 :project-id    project-id
-                 :repository-id %
-                 :github-url    (str "https://github.com/" (:github-org program) "/" %)
-         (program-project-repos program-id)))))
+  (let [program-id    (:program-id program)
+        project-id    (:project-id project)]
+    (filter nil?
+            (map #(if-let [repo-metadata (read-metadata-file-fn (str program-metadata-directory "/" program-id "/" program-id "/" % "/" repository-filename))]
+                    (assoc repo-metadata
+                           :program-id    program-id
+                           :project-id    project-id
+                           :repository-id %
+                           :github-url    (str "https://github.com/" (:github-org program) "/" %)))
+                 (program-project-repos program-id project-id)))))
 
 (defn- program-projects
   "A seq of the ids of all projects in the given program."
@@ -180,12 +183,13 @@
   "A seq containing the metadata of all projects in the given program."
   [program]
   (let [program-id (:program-id program)]
-    (map #(let [project (read-metadata-file-fn (str program-metadata-directory "/" program-id "/" % "/" project-filename))]
-            (assoc project
-                   :program-id   program-id
-                   :project-id   %
-                   :repositories (seq (remove nil? (program-project-repos-metadata program project)))))
-         (program-projects program-id))))
+    (filter nil?
+      (map #(if-let [project (read-metadata-file-fn (str program-metadata-directory "/" program-id "/" % "/" project-filename))]
+              (assoc project
+                     :program-id   program-id
+                     :project-id   %
+                     :repositories (seq (remove nil? (program-project-repos-metadata program project)))))
+           (program-projects program-id)))))
 
 (defn program-metadata
   "Program metadata of the given program-id, or nil if there is none."
