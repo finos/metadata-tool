@@ -27,10 +27,14 @@
   (:gen-class))
 
 (def ^:private cli-opts
-  [["-c" "--config-file FILE" "Path to configuration file (optional, defaults to 'config.edn' in the classpath)"
+  [["-c" "--config-file FILE" "Path of configuration file (optional, defaults to 'config.edn' in the classpath)"
     :validate [#(.exists  (io/file %)) "Must exist"
                #(.isFile  (io/file %)) "Must be a file"
                #(.canRead (io/file %)) "Must be readable"]]
+   ["-m" "--metadata-directory DIRECTORY" "Path of local metadata directory (optional, metadata will be checked out from GitHub if not specified)"
+    :validate [#(.exists      (io/file %)) "Must exist"
+               #(.isDirectory (io/file %)) "Must be a directory"
+               #(.canRead     (io/file %)) "Must be readable"]]
    ["-r" "--github-revision REVISION" "GitHub revision of the metadata repository to checkout and use (optional, defaults to latest)"]
    ["-h" "--help"]])
 
@@ -72,7 +76,8 @@
         :else              (mnt/with-args (assoc (if-let [config-file (:config-file options)]
                                                    (a/read-config config-file)
                                                    (a/read-config (io/resource "config.edn")))
-                                                 :github-revision (:github-revision options))))
+                                                 :metadata-directory (:metadata-directory options)
+                                                 :github-revision    (:github-revision    options))))
       (let [tools-to-run (map s/lower-case arguments)]
         (if (every? (set c/tool-names) tools-to-run)
           (try

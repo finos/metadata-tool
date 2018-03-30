@@ -161,12 +161,15 @@
 
 (defn- program-project-repos-metadata
   "A seq of the metadata of all repositories in the given program & project."
-  [program-id project-id]
-  (map #(assoc (read-metadata-file-fn (str program-metadata-directory "/" program-id "/" program-id "/" % "/" repository-filename))
-               :program-id    program-id
-               :project-id    project-id
-               :repository-id %)
-       (program-project-repos program-id)))
+  [program project]
+  (let [program-id (:program-id program)
+        project-id (:project-id project)]
+    (map #(assoc (read-metadata-file-fn (str program-metadata-directory "/" program-id "/" program-id "/" % "/" repository-filename))
+                 :program-id    program-id
+                 :project-id    project-id
+                 :repository-id %
+                 :github-url    (str "https://github.com/" (:github-org program) "/" %)
+         (program-project-repos program-id)))))
 
 (defn- program-projects
   "A seq of the ids of all projects in the given program."
@@ -175,20 +178,23 @@
 
 (defn- program-projects-metadata
   "A seq containing the metadata of all projects in the given program."
-  [program-id]
-  (map #(assoc (read-metadata-file-fn (str program-metadata-directory "/" program-id "/" % "/" project-filename))
-               :program-id   program-id
-               :project-id   %
-               :repositories (remove nil? (program-project-repos-metadata program-id %)))
-       (program-projects program-id)))
+  [program]
+  (let [program-id (:program-id program)]
+    (map #(let [project (read-metadata-file-fn (str program-metadata-directory "/" program-id "/" % "/" project-filename))]
+            (assoc project
+                   :program-id   program-id
+                   :project-id   %
+                   :repositories (seq (remove nil? (program-project-repos-metadata program project)))))
+         (program-projects program-id))))
 
 (defn program-metadata
   "Program metadata of the given program-id, or nil if there is none."
   [program-id]
-  (if program-id
-    (assoc (read-metadata-file (str program-metadata-directory "/" program-id "/" program-filename))
+  (if-let [program (read-metadata-file (str program-metadata-directory "/" program-id "/" program-filename))]
+    (assoc program
            :program-id program-id
-           :projects   (remove nil? (program-projects-metadata program-id)))))
+           :github-url (str "https://github.com/" (:github-org program)
+           :projects   (seq (remove nil? (program-projects-metadata program)))))))
 
 (defn programs-metadata
   "A seq containing the metadata of all programs."
@@ -198,12 +204,12 @@
 (defn projects-metadata
   "A seq containing the metadata of all projects, regardless of program."
   []
-  (remove nil? (map :projects (programs-metadata))))
+  (remove nil? (mapcat :projects (programs-metadata))))
 
 (defn repos-metadata
   "A seq containing the metadata of all repositories, regardless of program or project."
   []
-  (remove nil? (map :repositories (projects-metadata))))
+  (remove nil? (mapcat :repositories (projects-metadata))))
 
 (defn- current?
   "True if the given 'date range' map (with a :start-date and/or :end-date key) is current i.e. spans today."

@@ -35,14 +35,24 @@
 
 (defn gen-clabot-whitelist
   []
-  (println (str "[\n  "
-                (s/join ",\n  " (map ch/generate-string (sort (mapcat :github-user-ids (md/people-with-clas)))))   ; Use Cheshire here to ensure JSON escaping
-                "\n]")))
+  (println (tem/render "clabot-whitelist.ftl"
+                        { :github-ids (sort (mapcat :github-user-ids (md/people-with-clas))) })))
 
 (defn gen-bitergia-affiliation-data
   []
   (println (tem/render "bitergia-affiliations.ftl"
                        { :people (md/people-metadata-with-organizations) })))
+
+
+(defn gen-bitergia-project-data
+  []
+  (println (tem/render "bitergia-projects.ftl"
+                      { :projects (md/projects-metadata) })))
+
+
+
+
+
 
 
 
@@ -114,20 +124,6 @@
           (println "      end:" end-date)))
       (u/println-stderr "⚠️ Warning: unable to find metadata for organization with id" (get affiliation "organizationId")))))
 
-(defn- gen-bitergia-project
-  [project]
-  (let [project-name (key project)
-        repo-names   (map #(get % "repositoryName") (val project))]
-    (str "  \"" project-name "\" : {\n"
-         "    \"git\"    : [\n" (s/join ",\n"
-         (map #(str "                 \"https://github.com/symphonyoss/" % ".git\"") repo-names))
-         "\n               ],\n"
-         "    \"github\" : [\n" (s/join ",\n"
-         (map #(str "                 \"https://github.com/symphonyoss/" % "\"") repo-names))
-         "\n               ],\n"
-         "    \"meta\"   : { \"title\" : \"" project-name "\" }\n"
-         "  }")))
-
 (defn- gen-project-metadata-dir
   [repo-name]
   (println "Generating metadata for missing repo" repo-name)
@@ -145,43 +141,6 @@
            "}"
            "" ]))))
 
-(defn- gen-bitergia-project-file
-  []
-  (let [projects (u/all-projects-including-placeholders)]
-    (println "{")
-    (println "  \"Wiki\" : {")
-    (println "    \"confluence\" : [ \"https://symphonyoss.atlassian.net/wiki/\" ],")
-    (println "    \"meta\"       : { \"title\" : \"Wiki\"}")
-    (println "  },")
-    (println "  \"Dev List\" : {")
-    (println "    \"mbox\"       : [ \"dev /home/bitergia/mboxes/barnowl_symphony_dev\" ],")
-    (println "    \"meta\"       : { \"title\" : \"Dev List\"}")
-    (println "  },")
-    (println "  \"WG-DW\" : {")
-    (println "    \"confluence\" : [ \"WGDWAPI\" ],")
-    (println "    \"mbox\"       : [ \"wg-desktop-wrapper /home/bitergia/mboxes/barnowl_symphony_wg-desktop-wrapper\" ],")
-    (println "    \"meta\"       : { \"title\" : \"WG-DW\"}")
-    (println "  },")
-    (println "  \"WG-API\" : {")
-    (println "    \"confluence\" : [ \"WGA\" ],")
-    (println "    \"mbox\"       : [ \"wg-api /home/bitergia/mboxes/barnowl_symphony_wg-api\" ],")
-    (println "    \"meta\"       : { \"title\" : \"WG-API\"}")
-    (println "  },")
-    (println "  \"WG-FOS\" : {")
-    (println "    \"confluence\" : [ \"WGFOS\" ],")
-    (println "    \"mbox\"       : [ \"wg-financial-objects /home/bitergia/mboxes/barnowl_symphony_wg-financial-objects\" ],")
-    (println "    \"meta\"       : { \"title\" : \"WG-FOS\"}")
-    (println "  },")
-    (println "  \"ESCo\" : {")
-    (println "    \"confluence\" : [ \"ESCo\" ],")
-    (println "    \"meta\"       : { \"title\" : \"ESCo\"}")
-    (println "  },")
-    (println "  \"Foundation\" : {")
-    (println "    \"confluence\" : [ \"FM\" ],")
-    (println "    \"meta\"       : { \"title\" : \"Foundation\"}")
-    (println "  },")
-    (println (s/join ",\n" (map gen-bitergia-project projects)))
-    (println "}")))
 
 (defn- gen-project-metadata
   []

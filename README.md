@@ -20,6 +20,13 @@ This file is loaded using the [aero](https://github.com/juxt/aero) library, whic
 of flexibility around how values are specified in the file (they can be read from environment variables,
 for example).  See the [aero documentation](https://github.com/juxt/aero/blob/master/README.md) for details.
 
+### Logging Configuration
+
+unfurl bot uses the [logback](https://logback.qos.ch/) library for logging, and ships with a
+[reasonable default `logback.xml` file](https://github.com/finos/metadata-tool/blob/master/resources/logback.xml).
+Please review the [logback documentation](https://logback.qos.ch/manual/configuration.html#configFileProperty) if you
+wish to override this default logging configuration.
+
 ## Usage
 
 For now, the metadata tool should be run via Leiningen:
@@ -31,8 +38,9 @@ Runs one or more metadata tools.
 Usage: metadata-tool [options] tool [tool] ...
 
 Options:
-  -c, --config-file FILE          Path to configuration file (optional, defaults to 'config.edn' in the classpath)
-  -r, --github-revision REVISION  GitHub revision of the metadata repository to checkout and use (optional, defaults to latest)
+  -c, --config-file FILE              Path of configuration file (optional, defaults to 'config.edn' in the classpath)
+  -m, --metadata-directory DIRECTORY  Path of local metadata directory (optional, metadata will be checked out from GitHub if not specified)
+  -r, --github-revision REVISION      GitHub revision of the metadata repository to checkout and use (optional, defaults to latest)
   -h, --help
 
 Available tools:

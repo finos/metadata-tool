@@ -56,7 +56,7 @@
 ;    "list-projects-with-old-prs"                          tls/list-projects-with-old-prs
 ;    "list-active-projects-with-old-prs"                   tls/list-active-projects-with-old-prs
     "gen-bitergia-affiliation-data"                       tgn/gen-bitergia-affiliation-data
-;    "gen-bitergia-project-file"                           tgn/gen-bitergia-project-file
+    "gen-bitergia-project-data"                           tgn/gen-bitergia-project-data
 ;    "gen-project-metadata"                                tgn/gen-project-metadata
 ;    "gen-project-meta-for-website"                        tgn/gen-project-meta-for-website
     "gen-clabot-whitelist"                                tgn/gen-clabot-whitelist
