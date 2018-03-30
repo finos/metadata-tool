@@ -63,13 +63,13 @@
   []
   (let [approved-contributor-person-ids         (mapcat #(:person-id (:approved-contributors %)) (md/organizations-metadata))
         invalid-approved-contributor-person-ids (filter #(nil? (md/person-metadata %)) approved-contributor-person-ids)]
-    (doall (map #(println "❌ Person id" % " (used in an approved contributor) doesn't have metadata.") invalid-approved-contributor-person-ids))))
+    (doall (map #(println "❌ Person id" % "(used in an approved contributor) doesn't have metadata.") invalid-approved-contributor-person-ids))))
 
 (defn- check-pmc-lead-references
   []
   (let [pmc-lead-person-ids         (map :pmc-lead (md/programs-metadata))
         invalid-pmc-lead-person-ids (filter #(nil? (md/person-metadata %)) pmc-lead-person-ids)]
-    (doall (map #(println "❌ Person id" % " (a PMC lead) doesn't have metadata.") invalid-pmc-lead-person-ids))))
+    (doall (map #(println "❌ Person id" % "(a PMC lead) doesn't have metadata.") invalid-pmc-lead-person-ids))))
 
 (defn check-local
   "Performs comprehensive checking of files locally on disk (no API calls out to GitHub, JIRA, etc.)."
