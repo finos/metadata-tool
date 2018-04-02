@@ -82,6 +82,16 @@
         invalid-working-group-chair-person-ids (filter #(nil? (md/person-metadata %)) working-group-chair-person-ids)]
     (doall (map #(println "❌ Person id" % "(a Working Group chair) doesn't have metadata.") invalid-working-group-chair-person-ids))))
 
+(defn- check-project-states
+  []
+  (let [projects-with-invalid-states (remove #(boolean (some #{(:state %)} ["INCUBATING" "RELEASED" "ARCHIVED"])) (md/projects-metadata))]
+    (doall (map #(println "❌ Project" (:activity-name %) "has an invalid state:" (:state %)) projects-with-invalid-states))))
+
+(defn- check-working-group-states
+  []
+  (let [working-groups-with-invalid-states (remove #(boolean (some #{(:state %)} ["OPERATING" "ARCHIVED"])) (md/working-groups-metadata))]
+    (doall (map #(println "❌ Working Group" (:activity-name %) "has an invalid state:" (:state %)) working-groups-with-invalid-states))))
+
 (defn check-local
   "Performs comprehensive checking of files locally on disk (no API calls out to GitHub, JIRA, etc.)."
   []
@@ -93,7 +103,9 @@
   (check-approved-contributor-references)
   (check-pmc-lead-references)
   (check-missing-working-group-chairs)
-  (check-working-group-chair-references))
+  (check-working-group-chair-references)
+  (check-project-states)
+  (check-working-group-states))
 
 (defn check
   "Performs comprehensive checks, including API calls out to GitHub, JIRA, and Bitergia (which may be rate limited)."
