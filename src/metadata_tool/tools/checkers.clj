@@ -92,6 +92,11 @@
   (let [working-groups-with-invalid-states (remove #(boolean (some #{(:state %)} ["OPERATING" "ARCHIVED"])) (md/working-groups-metadata))]
     (doall (map #(println "❌ Working Group" (:activity-name %) "has an invalid state:" (:state %)) working-groups-with-invalid-states))))
 
+(defn- check-duplicate-github-urls
+  []
+  (let [duplicate-github-urls (filter #(> (val %) 1) (frequencies (mapcat :github-urls (md/activities-metadata))))]
+    (doall (map #(println "❌ GitHub URL" (key %) "appears" (val %) "times") duplicate-github-urls))))
+
 (defn check-local
   "Performs comprehensive checking of files locally on disk (no API calls out to GitHub, JIRA, etc.)."
   []
@@ -105,7 +110,8 @@
   (check-missing-working-group-chairs)
   (check-working-group-chair-references)
   (check-project-states)
-  (check-working-group-states))
+  (check-working-group-states)
+  (check-duplicate-github-urls))
 
 (defn check
   "Performs comprehensive checks, including API calls out to GitHub, JIRA, and Bitergia (which may be rate limited)."
