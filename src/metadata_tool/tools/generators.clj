@@ -46,7 +46,6 @@
 
 (defn gen-bitergia-project-data
   []
-(println (md/programs-metadata)) (flush)  ;####TEST!!!!
   (println (tem/render "bitergia-projects.ftl"
                       { :activities (md/activities-metadata) })))
 

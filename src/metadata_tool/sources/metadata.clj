@@ -155,30 +155,14 @@
   "Person metadata of the given GitHub user id, or nil if there is none."
   (memoize person-metadata-by-github-id-fn))
 
-(defn- program-activity-repos
-  "A seq of the ids of all repositories in the given program & activity."
-  [program-id activity-id]
-  (map #(.getName ^java.io.File %) (list-subdirs (io/file (str program-metadata-directory "/" program-id "/" activity-id)))))
-
-(defn- program-activity-repos-metadata
-  "A seq of the metadata of all GitHub repositories in the given program & activity."
-  [program activity]
-  (let [program-id  (:program-id program)
-        activity-id (:activity-id activity)]
-    (seq
-      (remove nil?
-              (map #(if-let [repo-metadata (read-metadata-file (str program-metadata-directory "/" program-id "/" activity-id "/" % "/" repository-filename))]
-                      (assoc repo-metadata
-                             :program-id    program-id
-                             :activity-id   activity-id
-                             :repository-id %
-                             :github-url    (str "https://github.com/" (:github-org program) "/" %)))
-                   (program-activity-repos program-id activity-id))))))
-
 (defn- program-activities
   "A seq of the ids of all activities in the given program."
   [program-id]
   (map #(.getName ^java.io.File %) (list-subdirs (io/file (str program-metadata-directory "/" program-id)))))
+
+(defn- program-activity-github-urls
+  [program activity]
+  (seq (map #(str "https://github.com/" (:github-org program) "/" %) (:github-repos activity))))
 
 (defn- program-activities-metadata
   "A seq containing the metadata of all activities in the given program."
@@ -187,9 +171,10 @@
     (seq
       (remove nil?
         (map #(if-let [activity (read-metadata-file (str program-metadata-directory "/" program-id "/" % "/" activity-filename))]
-                (let [activity (assoc activity :program-id program-id :activity-id %)]
-                  (assoc activity
-                         :repositories (program-activity-repos-metadata program activity))))
+                (assoc activity
+                       :program-id  program-id
+                       :activity-id %
+                       :github-urls (program-activity-github-urls program activity)))
              (program-activities program-id))))))
 
 (defn program-metadata

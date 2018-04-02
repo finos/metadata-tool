@@ -73,12 +73,12 @@
 
 (defn- check-missing-working-group-chairs
   []
-  (let [working-groups-with-missing-chairs (map :activity-name (filter #(nil? (:working-group-chair %)) (md/working-groups-metadata)))]
-    (doall (map #(println "❌ Working Group" (:activity-name %) "doesn't have a chair recorded.") working-groups-with-missing-chairs))))
+  (let [working-groups-with-missing-chairs (map :activity-name (filter #(empty? (:working-group-chairs %)) (md/working-groups-metadata)))]
+    (doall (map #(println "⚠️ Working Group" % "doesn't have any chairs.") working-groups-with-missing-chairs))))
 
 (defn- check-working-group-chair-references
   []
-  (let [working-group-chair-person-ids         (remove nil? (map :working-group-chair (md/working-groups-metadata)))
+  (let [working-group-chair-person-ids         (seq (distinct (mapcat :working-group-chairs (md/working-groups-metadata))))
         invalid-working-group-chair-person-ids (filter #(nil? (md/person-metadata %)) working-group-chair-person-ids)]
     (doall (map #(println "❌ Person id" % "(a Working Group chair) doesn't have metadata.") invalid-working-group-chair-person-ids))))
 
