@@ -73,8 +73,8 @@
 
 (defn- check-missing-working-group-chairs
   []
-  (let [working-groups-with-missing-chairs (map :activity-name (filter #(empty? (:working-group-chairs %)) (md/working-groups-metadata)))]
-    (doall (map #(println "⚠️ Working Group" % "doesn't have any chairs.") working-groups-with-missing-chairs))))
+  (let [working-groups-with-missing-chairs (filter #(empty? (:working-group-chairs %)) (md/working-groups-metadata))]
+    (doall (map #(println "⚠️ Working Group" (str (:program-id %) "/" (:activity-id %)) "doesn't have any chairs.") working-groups-with-missing-chairs))))
 
 (defn- check-working-group-chair-references
   []
@@ -90,7 +90,7 @@
 (defn- check-working-group-states
   []
   (let [working-groups-with-invalid-states (remove #(boolean (some #{(:state %)} ["OPERATING" "ARCHIVED"])) (md/working-groups-metadata))]
-    (doall (map #(println "❌ Working Group" (:activity-name %) "has an invalid state:" (:state %)) working-groups-with-invalid-states))))
+    (doall (map #(println "❌ Working Group" (str (:program-id %) "/" (:activity-id %)) "has an invalid state:" (:state %)) working-groups-with-invalid-states))))
 
 (defn- check-duplicate-github-urls
   []
