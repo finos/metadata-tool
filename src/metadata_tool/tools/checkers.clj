@@ -71,6 +71,17 @@
         invalid-pmc-lead-person-ids (filter #(nil? (md/person-metadata %)) pmc-lead-person-ids)]
     (doall (map #(println "❌ Person id" % "(a PMC lead) doesn't have metadata.") invalid-pmc-lead-person-ids))))
 
+(defn- check-missing-working-group-chairs
+  []
+  (let [working-groups-with-missing-chairs (map :activity-name (filter #(nil? (:working-group-chair %)) (md/working-groups-metadata)))]
+    (doall (map #(println "❌ Working Group" (:activity-name %) "doesn't have a chair recorded.") working-groups-with-missing-chairs))))
+
+(defn- check-working-group-chair-references
+  []
+  (let [working-group-chair-person-ids         (remove nil? (map :working-group-chair (md/working-groups-metadata)))
+        invalid-working-group-chair-person-ids (filter #(nil? (md/person-metadata %)) working-group-chair-person-ids)]
+    (doall (map #(println "❌ Person id" % "(a Working Group chair) doesn't have metadata.") invalid-working-group-chair-person-ids))))
+
 (defn check-local
   "Performs comprehensive checking of files locally on disk (no API calls out to GitHub, JIRA, etc.)."
   []
@@ -80,7 +91,9 @@
   (check-duplicate-github-ids)
   (check-affiliation-references)
   (check-approved-contributor-references)
-  (check-pmc-lead-references))
+  (check-pmc-lead-references)
+  (check-missing-working-group-chairs)
+  (check-working-group-chair-references))
 
 (defn check
   "Performs comprehensive checks, including API calls out to GitHub, JIRA, and Bitergia (which may be rate limited)."

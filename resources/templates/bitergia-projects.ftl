@@ -8,44 +8,25 @@
     "mbox"       : [ "dev /home/bitergia/mboxes/barnowl_symphony_dev" ],
     "meta"       : { "title" : "Dev List"}
   },
-  "WG-DW" : {
-    "confluence" : [ "WGDWAPI" ],
-    "mbox"       : [ "wg-desktop-wrapper /home/bitergia/mboxes/barnowl_symphony_wg-desktop-wrapper" ],
-    "meta"       : { "title" : "WG-DW"}
-  },
-  "WG-API" : {
-    "confluence" : [ "WGA" ],
-    "mbox"       : [ "wg-api /home/bitergia/mboxes/barnowl_symphony_wg-api" ],
-    "meta"       : { "title" : "WG-API"}
-  },
-  "WG-FOS" : {
-    "confluence" : [ "WGFOS" ],
-    "mbox"       : [ "wg-financial-objects /home/bitergia/mboxes/barnowl_symphony_wg-financial-objects" ],
-    "meta"       : { "title" : "WG-FOS"}
-  },
-  "ESCo" : {
-    "confluence" : [ "ESCo" ],
-    "meta"       : { "title" : "ESCo"}
-  },
   "Foundation" : {
     "confluence" : [ "FM" ],
     "meta"       : { "title" : "Foundation"}
-  }[#if projects?? && projects?size > 0],
-  [#list projects as project]
-  "${project.project_name}" : {
-    "git"    : [
-    [#list project.repositories as repository]
-      "${repository.github_url}.git"[#if repository != repositories?last],[/#if]
-    [/#list]
+  }[#if activities?? && activities?size > 0],
+  [#list activities as activity]
+  "${activity.activity_name}" : {[#if activity.repositories?? && activity.repositories?size > 0]
+    "git"        : [
+      [#list activity.repositories as repository]
+      "${repository.github_url}.git"[#if repository.repository_id != activity.repositories?last.repository_id],[/#if]
+      [/#list]
     ],
-    "github" : [
-    [#list project.repositories as repository]
-      "${repository.github_url}.git"[#if repository != repositories?last],[/#if]
-    [/#list]
-    ],
-    "meta"   : { "title" : "${project.project_name}" }
-  }[#if project != projects?last],[/#if]
-  [/#list]
-[/#if]
-
+    "github"     : [
+      [#list activity.repositories as repository]
+      "${repository.github_url}"[#if repository.repository_id != activity.repositories?last.repository_id],[/#if]
+      [/#list]
+    ],[/#if][#if activity.confluence_space_key??]
+    "confluence" : [ "${activity.confluence_space_key}" ],[/#if][#if activity.mailing_list_address??]
+    "mbox"       : [ [#assign ml_name=activity.mailing_list_address?split("@")?first]"${ml_name} /home/bitergia/mboxes/barnowl_symphony_${ml_name}" ],[/#if]
+    "meta"       : { "title" : "${activity.activity_name}" }
+  }[#if activity.activity_id != activities?last.activity_id],[/#if]
+  [/#list][/#if]
 }

@@ -33,7 +33,7 @@
 (def ^:private organization-filename "organization-metadata.json")
 (def ^:private person-filename       "person-metadata.json")
 (def ^:private program-filename      "program-metadata.json")
-(def ^:private project-filename      "project-metadata.json")
+(def ^:private activity-filename     "activity-metadata.json")
 (def ^:private repository-filename   "repository-metadata.json")
 
 (defn- list-metadata-files
@@ -45,14 +45,14 @@
 (defstate ^:private organization-metadata-files :start (list-metadata-files organization-filename))
 (defstate ^:private person-metadata-files       :start (list-metadata-files person-filename))
 (defstate ^:private program-metadata-files      :start (list-metadata-files program-filename))
-(defstate ^:private project-metadata-files      :start (list-metadata-files project-filename))
+(defstate ^:private activity-metadata-files     :start (list-metadata-files activity-filename))
 (defstate ^:private repository-metadata-files   :start (list-metadata-files repository-filename))
 
 (defstate ^:private metadata-files
   :start { :organization organization-metadata-files
            :person       person-metadata-files
            :program      program-metadata-files
-           :project      project-metadata-files
+           :activity     activity-metadata-files
            :repository   repository-metadata-files })
 
 (defn- list-subdirs
@@ -155,65 +155,76 @@
   "Person metadata of the given GitHub user id, or nil if there is none."
   (memoize person-metadata-by-github-id-fn))
 
-(defn- program-project-repos
-  "A seq of the ids of all repositories in the given program & project."
-  [program-id project-id]
-  (map #(.getName ^java.io.File %) (list-subdirs (io/file (str program-metadata-directory "/" program-id "/" project-id)))))
+(defn- program-activity-repos
+  "A seq of the ids of all repositories in the given program & activity."
+  [program-id activity-id]
+  (map #(.getName ^java.io.File %) (list-subdirs (io/file (str program-metadata-directory "/" program-id "/" activity-id)))))
 
-(defn- program-project-repos-metadata
-  "A seq of the metadata of all repositories in the given program & project."
-  [program project]
-  (let [program-id    (:program-id program)
-        project-id    (:project-id project)]
-    (filter nil?
-            (map #(if-let [repo-metadata (read-metadata-file-fn (str program-metadata-directory "/" program-id "/" program-id "/" % "/" repository-filename))]
-                    (assoc repo-metadata
-                           :program-id    program-id
-                           :project-id    project-id
-                           :repository-id %
-                           :github-url    (str "https://github.com/" (:github-org program) "/" %)))
-                 (program-project-repos program-id project-id)))))
+(defn- program-activity-repos-metadata
+  "A seq of the metadata of all GitHub repositories in the given program & activity."
+  [program activity]
+  (let [program-id  (:program-id program)
+        activity-id (:activity-id activity)]
+    (seq
+      (remove nil?
+              (map #(if-let [repo-metadata (read-metadata-file (str program-metadata-directory "/" program-id "/" activity-id "/" % "/" repository-filename))]
+                      (assoc repo-metadata
+                             :program-id    program-id
+                             :activity-id   activity-id
+                             :repository-id %
+                             :github-url    (str "https://github.com/" (:github-org program) "/" %)))
+                   (program-activity-repos program-id activity-id))))))
 
-(defn- program-projects
-  "A seq of the ids of all projects in the given program."
+(defn- program-activities
+  "A seq of the ids of all activities in the given program."
   [program-id]
   (map #(.getName ^java.io.File %) (list-subdirs (io/file (str program-metadata-directory "/" program-id)))))
 
-(defn- program-projects-metadata
-  "A seq containing the metadata of all projects in the given program."
+(defn- program-activities-metadata
+  "A seq containing the metadata of all activities in the given program."
   [program]
   (let [program-id (:program-id program)]
-    (filter nil?
-      (map #(if-let [project (read-metadata-file-fn (str program-metadata-directory "/" program-id "/" % "/" project-filename))]
-              (assoc project
-                     :program-id   program-id
-                     :project-id   %
-                     :repositories (seq (remove nil? (program-project-repos-metadata program project)))))
-           (program-projects program-id)))))
+    (seq
+      (remove nil?
+        (map #(if-let [activity (read-metadata-file (str program-metadata-directory "/" program-id "/" % "/" activity-filename))]
+                (let [activity (assoc activity :program-id program-id :activity-id %)]
+                  (assoc activity
+                         :repositories (program-activity-repos-metadata program activity))))
+             (program-activities program-id))))))
 
 (defn program-metadata
   "Program metadata of the given program-id, or nil if there is none."
   [program-id]
   (if-let [program (read-metadata-file (str program-metadata-directory "/" program-id "/" program-filename))]
-    (assoc program
-           :program-id program-id
-           :github-url (str "https://github.com/" (:github-org program)
-           :projects   (seq (remove nil? (program-projects-metadata program)))))))
+    (let [program (assoc program :program-id program-id)]
+      (assoc program
+             :github-url (str "https://github.com/" (:github-org program))
+             :activities (program-activities-metadata program)))))
 
 (defn programs-metadata
   "A seq containing the metadata of all programs."
   []
   (remove nil? (map program-metadata programs)))
 
-(defn projects-metadata
-  "A seq containing the metadata of all projects, regardless of program."
+(defn activities-metadata
+  "A seq containing the metadata of all activities, regardless of program."
   []
-  (remove nil? (mapcat :projects (programs-metadata))))
+  (remove nil? (mapcat :activities (programs-metadata))))
+
+(defn projects-metadata
+  "A seq containing the metadata of all activities of type PROJECT, regardless of program."
+  []
+  (filter #(= (:type %) "PROJECT") (activities-metadata)))
+
+(defn working-groups-metadata
+  "A seq containing the metadata of all activities of type WORKING_GROUP, regardless of program."
+  []
+  (filter #(= (:type %) "WORKING_GROUP") (activities-metadata)))
 
 (defn repos-metadata
-  "A seq containing the metadata of all repositories, regardless of program or project."
+  "A seq containing the metadata of all repositories, regardless of program or activity."
   []
-  (remove nil? (mapcat :repositories (projects-metadata))))
+  (remove nil? (mapcat :repositories (activities-metadata))))
 
 (defn- current?
   "True if the given 'date range' map (with a :start-date and/or :end-date key) is current i.e. spans today."

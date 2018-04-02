@@ -28,7 +28,7 @@
   :start { :organization (str gh/metadata-directory "/jsonschema/organization-metadata")
            :person       (str gh/metadata-directory "/jsonschema/person-metadata")
            :program      (str gh/metadata-directory "/jsonschema/program-metadata")
-           :project      (str gh/metadata-directory "/jsonschema/project-metadata")
+           :activity     (str gh/metadata-directory "/jsonschema/activity-metadata")
            :repository   (str gh/metadata-directory "/jsonschema/repository-metadata")
          })
 
@@ -54,7 +54,7 @@
   :start (into {} (map #(hash-map % (load-schema %)) schema-ids)))
 
 (defn validate-json
-  "Validates the given JSON string against the given 'schema-id' (a two element vector such as [:project \"1.0.0\"]).
+  "Validates the given JSON string against the given 'schema-id' (a two element vector such as [:person \"1.0.0\"]).
   Returns nil on success, or a status map on error (see https://github.com/metosin/scjsv for details)."
   [schema-id ^String json]
   (if-let [validator-fn (get schema-validators schema-id)]
