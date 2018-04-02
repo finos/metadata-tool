@@ -158,7 +158,7 @@
 (defn- program-activities
   "A seq of the ids of all activities in the given program."
   [program-id]
-  (map #(.getName ^java.io.File %) (list-subdirs (io/file (str program-metadata-directory "/" program-id)))))
+  (sort (map #(.getName ^java.io.File %) (list-subdirs (io/file (str program-metadata-directory "/" program-id))))))
 
 (defn- program-activity-github-urls
   [program activity]
@@ -194,7 +194,7 @@
 (defn activities-metadata
   "A seq containing the metadata of all activities, regardless of program."
   []
-  (remove nil? (mapcat :activities (programs-metadata))))
+  (sort-by :activity-name (remove nil? (mapcat :activities (programs-metadata)))))
 
 (defn projects-metadata
   "A seq containing the metadata of all activities of type PROJECT, regardless of program."
@@ -205,11 +205,6 @@
   "A seq containing the metadata of all activities of type WORKING_GROUP, regardless of program."
   []
   (filter #(= (:type %) "WORKING_GROUP") (activities-metadata)))
-
-(defn repos-metadata
-  "A seq containing the metadata of all repositories, regardless of program or activity."
-  []
-  (remove nil? (mapcat :repositories (activities-metadata))))
 
 (defn- current?
   "True if the given 'date range' map (with a :start-date and/or :end-date key) is current i.e. spans today."
