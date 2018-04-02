@@ -97,6 +97,13 @@
   (let [duplicate-github-urls (filter #(> (val %) 1) (frequencies (mapcat :github-urls (md/activities-metadata))))]
     (doall (map #(println "❌ GitHub URL" (key %) "appears" (val %) "times") duplicate-github-urls))))
 
+(defn- check-states-and-dates
+  []
+  (let [released-projects-without-release-dates    (filter #(and (= (:state %) "RELEASED") (nil? (:release-date %))) (md/projects-metadata))
+        archived-activities-without-archived-dates (filter #(and (= (:state %) "ARCHIVED") (nil? (:archive-date %))) (md/activities-metadata))]
+    (doall (map #(println "❌ Project" (str (:program-id %) "/" (:activity-id %)) "is released, but has no release date") released-projects-without-release-dates))
+    (doall (map #(println "❌ Activity" (str (:program-id %) "/" (:activity-id %)) "is archived, but has no archive date") archived-activities-without-archived-dates))))
+
 (defn check-local
   "Performs comprehensive checking of files locally on disk (no API calls out to GitHub, JIRA, etc.)."
   []
@@ -111,7 +118,8 @@
   (check-working-group-chair-references)
   (check-project-states)
   (check-working-group-states)
-  (check-duplicate-github-urls))
+  (check-duplicate-github-urls)
+  (check-states-and-dates))
 
 (defn check
   "Performs comprehensive checks, including API calls out to GitHub, JIRA, and Bitergia (which may be rate limited)."
