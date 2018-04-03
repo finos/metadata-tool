@@ -97,6 +97,12 @@
   (let [duplicate-github-urls (filter #(> (val %) 1) (frequencies (mapcat :github-urls (md/activities-metadata))))]
     (doall (map #(println "❌ GitHub URL" (key %) "appears" (val %) "times") duplicate-github-urls))))
 
+(defn- check-duplicate-activity-names
+  "Ensure global uniqueness of activity names, since that will cause problems for systems that don't natively support programs (e.g. Bitergia)."
+  []
+  (let [duplicate-activity-names (filter #(> (val %) 1) (frequencies (map :activity-name (md/activities-metadata))))]
+    (doall (map #(println "❌ Activity Name" (key %) "appears" (val %) "times") duplicate-activity-names))))
+
 (defn- check-states-and-dates
   []
   (let [released-projects-without-release-dates    (filter #(and (= (:state %) "RELEASED") (nil? (:release-date %))) (md/projects-metadata))
@@ -119,6 +125,7 @@
   (check-project-states)
   (check-working-group-states)
   (check-duplicate-github-urls)
+  (check-duplicate-activity-names)
   (check-states-and-dates))
 
 (defn check
