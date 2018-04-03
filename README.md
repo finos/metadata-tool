@@ -1,7 +1,7 @@
 
 # metadata tool
 
-[![Build Status](https://circleci.com/gh/finos/metadata-tool.png?circle-token=:circle-token)](https://circleci.com/gh/finos/metadata-tool)
+[![Build Status](https://travis-ci.com/finos/metadata-tool.svg?token=pqqpLyKQyKTy9sWFPywW&branch=master)](https://travis-ci.com/finos/metadata-tool)
 
 An easily extensible command line tool for performing various tasks with FINOS Foundation metadata.
 
