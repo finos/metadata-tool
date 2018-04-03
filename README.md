@@ -45,8 +45,6 @@ Options:
 
 Available tools:
 <list of currently available tools is displayed here - this list will change as new tools are developed>
-$ lein run -- -c <path to EDN configuration file> tool [tool] ...
-$ lein run -- -c <path to EDN configuration file> -t <path of desired temp directory> tool [tool] ...
 ```
 
 ## Developer Information
