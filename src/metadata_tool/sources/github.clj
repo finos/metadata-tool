@@ -19,6 +19,7 @@
             [clojure.java.io       :as io]
             [clojure.tools.logging :as log]
             [mount.core            :as mnt :refer [defstate]]
+            [lambdaisland.uri      :as uri]
             [cheshire.core         :as ch]
             [clj-jgit.porcelain    :as git]
             [tentacles.core        :as tc]
@@ -27,11 +28,11 @@
             [tentacles.users       :as tu]
             [metadata-tool.config  :as cfg]))
 
-(def org-name           "finos")
-(def metadata-repo-name "metadata")
-(def org-admins         ["finos-admin"])
+(def ^:private org-name           "finos")
+(def ^:private metadata-repo-name "metadata")
+(def ^:private org-admins         #{"ssf-admin" "finos-admin"})
 
-(defn rm-rf
+(defn- rm-rf
   [^java.io.File file]
   (when (.isDirectory file)
     (doseq [child-file (.listFiles file)]
@@ -48,7 +49,7 @@
           :start (str username ":" password))
 
 (defstate opts
-          :start {:all-pages true :per-page 100 :auth auth :user-agent (str org-name " metadata tool")})
+          :start {:throw-exceptions true :all-pages true :per-page 100 :auth auth :user-agent (str org-name " metadata tool")})
 
 (defstate github-revision
           :start (:github-revision cfg/config))
@@ -75,6 +76,37 @@
 
 ; Note: functions that call GitHub APIs are memoized, so that when tools are "stacked" they benefit from cached GitHub API calls
 
+(defn- collaborators-fn
+  "Returns the collaborators for the given repo, or for all repos if none is provided."
+  [repo-url]
+  (let [[org repo] (remove s/blank? (s/split (:path (uri/uri repo-url)) #"/"))]
+    (remove #(some #{(:login %)} org-admins) (tr/collaborators org repo opts))))
+(def collaborators (memoize collaborators-fn))
+
+(defn collaborator-logins
+  "Returns a list containing the logins of all collaborators in the given repo, or for all repos if none is provided."
+  [repo-url]
+  (map :login (collaborators repo-url)))
+
+(defn- admins
+  "List the admins of the given repository."
+  [repo-url]
+  (filter #(:admin (:permissions %)) (collaborators repo-url)))
+
+(defn admin-logins
+  "List the logins of the admins of the given repository."
+  [repo-url]
+  (map :login (filter #(:admin (:permissions %)) (collaborators repo-url))))
+
+
+
+
+
+
+
+
+
+(comment
 (defn- check-call
   [gh-result & [url fail-silently]]
   (if-let [response-code (:status gh-result)]
@@ -85,6 +117,10 @@
                               (:message (:body gh-result))
                               (if url (str " URL: " url)))))))
   gh-result)
+
+(def user-details
+  "Returns user details for the given Github username."
+  (memoize tu/user))
 
 (defn- repos-fn
   []
@@ -127,41 +163,6 @@
   []
   (map :name (repos)))
 
-(defn- collaborators-fn
-  ([]     (into '() (set (flatten (map collaborators-fn (repo-names))))))
-  ([repo] (check-call (tr/collaborators org-name repo opts))))
-
-(def collaborators
-  "Returns the collaborators for the given repo, or for all repos if none is provided."
-  (memoize collaborators-fn))
-
-(defn collaborator-names
-  "Returns a list containing the names of all collaborators in the given repo, or for all repos if none is provided."
-  ([]     (map :login (collaborators)))
-  ([repo] (map :login (collaborators repo))))
-
-(defn- user-details-fn
-  [user-name]
-  (check-call (tu/user user-name)))
-(def user-details
-  "Returns user details for the given Github username."
-  (memoize user-details-fn))
-
-(defn admins
-  "List the admins of the given repository."
-  [repo]
-  (filter #(:admin (:permissions %)) (collaborators repo)))
-
-(defn admin-names
-  "List the names of the admins of the given repository."
-  [repo]
-  (map :login (filter #(:admin (:permissions %)) (collaborators repo))))
-
-(defn project-lead-names
-  "List the 'project leads' of the given repository."
-  [repo]
-  (filter #(not-any? #{%} org-admins) (admin-names repo)))
-
 (defn- ls-fn
   ([dir]      (ls-fn metadata-repo-name dir))
   ([repo dir] (map :name (check-call (tr/contents org-name repo dir opts)))))
@@ -175,3 +176,4 @@
 (def read-file
   "Reads the contents of the given file in the metadata repository, or (2 param version) the given repository."
   (memoize read-file-fn))
+)

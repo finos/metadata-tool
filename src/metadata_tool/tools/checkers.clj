@@ -30,6 +30,9 @@
             [metadata-tool.sources.schemas  :as sch]
             [metadata-tool.sources.metadata :as md]))
 
+
+; Local (filesystem only, no API calls) checks
+
 (defn- check-syntax
   []
   (md/validate-metadata))
@@ -128,14 +131,45 @@
   (check-duplicate-activity-names)
   (check-states-and-dates))
 
+
+
+
+
+; Local and remote (filesystem and/or API call) checks
+
+
+(defn- check-project-leads
+  []
+  (let [activities-with-github-urls (remove #(empty? (:github-urls %)) (md/activities-metadata))]
+    (doall
+      (map #(doall
+              (map (fn [github-url]
+                     (if (empty? (gh/admin-logins github-url))
+                       (if (= "ARCHIVED" (:state %))
+                         (println "⚠️ GitHub Repository" github-url "in archived activity" (str (:program-id %) "/" (:activity-id %)) "has no admins, or they haven't accepted their invitations yet.")
+                         (println "❌ GitHub Repository" github-url "in activity" (str (:program-id %) "/" (:activity-id %)) "has no admins, or they haven't accepted their invitations yet."))))
+                   (:github-urls %)))
+           activities-with-github-urls))))
+
+(defn check-remote
+  "Performs checks that require API calls out to GitHub, JIRA, Bitergia, etc. (which may be rate limited)."
+  []
+  (check-project-leads)
+;  (check-metadata-for-collaborators)
+;  (check-bitergia-projects)
+)
+
+
+
+
+
+; Convenience fn for performing all checks
+
 (defn check
   "Performs comprehensive checks, including API calls out to GitHub, JIRA, and Bitergia (which may be rate limited)."
   []
   (check-local)
-;  (check-project-leads)
-;  (check-contribs)
-;  (check-bitergia-projects)
-)
+  (check-remote))
 
 
 

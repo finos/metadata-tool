@@ -39,6 +39,7 @@
                           [cheshire                              "5.8.0"]
                           [aero                                  "1.1.3"]
                           [mount                                 "0.1.12"]
+                          [lambdaisland/uri                      "1.1.0"]
                           [hiccup                                "1.0.5"]
                           [com.github.grinnbearit/freemarker-clj "-SNAPSHOT"]
                           [metosin/scjsv                         "0.4.1"]

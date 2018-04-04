@@ -147,13 +147,13 @@
   []
   (sort-by :full-name (remove nil? (map person-metadata-with-organizations people))))
 
-(defn- person-metadata-by-github-id-fn
-  [github-id]
-  (if github-id
-    (first (filter #(some #{github-id} (:github-user-ids %)) (people-metadata)))))
-(def person-metadata-by-github-id
-  "Person metadata of the given GitHub user id, or nil if there is none."
-  (memoize person-metadata-by-github-id-fn))
+(defn- person-metadata-by-github-login-fn
+  [github-login]
+  (if github-login
+    (first (filter #(some #{github-login} (:github-logins %)) (people-metadata)))))
+(def person-metadata-by-github-login
+  "Person metadata of the given GitHub login, or nil if there is none."
+  (memoize person-metadata-by-github-login-fn))
 
 (defn- program-activities
   "A seq of the ids of all activities in the given program."
