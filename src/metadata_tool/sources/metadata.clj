@@ -183,7 +183,7 @@
   (if-let [program (read-metadata-file (str program-metadata-directory "/" program-id "/" program-filename))]
     (let [program (assoc program :program-id program-id)]
       (assoc program
-             :github-url (str "https://github.com/" (:github-org program))
+             :github-url (if (:github-org program) (str "https://github.com/" (:github-org program)))
              :activities (program-activities-metadata program)))))
 
 (defn programs-metadata

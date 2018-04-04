@@ -79,24 +79,45 @@
 (defn- collaborators-fn
   "Returns the collaborators for the given repo, or for all repos if none is provided."
   [repo-url]
-  (let [[org repo] (remove s/blank? (s/split (:path (uri/uri repo-url)) #"/"))]
-    (remove #(some #{(:login %)} org-admins) (tr/collaborators org repo opts))))
+  (if repo-url
+    (let [[org repo] (remove s/blank? (s/split (:path (uri/uri repo-url)) #"/"))]
+      (if (and (not (s/blank? org))
+               (not (s/blank? repo)))
+        (remove #(some #{(:login %)} org-admins) (tr/collaborators org repo opts))))))
 (def collaborators (memoize collaborators-fn))
 
 (defn collaborator-logins
   "Returns a list containing the logins of all collaborators in the given repo, or for all repos if none is provided."
   [repo-url]
-  (map :login (collaborators repo-url)))
+  (if repo-url
+    (map :login (collaborators repo-url))))
 
 (defn- admins
   "List the admins of the given repository."
   [repo-url]
-  (filter #(:admin (:permissions %)) (collaborators repo-url)))
+  (if repo-url
+    (filter #(:admin (:permissions %)) (collaborators repo-url))))
 
 (defn admin-logins
   "List the logins of the admins of the given repository."
   [repo-url]
-  (map :login (filter #(:admin (:permissions %)) (collaborators repo-url))))
+  (if repo-url
+    (map :login (filter #(:admin (:permissions %)) (collaborators repo-url)))))
+
+(defn- repos-fn
+  "Returns all repos in the given org."
+  [org-url]
+  (if org-url
+    (let [[org-name] (remove s/blank? (s/split (:path (uri/uri org-url)) #"/"))]
+      (if-not (s/blank? org-name)
+        (tr/org-repos org-name opts)))))
+(def repos (memoize repos-fn))
+
+(defn repos-urls
+  "Returns the URLs of all repos in the given org."
+  [org-url]
+  (if org-url
+    (map :html_url (repos org-url))))
 
 
 

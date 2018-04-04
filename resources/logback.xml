@@ -25,7 +25,7 @@
   <logger name="org.eclipse" level="ERROR" />
   <logger name="freemarker"  level="ERROR" />
 
-  <root level="DEBUG">
+  <root level="INFO">
     <appender-ref ref="FILE" />
     <appender-ref ref="STDERR" />
   </root>

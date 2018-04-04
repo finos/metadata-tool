@@ -81,9 +81,14 @@
 
 (defn- check-working-group-chair-references
   []
-  (let [working-group-chair-person-ids         (seq (distinct (mapcat :working-group-chairs (md/working-groups-metadata))))
+  (let [working-group-chair-person-ids         (seq (distinct (mapcat :working-group-chairs (md/activities-metadata))))
         invalid-working-group-chair-person-ids (filter #(nil? (md/person-metadata %)) working-group-chair-person-ids)]
     (doall (map #(println "❌ Person id" % "(a Working Group chair) doesn't have metadata.") invalid-working-group-chair-person-ids))))
+
+(defn- check-project-chairs
+  []
+  (let [projects-with-chairs (sort-by :activity-id (filter :working-group-chairs (md/projects-metadata)))]
+    (doall (map #(println "⚠️ Project" (str (:program-id %) "/" (:activity-id %)) "has working group chairs.") projects-with-chairs))))
 
 (defn- check-project-states
   []
@@ -92,7 +97,7 @@
 
 (defn- check-working-group-states
   []
-  (let [working-groups-with-invalid-states (remove #(boolean (some #{(:state %)} ["OPERATING" "ARCHIVED"])) (md/working-groups-metadata))]
+  (let [working-groups-with-invalid-states (remove #(boolean (some #{(:state %)} ["OPERATING" "PAUSED" "ARCHIVED"])) (md/working-groups-metadata))]
     (doall (map #(println "❌ Working Group" (str (:program-id %) "/" (:activity-id %)) "has an invalid state:" (:state %)) working-groups-with-invalid-states))))
 
 (defn- check-duplicate-github-urls
@@ -113,6 +118,12 @@
     (doall (map #(println "❌ Project" (str (:program-id %) "/" (:activity-id %)) "is released, but has no release date") released-projects-without-release-dates))
     (doall (map #(println "❌ Activity" (str (:program-id %) "/" (:activity-id %)) "is archived, but has no archive date") archived-activities-without-archived-dates))))
 
+(defn- check-github-coords
+  []
+  (let [programs-without-github-org                     (filter #(nil? (:github-org %)) (md/programs-metadata))
+        programs-without-github-org-with-activity-repos (filter #(not (empty? (mapcat :github-repos (:activities %)))) programs-without-github-org)]
+    (doall (map #(println "❌ Program" (str (:program-id %)) "does not have a GitHub org, but some of its activities have GitHub repos.") programs-without-github-org-with-activity-repos))))
+
 (defn check-local
   "Performs comprehensive checking of files locally on disk (no API calls out to GitHub, JIRA, etc.)."
   []
@@ -125,11 +136,13 @@
   (check-pmc-lead-references)
   (check-missing-working-group-chairs)
   (check-working-group-chair-references)
+  (check-project-chairs)
   (check-project-states)
   (check-working-group-states)
   (check-duplicate-github-urls)
   (check-duplicate-activity-names)
-  (check-states-and-dates))
+  (check-states-and-dates)
+  (check-github-coords))
 
 
 
@@ -153,18 +166,28 @@
 
 (defn- check-metadata-for-collaborators
   []
-  (let [github-urls   (remove empty? (mapcat :github-urls (md/activities-metadata)))
+  (let [github-urls   (mapcat :github-urls (md/activities-metadata))
         github-logins (sort (distinct (mapcat gh/collaborator-logins github-urls)))]
     (doall (map #(if-not (md/person-metadata-by-github-login %)
                    (println "❌ GitHub login" % "doesn't have any metadata."))
                 github-logins))))
+
+(defn- check-metadata-for-repos
+  []
+  (let [github-repo-urls       (set (remove s/blank? (mapcat #(gh/repos-urls (:github-url %)) (md/programs-metadata))))
+        metadata-repo-urls     (set (remove s/blank? (mapcat :github-urls (md/activities-metadata))))
+        repos-without-metadata (sort (set/difference github-repo-urls metadata-repo-urls))
+        metadata-without-repo  (sort (set/difference metadata-repo-urls github-repo-urls))]
+    (doall (map #(println "❌ GitHub repo" % "has no metadata.") repos-without-metadata))
+    (doall (map #(println "❌ GitHub repo" % "has metadata, but does not exist in GitHub.") metadata-without-repo))))
+
 
 (defn check-remote
   "Performs checks that require API calls out to GitHub, JIRA, Bitergia, etc. (which may be rate limited)."
   []
   (check-project-leads)
   (check-metadata-for-collaborators)
-;  (check-metadata-for-repos)
+  (check-metadata-for-repos)
 ;  (check-bitergia-projects)
 )
 
