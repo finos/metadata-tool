@@ -146,16 +146,25 @@
               (map (fn [github-url]
                      (if (empty? (gh/admin-logins github-url))
                        (if (= "ARCHIVED" (:state %))
-                         (println "⚠️ GitHub Repository" github-url "in archived activity" (str (:program-id %) "/" (:activity-id %)) "has no admins, or they haven't accepted their invitations yet.")
-                         (println "❌ GitHub Repository" github-url "in activity" (str (:program-id %) "/" (:activity-id %)) "has no admins, or they haven't accepted their invitations yet."))))
+                         (println "⚠️ GitHub Repository" github-url "in archived" (s/lower-case (s/replace (:type %) "_" " ")) (str (:program-id %) "/" (:activity-id %)) "has no admins, or they haven't accepted their invitations yet.")
+                         (println "❌ GitHub Repository" github-url "in" (s/lower-case (s/replace (:type %) "_" " ")) (str (:program-id %) "/" (:activity-id %)) "has no admins, or they haven't accepted their invitations yet."))))
                    (:github-urls %)))
            activities-with-github-urls))))
+
+(defn- check-metadata-for-collaborators
+  []
+  (let [github-urls   (remove empty? (mapcat :github-urls (md/activities-metadata)))
+        github-logins (sort (distinct (mapcat gh/collaborator-logins github-urls)))]
+    (doall (map #(if-not (md/person-metadata-by-github-login %)
+                   (println "❌ GitHub login" % "doesn't have any metadata."))
+                github-logins))))
 
 (defn check-remote
   "Performs checks that require API calls out to GitHub, JIRA, Bitergia, etc. (which may be rate limited)."
   []
   (check-project-leads)
-;  (check-metadata-for-collaborators)
+  (check-metadata-for-collaborators)
+;  (check-metadata-for-repos)
 ;  (check-bitergia-projects)
 )
 
