@@ -66,7 +66,7 @@
 
 (defn -main
   [& args]
-  (log/debug "metadata-tool started")
+  (log/info "metadata-tool started")
   (try
     (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-opts)]
       (cond
@@ -91,5 +91,5 @@
       (st/print-cause-trace e)
       (flush)
       (exit 2)))
-  (log/debug "metadata-tool finished successfully")
+  (log/info "metadata-tool finished successfully")
   (exit 0))

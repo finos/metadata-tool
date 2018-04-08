@@ -112,8 +112,9 @@
   "Organization metadata of the given organization-id, or nil if there is none."
   [organization-id]
   (if organization-id
-    (assoc (read-metadata-file (str organization-metadata-directory "/" organization-id "/" organization-filename))
-           :organization-id organization-id)))
+    (if-let [result (read-metadata-file (str organization-metadata-directory "/" organization-id "/" organization-filename))]
+      (assoc result
+             :organization-id organization-id))))
 
 (defn organizations-metadata
   "A seq containing the metadata of all organizations, sorted by organization-name."
@@ -164,6 +165,27 @@
   [program activity]
   (seq (map #(str "https://github.com/" (:github-org program) "/" %) (:github-repos activity))))
 
+(defn- expand-mailing-list-address
+  [mailing-list-address]
+  (if-not (s/blank? mailing-list-address)
+    {
+      :email-address   mailing-list-address
+      :web-archive-url (let [[list-name domain] (s/split mailing-list-address #"@")]
+                         (if (and (not (s/blank? list-name))
+                                  (not (s/blank? domain))
+                                  (or (= domain "finos.org")
+                                      (= domain "symphony.foundation")))
+                           (str "https://groups.google.com/a/" domain "/forum/#!forum/" list-name)))
+    }))
+
+(defn- expand-confluence-space-key
+  [confluence-space-key]
+  (if-not (s/blank? confluence-space-key)
+    {
+      :key confluence-space-key
+      :url (str "https://finosfoundation.atlassian.net/wiki/spaces/" confluence-space-key "/overview")
+    }))
+
 (defn- program-activities-metadata
   "A seq containing the metadata of all activities in the given program."
   [program]
@@ -172,19 +194,27 @@
       (remove nil?
         (map #(if-let [activity (read-metadata-file (str program-metadata-directory "/" program-id "/" % "/" activity-filename))]
                 (assoc activity
-                       :program-id  program-id
-                       :activity-id %
-                       :github-urls (program-activity-github-urls program activity)))
+                       :program-id        program-id
+                       :activity-id       %
+                       :tags              (if-let [current-tags (:tags activity)]      ; Normalise tags to lower case, de-dupe and sort
+                                            (seq (sort (distinct (map s/lower-case (remove s/blank? current-tags))))))
+                       :github-urls       (program-activity-github-urls program activity)
+                       :mailing-lists     (map expand-mailing-list-address (:mailing-list-addresses activity))
+                       :confluence-spaces (map expand-confluence-space-key (:confluence-space-keys activity))))
              (program-activities program-id))))))
 
 (defn program-metadata
   "Program metadata of the given program-id, or nil if there is none."
   [program-id]
   (if-let [program (read-metadata-file (str program-metadata-directory "/" program-id "/" program-filename))]
-    (let [program (assoc program :program-id program-id)]
+    (let [program (assoc program :program-id program-id)]   ; Note: this assoc has to happen first, since (program-activities-metadata) depends on it.
       (assoc program
-             :github-url (if (:github-org program) (str "https://github.com/" (:github-org program)))
-             :activities (program-activities-metadata program)))))
+             :github-url               (if (:github-org program) (str "https://github.com/" (:github-org program)))
+             :activities               (program-activities-metadata program)
+             :pmc-mailing-list         (expand-mailing-list-address (:pmc-mailing-list-address         program))
+             :pmc-private-mailing-list (expand-mailing-list-address (:pmc-private-mailing-list-address program))
+             :program-mailing-list     (expand-mailing-list-address (:program-mailing-list-address     program))
+             :confluence-space         (expand-confluence-space-key (:confluence-space-key             program))))))
 
 (defn programs-metadata
   "A seq containing the metadata of all programs."
@@ -253,3 +283,8 @@
   "A seq of person metadata for all people who currently have CLAs with the Foundation."
   []
   (map person-metadata (filter has-cla? people)))
+
+(defn all-activity-tags
+  "A seq of all of the tags in activities, normalised to lower-case."
+  []
+  (seq (sort (distinct (map s/lower-case (remove s/blank? (mapcat :tags (activities-metadata))))))))

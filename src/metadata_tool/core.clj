@@ -44,8 +44,7 @@
     "check-local"                                         tch/check-local
     "check"                                               tch/check
     "list-schemas"                                        tls/list-schemas
-    "list-clas"                                           tls/list-people-with-clas
-;    "check-bitergia-projects"                             tch/check-bitergia-projects
+    "list-people-with-clas"                               tls/list-people-with-clas
 ;    "list-projects"                                       tls/list-projects
 ;    "list-project-leads"                                  tls/list-project-leads
 ;    "list-projects-repos-and-team"                        tls/list-projects-repos-and-team
@@ -60,6 +59,7 @@
 ;    "gen-project-metadata"                                tgn/gen-project-metadata
 ;    "gen-project-meta-for-website"                        tgn/gen-project-meta-for-website
     "gen-clabot-whitelist"                                tgn/gen-clabot-whitelist
+    "gen-catalogue-data"                                  tgn/gen-catalogue-data
 ;    "email-inactive-projects-report"                      trp/email-inactive-projects-report
 ;    "email-active-projects-with-unactioned-prs-report"    trp/email-active-projects-with-unactioned-prs-report
 ;    "email-active-projects-with-unactioned-issues-report" trp/email-active-projects-with-unactioned-issues-report

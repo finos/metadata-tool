@@ -76,11 +76,19 @@
 
 ; Note: functions that call GitHub APIs are memoized, so that when tools are "stacked" they benefit from cached GitHub API calls
 
+(defn- parse-github-url-path
+  "Parses the path elements of a GitHub URL - useful for retrieving org name (first position) and repo name (optional second position)."
+  [url]
+  (if-not (s/blank? url)
+    (remove s/blank? (s/split (:path (uri/uri url)) #"/"))))
+
+
 (defn- collaborators-fn
   "Returns the collaborators for the given repo, or for all repos if none is provided."
   [repo-url]
-  (if repo-url
-    (let [[org repo] (remove s/blank? (s/split (:path (uri/uri repo-url)) #"/"))]
+  (log/debug "Requesting repository collaborators for" repo-url)
+  (if-not (s/blank? repo-url)
+    (let [[org repo] (parse-github-url-path repo-url)]
       (if (and (not (s/blank? org))
                (not (s/blank? repo)))
         (remove #(some #{(:login %)} org-admins) (tr/collaborators org repo opts))))))
@@ -89,26 +97,24 @@
 (defn collaborator-logins
   "Returns a list containing the logins of all collaborators in the given repo, or for all repos if none is provided."
   [repo-url]
-  (if repo-url
-    (map :login (collaborators repo-url))))
+  (map :login (collaborators repo-url)))
 
 (defn- admins
   "List the admins of the given repository."
   [repo-url]
-  (if repo-url
-    (filter #(:admin (:permissions %)) (collaborators repo-url))))
+  (filter #(:admin (:permissions %)) (collaborators repo-url)))
 
 (defn admin-logins
   "List the logins of the admins of the given repository."
   [repo-url]
-  (if repo-url
-    (map :login (filter #(:admin (:permissions %)) (collaborators repo-url)))))
+  (map :login (filter #(:admin (:permissions %)) (collaborators repo-url))))
 
 (defn- repos-fn
   "Returns all repos in the given org."
   [org-url]
-  (if org-url
-    (let [[org-name] (remove s/blank? (s/split (:path (uri/uri org-url)) #"/"))]
+  (log/debug "Requesting repositories for" org-url)
+  (if-not (s/blank? org-url)
+    (let [[org-name] (parse-github-url-path org-url)]
       (if-not (s/blank? org-name)
         (tr/org-repos org-name opts)))))
 (def repos (memoize repos-fn))
@@ -119,82 +125,26 @@
   (if org-url
     (map :html_url (repos org-url))))
 
+(defn- repo-fn
+  "Retrieve the data for a specific repo."
+  [repo-url]
+  (log/debug "Requesting repository details for" repo-url)
+  (if repo-url
+    (let [[org repo] (parse-github-url-path repo-url)]
+      (if (and (not (s/blank? org))
+               (not (s/blank? repo)))
+        (tr/specific-repo org repo opts)))))
+(def repo (memoize repo-fn))
 
 
+(defn- languages-fn
+  "Retrieve the languages data for a specific repo."
+  [repo-url]
+  (log/debug "Requesting repository languages for" repo-url)
+  (if repo-url
+    (let [[org repo] (parse-github-url-path repo-url)]
+      (if (and (not (s/blank? org))
+               (not (s/blank? repo)))
+        (tr/languages org repo opts)))))
+(def languages (memoize languages-fn))
 
-
-
-
-
-
-(comment
-(defn- check-call
-  [gh-result & [url fail-silently]]
-  (if-let [response-code (:status gh-result)]
-    (if (and (>= response-code 400)
-             (not fail-silently))
-      (throw (Exception. (str response-code
-                              " response from GitHub: "
-                              (:message (:body gh-result))
-                              (if url (str " URL: " url)))))))
-  gh-result)
-
-(def user-details
-  "Returns user details for the given Github username."
-  (memoize tu/user))
-
-(defn- repos-fn
-  []
-  (check-call (tr/org-repos org-name opts) (str "org-repos/" org-name)))
-
-(def repos
-  "Returns all repos in the Foundation org."
-  (memoize repos-fn))
-
-(defn- repo-hotness
-  "Returns the 'hotness' of the given repo"
-  [repo]
-  (+ (* (get repo :collaborators 0) 5)
-     (* (get repo :forks         0) 4)
-     (* (get repo :stars         0) 2)
-     (* (get repo :watchers      0) 1)))
-
-(defn repo-langs
-  "Returns a list containing the names of all languages in a given repo."
-  [repo]
-  (let [repo-name (get repo "repositoryName")
-        url       (str "languages/" repo-name)
-        langs     (check-call (tr/languages org-name repo-name opts) url true)]
-    langs))
-
-(defn repo-stats
-  "Returns GitHub repo stats."
-  [repo-name]
-  (let [repo-meta   (check-call (tr/specific-repo org-name repo-name opts) (str "specific-repo/" org-name "/" repo-name) true)
-        collabs     (check-call (tr/collaborators org-name repo-name opts) (str "collaborators/" org-name "/" repo-name) true)
-        repo-stats  (assoc {} :collaborators (count collabs)
-                              :stars         (:stargazers_count repo-meta)
-                              :watchers      (:watchers_count   repo-meta)
-                              :size          (:size             repo-meta)
-                              :forks         (:forks_count      repo-meta))]
-    (assoc repo-stats :hotness (repo-hotness repo-stats))))
-
-(defn repo-names
-  "Returns a list containing the names of all repos in the SSF org."
-  []
-  (map :name (repos)))
-
-(defn- ls-fn
-  ([dir]      (ls-fn metadata-repo-name dir))
-  ([repo dir] (map :name (check-call (tr/contents org-name repo dir opts)))))
-(def ls
-  "Lists the contents of the given directory in the metadata repository, or (2 param version) the given repository."
-  (memoize ls-fn))
-
-(defn- read-file-fn
-  ([path]      (read-file-fn metadata-repo-name path))
-  ([repo path] (:content (check-call (tr/contents org-name repo path (assoc opts :str? true))))))
-(def read-file
-  "Reads the contents of the given file in the metadata repository, or (2 param version) the given repository."
-  (memoize read-file-fn))
-)
