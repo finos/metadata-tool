@@ -130,10 +130,11 @@
         activities-metadata              (mapcat :activities programs-metadata)
         unknown-program-email-addresses  (remove #(or (s/ends-with? % "@finos.org")
                                                       (s/ends-with? % "@symphony.foundation"))
-                                                 (remove s/blank? (mapcat #(vec [(:pmcMailingList %) (:programMailingList %)]) programs-metadata)))
+                                                 (remove s/blank? (mapcat #(vec [(:pmc-mailing-list %) (:pmc-private-mailing-list %) (:program-mailing-list %)])
+                                                                          programs-metadata)))
         unknown-activity-email-addresses (remove #(or (s/ends-with? % "@finos.org")
                                                       (s/ends-with? % "@symphony.foundation"))
-                                                 (remove s/blank? (mapcat :mailingListAddresses activities-metadata)))]
+                                                 (remove s/blank? (mapcat :mailing-list-addresses activities-metadata)))]
     (doall (map #(println "⚠️ Mailing list address" % "(a program-level mailing list) does not appear to be Foundation-managed.") unknown-program-email-addresses))
     (doall (map #(println "⚠️ Mailing list address" % "(an activity-level mailing list) does not appear to be Foundation-managed.") unknown-activity-email-addresses))))
 
