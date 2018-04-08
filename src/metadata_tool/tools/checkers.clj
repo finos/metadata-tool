@@ -121,7 +121,8 @@
 (defn- check-github-coords
   []
   (let [programs-without-github-org                     (filter #(nil? (:github-org %)) (md/programs-metadata))
-        programs-without-github-org-with-activity-repos (filter #(not (empty? (mapcat :github-repos (:activities %)))) programs-without-github-org)]
+        programs-without-github-org-with-activity-repos (filter #(seq (mapcat :github-repos (:activities %))) programs-without-github-org)]
+    (doall (map #(println "⚠️ Program" (str (:program-id %)) "does not have a GitHub org.") programs-without-github-org))
     (doall (map #(println "❌ Program" (str (:program-id %)) "does not have a GitHub org, but some of its activities have GitHub repos.") programs-without-github-org-with-activity-repos))))
 
 (defn- check-mailing-list-addresses
@@ -130,7 +131,9 @@
         activities-metadata              (mapcat :activities programs-metadata)
         unknown-program-email-addresses  (remove #(or (s/ends-with? % "@finos.org")
                                                       (s/ends-with? % "@symphony.foundation"))
-                                                 (remove s/blank? (mapcat #(vec [(:pmc-mailing-list %) (:pmc-private-mailing-list %) (:program-mailing-list %)])
+                                                 (remove s/blank? (mapcat #(vec [(:pmc-mailing-list-address         %)
+                                                                                 (:pmc-private-mailing-list-address %)
+                                                                                 (:program-mailing-list-address     %)])
                                                                           programs-metadata)))
         unknown-activity-email-addresses (remove #(or (s/ends-with? % "@finos.org")
                                                       (s/ends-with? % "@symphony.foundation"))
