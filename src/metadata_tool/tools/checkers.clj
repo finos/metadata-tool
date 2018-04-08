@@ -58,19 +58,19 @@
 
 (defn- check-affiliation-references
   []
-  (let [affiliation-org-ids          (mapcat #(:organization-id (:affiliations %)) (md/people-metadata))
+  (let [affiliation-org-ids          (seq (distinct (mapcat #(map :organization-id (:affiliations %)) (md/people-metadata))))
         invalid-affiliations-org-ids (filter #(nil? (md/organization-metadata %)) affiliation-org-ids)]
     (doall (map #(println "❌ Organization id" % "(used in an affiliation) doesn't have metadata.") invalid-affiliations-org-ids))))
 
 (defn- check-approved-contributor-references
   []
-  (let [approved-contributor-person-ids         (mapcat #(:person-id (:approved-contributors %)) (md/organizations-metadata))
+  (let [approved-contributor-person-ids         (seq (distinct (mapcat #(:person-id (:approved-contributors %)) (md/organizations-metadata))))
         invalid-approved-contributor-person-ids (filter #(nil? (md/person-metadata %)) approved-contributor-person-ids)]
     (doall (map #(println "❌ Person id" % "(used in an approved contributor) doesn't have metadata.") invalid-approved-contributor-person-ids))))
 
 (defn- check-pmc-lead-references
   []
-  (let [pmc-lead-person-ids         (map :pmc-lead (md/programs-metadata))
+  (let [pmc-lead-person-ids         (seq (distinct (map :pmc-lead (md/programs-metadata))))
         invalid-pmc-lead-person-ids (filter #(nil? (md/person-metadata %)) pmc-lead-person-ids)]
     (doall (map #(println "❌ Person id" % "(a PMC lead) doesn't have metadata.") invalid-pmc-lead-person-ids))))
 
@@ -124,6 +124,20 @@
         programs-without-github-org-with-activity-repos (filter #(not (empty? (mapcat :github-repos (:activities %)))) programs-without-github-org)]
     (doall (map #(println "❌ Program" (str (:program-id %)) "does not have a GitHub org, but some of its activities have GitHub repos.") programs-without-github-org-with-activity-repos))))
 
+(defn- check-mailing-list-addresses
+  []
+  (let [programs-metadata                (md/programs-metadata)
+        activities-metadata              (mapcat :activities programs-metadata)
+        unknown-program-email-addresses  (remove #(or (s/ends-with? % "@finos.org")
+                                                      (s/ends-with? % "@symphony.foundation"))
+                                                 (remove s/blank? (mapcat #(vec [(:pmcMailingList %) (:programMailingList %)]) programs-metadata)))
+        unknown-activity-email-addresses (remove #(or (s/ends-with? % "@finos.org")
+                                                      (s/ends-with? % "@symphony.foundation"))
+                                                 (remove s/blank? (mapcat :mailingListAddresses activities-metadata)))]
+    (doall (map #(println "⚠️ Mailing list address" % "(a program-level mailing list) does not appear to be Foundation-managed.") unknown-program-email-addresses))
+    (doall (map #(println "⚠️ Mailing list address" % "(an activity-level mailing list) does not appear to be Foundation-managed.") unknown-activity-email-addresses))))
+
+
 (defn check-local
   "Performs comprehensive checking of files locally on disk (no API calls out to GitHub, JIRA, etc.)."
   []
@@ -142,7 +156,8 @@
   (check-duplicate-github-urls)
   (check-duplicate-activity-names)
   (check-states-and-dates)
-  (check-github-coords))
+  (check-github-coords)
+  (check-mailing-list-addresses))
 
 
 
@@ -174,8 +189,8 @@
 
 (defn- check-metadata-for-repos
   []
-  (let [github-repo-urls       (set (remove s/blank? (mapcat #(gh/repos-urls (:github-url %)) (md/programs-metadata))))
-        metadata-repo-urls     (set (remove s/blank? (mapcat :github-urls (md/activities-metadata))))
+  (let [github-repo-urls       (set (map s/lower-case (remove s/blank? (mapcat #(gh/repos-urls (:github-url %)) (md/programs-metadata)))))
+        metadata-repo-urls     (set (map s/lower-case (remove s/blank? (mapcat :github-urls (md/activities-metadata)))))
         repos-without-metadata (sort (set/difference github-repo-urls metadata-repo-urls))
         metadata-without-repo  (sort (set/difference metadata-repo-urls github-repo-urls))]
     (doall (map #(println "❌ GitHub repo" % "has no metadata.") repos-without-metadata))
