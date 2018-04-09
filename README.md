@@ -22,7 +22,7 @@ for example).  See the [aero documentation](https://github.com/juxt/aero/blob/ma
 
 ### Logging Configuration
 
-The metadata-tool uses the [logback](https://logback.qos.ch/) library for logging, and ships with a
+metadata tool uses the [logback](https://logback.qos.ch/) library for logging, and ships with a
 [reasonable default `logback.xml` file](https://github.com/finos/metadata-tool/blob/master/resources/logback.xml).
 Please review the [logback documentation](https://logback.qos.ch/manual/configuration.html#configFileProperty) if you
 wish to override this default logging configuration.
