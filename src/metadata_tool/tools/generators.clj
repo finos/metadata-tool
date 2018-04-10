@@ -31,8 +31,10 @@
 
 (defn gen-clabot-whitelist
   []
+;####TEST!!!!
+(println (md/people-with-clas))
   (println (tem/render "clabot-whitelist.ftl"
-                        { :github-ids (sort (mapcat :github-user-ids (md/people-with-clas))) }))
+                        { :github-ids (sort (mapcat :github-logins (md/people-with-clas))) }))
   (flush))
 
 (defn gen-bitergia-affiliation-data

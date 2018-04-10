@@ -48,11 +48,11 @@
         duplicate-emails  (filter #(> (get email-frequencies %) 1) (keys email-frequencies))]
     (doall (map #(println "❌ Email" % "appears more than once.") duplicate-emails))))
 
-(defn- check-duplicate-github-ids
+(defn- check-duplicate-github-logins
   []
-  (let [github-id-frequencies (frequencies (mapcat :github-user-ids (md/people-metadata)))
-        duplicate-github-ids  (filter #(> (get github-id-frequencies %) 1) (keys github-id-frequencies))]
-    (doall (map #(println "❌ GitHub user id" % "appears more than once.") duplicate-github-ids))))
+  (let [github-login-frequencies (frequencies (mapcat :github-logins (md/people-metadata)))
+        duplicate-github-logins  (filter #(> (get github-login-frequencies %) 1) (keys github-login-frequencies))]
+    (doall (map #(println "❌ GitHub login" % "appears more than once.") duplicate-github-logins))))
 
 (defn- check-affiliation-references
   []
@@ -146,7 +146,7 @@
   (check-syntax)
   (check-current-affiliations)
   (check-duplicate-email-addresses)
-  (check-duplicate-github-ids)
+  (check-duplicate-github-logins)
   (check-affiliation-references)
   (check-approved-contributor-references)
   (check-pmc-lead-references)

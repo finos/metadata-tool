@@ -83,9 +83,10 @@
       (let [tools-to-run (map s/lower-case arguments)]
         (if (every? (set c/tool-names) tools-to-run)
           (try
-            (log/debug "Running tools" (s/join ", " tools-to-run))
             (mnt/start)
-            (doall (map c/run-tool arguments))
+            (doall (map #(do (log/info "Running tool" %)
+                             (c/run-tool %))
+                        arguments))
             (finally
               (mnt/stop)))
           (exit 1 (str "Unknown tool - available tools are:\n\t" (s/join "\n\t" c/tool-names))))))
