@@ -107,7 +107,17 @@
 (defn admin-logins
   "List the logins of the admins of the given repository."
   [repo-url]
-  (map :login (filter #(:admin (:permissions %)) (collaborators repo-url))))
+  (map :login (admins repo-url)))
+
+(defn- committers
+  [repo-url]
+  "List the committers (non-admin collaborators) of the given repository."
+  (remove #(:admin (:permissions %))) (collaborators repo-url))
+
+(defn committer-logins
+  "List the logins of the committers of the given repository."
+  [repo-url]
+  (map :login (committers repo-url)))
 
 (defn- repos-fn
   "Returns all repos in the given org."

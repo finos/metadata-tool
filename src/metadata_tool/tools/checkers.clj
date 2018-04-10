@@ -21,8 +21,6 @@
             [clojure.tools.logging          :as log]
             [clojure.java.io                :as io]
             [mount.core                     :as mnt :refer [defstate]]
-            [clj-time.core                  :as tm]
-            [clj-time.format                :as tf]
             [metadata-tool.utils            :as u]
             [metadata-tool.config           :as cfg]
             [metadata-tool.sources.github   :as gh]

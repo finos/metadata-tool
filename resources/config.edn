@@ -25,8 +25,6 @@
     :ssl                #or [#env SMTP_USE_SSL true]
     :user               #env SMTP_USER
     :pass               #env SMTP_PASSWORD
-    :esco-email-address #env ESCO_EMAIL_ADDRESS
-; The following could be used instead, but it makes it easier to accidentally spam the ESCo alias
-;    :esco-email-address #or [#env ESCO_EMAIL_ADDRESS "esco@symphony.foundation"]
+    :test-email-address #env TEST_EMAIL_ADDRESS
   }
 }

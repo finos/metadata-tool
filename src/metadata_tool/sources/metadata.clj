@@ -203,7 +203,7 @@
                        :confluence-spaces (map expand-confluence-space-key (:confluence-space-keys activity))))
              (program-activities program-id))))))
 
-(defn program-metadata
+(defn- program-metadata-fn
   "Program metadata of the given program-id, or nil if there is none."
   [program-id]
   (if-let [program (read-metadata-file (str program-metadata-directory "/" program-id "/" program-filename))]
@@ -215,6 +215,7 @@
              :pmc-private-mailing-list (expand-mailing-list-address (:pmc-private-mailing-list-address program))
              :program-mailing-list     (expand-mailing-list-address (:program-mailing-list-address     program))
              :confluence-space         (expand-confluence-space-key (:confluence-space-key             program))))))
+(def program-metadata (memoize program-metadata-fn))
 
 (defn programs-metadata
   "A seq containing the metadata of all programs."
@@ -225,6 +226,16 @@
   "A seq containing the metadata of all activities, regardless of program."
   []
   (sort-by :activity-name (remove nil? (mapcat :activities (programs-metadata)))))
+
+(defn activity-metadata
+  "The metadata for a specific activity."
+  [activity-id]
+  (filter #(= activity-id (:activity-id %)) activities-metadata))
+
+(defn activity-metadata-by-name
+  "The metadata for a specific activity, identified by name."
+  [activity-name]
+  (filter #(= activity-name (:activity-name %)) activities-metadata))
 
 (defn projects-metadata
   "A seq containing the metadata of all activities of type PROJECT, regardless of program."

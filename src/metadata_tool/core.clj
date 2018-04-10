@@ -16,26 +16,10 @@
 ;
 (ns metadata-tool.core
   (:require [clojure.string                 :as s]
-            [clojure.set                    :as set]
-            [clojure.pprint                 :as pp]
-            [clojure.tools.logging          :as log]
-            [clojure.java.io                :as io]
-            [mount.core                     :as mnt :refer [defstate]]
-            [cheshire.core                  :as ch]
-            [clj-time.core                  :as tm]
-            [clj-time.format                :as tf]
-            [metadata-tool.utils            :as u]
-            [metadata-tool.config           :as cfg]
-            [metadata-tool.sources.github   :as gh]
-            [metadata-tool.sources.bitergia :as bi]
-            [metadata-tool.sources.schemas  :as sch]
-            [metadata-tool.sources.metadata :as md]
             [metadata-tool.tools.checkers   :as tch]
             [metadata-tool.tools.listers    :as tls]
             [metadata-tool.tools.generators :as tgn]
-;            [metadata-tool.tools.reports    :as trp]
-            ))
-
+            [metadata-tool.tools.reports    :as trp]))
 
 
 ; Map of (lowercase) tool names to tool fns
@@ -60,7 +44,7 @@
 ;    "gen-project-meta-for-website"                        tgn/gen-project-meta-for-website
     "gen-clabot-whitelist"                                tgn/gen-clabot-whitelist
     "gen-catalogue-data"                                  tgn/gen-catalogue-data
-;    "email-inactive-projects-report"                      trp/email-inactive-projects-report
+    "email-inactive-projects-reports"                     trp/email-inactive-projects-reports
 ;    "email-active-projects-with-unactioned-prs-report"    trp/email-active-projects-with-unactioned-prs-report
 ;    "email-active-projects-with-unactioned-issues-report" trp/email-active-projects-with-unactioned-issues-report
   })

@@ -36,6 +36,7 @@
                #(.isDirectory (io/file %)) "Must be a directory"
                #(.canRead     (io/file %)) "Must be readable"]]
    ["-r" "--github-revision REVISION" "GitHub revision of the metadata repository to checkout and use (optional, defaults to latest)"]
+   [nil  "--email-override" "Overrides the default email behaviour of using a test email address for all outbound emails."]
    ["-h" "--help"]])
 
 (defn- usage
@@ -77,7 +78,8 @@
                                                    (a/read-config config-file)
                                                    (a/read-config (io/resource "config.edn")))
                                                  :metadata-directory (:metadata-directory options)
-                                                 :github-revision    (:github-revision    options))))
+                                                 :github-revision    (:github-revision    options)
+                                                 :email-override     (:email-override     options))))
       (let [tools-to-run (map s/lower-case arguments)]
         (if (every? (set c/tool-names) tools-to-run)
           (try

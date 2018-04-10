@@ -1,15 +1,15 @@
 [#ftl output_format="JSON"]
 {
   "Wiki" : {
-    "confluence" : [ "https://symphonyoss.atlassian.net/wiki/" ],
-    "meta"       : { "title" : "Wiki"}
+    "confluence" : [ "https://finosfoundation.atlassian.net/wiki/" ],
+    "meta"       : { "title" : "Wiki" }
   },
-  "Dev List" : {
+  "Symphony Program Public Mailing List" : {[#-- ####TODO: NEED A BETTER WAY OF HANDLING PROGRAM-LEVEL MAILING LISTS!  https://github.com/chaoss/grimoirelab/issues/83 may help here --]
     "mbox"       : [ "dev /home/bitergia/mboxes/barnowl_symphony_dev" ],
-    "meta"       : { "title" : "Dev List"}
+    "meta"       : { "title" : "Symphony Program Public Mailing List" }
   },
   "Foundation" : {
-    "confluence" : [ "FM" ],
+    "confluence" : [ "FINOS" ],
     "meta"       : { "title" : "Foundation"}
   }[#if activities?? && activities?size > 0],
   [#list activities as activity]
