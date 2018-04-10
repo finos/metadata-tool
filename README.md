@@ -41,6 +41,7 @@ Options:
   -c, --config-file FILE              Path of configuration file (optional, defaults to 'config.edn' in the classpath)
   -m, --metadata-directory DIRECTORY  Path of local metadata directory (optional, metadata will be checked out from GitHub if not specified)
   -r, --github-revision REVISION      GitHub revision of the metadata repository to checkout and use (optional, defaults to latest)
+      --email-override                Overrides the default email behaviour of using a test email address for all outbound emails.
   -h, --help
 
 Available tools:
