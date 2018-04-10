@@ -58,7 +58,7 @@
       :name          (get repo :name              "")
       :description   (get repo :description       "")
       :url           repo-url
-      :hotness       (+ (* (count collaborators)  5)
+      :heat          (+ (* (count collaborators)  5)
                         (* (get repo :forks    0) 4)
                         (* (get repo :stars    0) 1)
                         (* (get repo :watchers 0) 1))
@@ -76,7 +76,7 @@
   [github-repos]
   (if-not (empty? github-repos)
     {
-      :hotness       (apply +                      (map :hotness       github-repos))
+      :heat          (apply +                      (map :heat          github-repos))
       :watchers      (apply +                      (map :watchers      github-repos))
       :size          (apply +                      (map :size          github-repos))
       :collaborators (apply +                      (map :collaborators github-repos))
@@ -92,7 +92,9 @@
                               activity-metadata (:activities program-metadata)]
                           (let [github-repos (map build-github-repo-data (:github-urls activity-metadata))]
                             (assoc activity-metadata
-                                   :program-name            (:program-name program-metadata)
+                                   :program-name            (:program-name           program-metadata)
+                                   :program-short-name      (:program-short-name     program-metadata)
+                                   :program-home-page       (:url (:confluence-space program-metadata))
                                    :github-repos            github-repos
                                    :cumulative-github-stats (accumulate-github-stats github-repos))))]
     (println (tem/render "catalogue.ftl"

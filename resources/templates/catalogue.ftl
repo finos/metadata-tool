@@ -5,6 +5,8 @@
   [#list activities as activity]
     {
       "programName"          : "${activity.program_name}",
+      "programShortName"     : "${activity.program_short_name}",
+      "programHomePage"      : "${activity.program_home_page}",
       "activityName"         : "${activity.activity_name}",
       "type"                 : "${activity.type}",
       "state"                : "${activity.state}",
@@ -22,7 +24,7 @@
           "name"          : "${github_repo.name!}",
           "description"   : "${github_repo.description!}",
           "gitHubURL"     : "${github_repo.url}",
-          "hotness"       : ${(github_repo.hotness!0)?c},
+          "heat"          : ${(github_repo.heat!0)?c},
           "watchers"      : ${(github_repo.watchers!0)?c},
           "size"          : ${(github_repo.size!0)?c},
           "collaborators" : ${(github_repo.collaborators!0)?c},
@@ -38,7 +40,7 @@
       [/#list]
       ][/#if][#if activity.cumulative_github_stats??],
       "cumulativeGitHubStats" : {
-        "hotness"       : ${(activity.cumulative_github_stats.hotness!0)?c},
+        "heat"          : ${(activity.cumulative_github_stats.heat!0)?c},
         "watchers"      : ${(activity.cumulative_github_stats.watchers!0)?c},
         "size"          : ${(activity.cumulative_github_stats.size!0)?c},
         "collaborators" : ${(activity.cumulative_github_stats.collaborators!0)?c},
