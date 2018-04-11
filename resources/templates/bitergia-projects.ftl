@@ -6,11 +6,12 @@
   },
   "Symphony Program Public Mailing List" : {[#-- ####TODO: NEED A BETTER WAY OF HANDLING PROGRAM-LEVEL MAILING LISTS!  https://github.com/chaoss/grimoirelab/issues/83 may help here --]
     "mbox"       : [ "dev /home/bitergia/mboxes/barnowl_symphony_dev" ],
-    "meta"       : { "title" : "Symphony Program Public Mailing List" }
+    "meta"       : { "title"   : "Symphony Program Public Mailing List",
+                     "program" : "Symphony" }
   },
   "Foundation" : {
     "confluence" : [ "FINOS" ],
-    "meta"       : { "title" : "Foundation"}
+    "meta"       : { "title" : "Foundation" }
   }[#if activities?? && activities?size > 0],
   [#list activities as activity]
   "${activity.activity_name}" : {[#if activity.github_urls?? && activity.github_urls?size > 0]
@@ -34,7 +35,10 @@
                      "${ml_name} /home/bitergia/mboxes/barnowl_symphony_${ml_name}"[#if mailing_list_address != activity.mailing_list_addresses?last],[/#if]
       [/#list]
                    ],[/#if]
-    "meta"       : { "title" : "${activity.activity_name}" }
+    "meta"       : { "title"   : "${activity.activity_name}",
+                     "program" : "${activity.program_short_name}",
+                     "state"   : "${activity.state}",
+                     "type"    : "${activity.type}" }
   }[#if activity.activity_id != activities?last.activity_id],[/#if]
   [/#list][/#if]
 }
