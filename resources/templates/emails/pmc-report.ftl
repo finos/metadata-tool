@@ -65,7 +65,7 @@
      <a href="https://symphonyoss.atlassian.net/wiki/display/FM/Archived">Archived state</a>:</p>
   <p>
     <blockquote>
-[#if projects-with-unactioned-prs?? && projects-with-unactioned-prs?size > 0]
+[#if projects_with_unactioned_prs?? && projects_with_unactioned_prs?size > 0]
      <table width="600px" border=1 cellspacing=0>
       <thead>
         <tr bgcolor="#CCCCCC">
