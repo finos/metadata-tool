@@ -85,7 +85,7 @@
                                                                 (remove nil?
                                                                         (map #(j/activity-with-team (md/activity-metadata-by-name %))
                                                                              (bi/projects-with-old-prs old-pr-days)))))]
-    (log/info "Emailing" (count (keys inactive-unarchived-projects-metadata)) "PMC reports...")
+    (log/info "Emailing" (count all-programs) "PMC reports...")
     (doall (map #(send-email-to-pmc (:program-id %)
                                     (str "PMC Report for " (:program-short-name %) ", as at " now-str)
                                     (tem/render "emails/pmc-report.ftl"
