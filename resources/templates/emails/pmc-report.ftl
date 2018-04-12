@@ -16,13 +16,11 @@
              [#if lead.email_addresses?? &&
                   lead.email_addresses?size > 0 &&
                   !lead.email_addresses?first?ends_with("@users.noreply.github.com")]</a>[/#if]
-           [/#if][/#list][#else]
+           [/#list][#else]
              This project has no leads.
            [/#if]</td>
         </tr>
 [/#macro]
-
-projects_with_unactioned_prs
 
 <html>
 <head>
@@ -49,7 +47,10 @@ projects_with_unactioned_prs
       </thead>
       <tbody>
 [#list inactive_projects as inactive_project]
-        [@render_project_row inactive_project.activity_name inactive_project.state inactive_project.github-urls inactive_project.project_leads /]
+        [@render_project_row inactive_project.activity_name
+                             inactive_project.state
+                             inactive_project.github-urls
+                             inactive_project.project_leads /]
 [/#list]
        </tbody>
      </table>
@@ -75,8 +76,11 @@ projects_with_unactioned_prs
         </tr>
       </thead>
       <tbody>
-[#list inactive_projects as inactive_project]
-        [@render_project_row inactive_project.activity_name inactive_project.state inactive_project.github-urls inactive_project.project_leads /]
+[#list projects_with_unactioned_prs as project_with_unactioned_prs]
+        [@render_project_row project_with_unactioned_prs.activity_name
+                             project_with_unactioned_prs.state
+                             inactive_project.github-urls
+                             inactive_project.project_leads /]
 [/#list]
        </tbody>
      </table>
