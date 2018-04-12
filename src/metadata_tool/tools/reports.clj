@@ -88,7 +88,7 @@
     (log/info "Emailing" (count (keys inactive-unarchived-projects-metadata)) "PMC reports...")
     (doall (map #(send-email-to-pmc (:program-id %)
                                     (str "PMC Report for " (:program-short-name %) ", as at " now-str)
-                                    (tem/render "email/pmc-report.ftl"
+                                    (tem/render "emails/pmc-report.ftl"
                                                 { :now                          now-str
                                                   :inactive-days                inactive-project-days
                                                   :old-pr-days                  old-pr-days
