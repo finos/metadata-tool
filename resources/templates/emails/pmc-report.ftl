@@ -1,4 +1,14 @@
 [#ftl output_format="HTML"]
+[#macro project_table_head]
+      <thead>
+        <tr bgcolor="#CCCCCC">
+          <th>Project</th>
+          <th>Lifecycle State</th>
+          <th>Repositories</th>
+          <th>Project Leads</th>
+        </tr>
+      </thead>
+[/#macro]
 [#macro render_project_row name state github_urls leads]
         <tr>
            <td>${name}</td>
@@ -27,8 +37,8 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
 <body>
-  <p><b>PMC Report, as at ${now}.</b></p>
-  <h1>Inactive Projects</h2>
+  <h3>PMC Report for ${program.program_short_name}, as at ${now}</h3>
+  <p><b>Inactive Projects</b></p>
   <p>Here are the currently inactive projects, defined as being those projects
      with no git commit or GitHub issue/PR activity in the last ${inactive_days}
      days), that are not in
@@ -37,20 +47,13 @@
     <blockquote>
 [#if inactive_projects?? && inactive_projects?size > 0]
      <table width="600px" border=1 cellspacing=0>
-      <thead>
-        <tr bgcolor="#CCCCCC">
-          <th>Project</th>
-          <th>Lifecycle State</th>
-          <th>Repositories</th>
-          <th>Project Leads</th>
-        </tr>
-      </thead>
+[@project_table_head /]
       <tbody>
 [#list inactive_projects as inactive_project]
-        [@render_project_row inactive_project.activity_name
-                             inactive_project.state
-                             inactive_project.github-urls
-                             inactive_project.project_leads /]
+  [@render_project_row inactive_project.activity_name
+                       inactive_project.state
+                       inactive_project.github-urls
+                       inactive_project.project_leads /]
 [/#list]
        </tbody>
      </table>
@@ -59,7 +62,7 @@
 [/#if]
    </blockquote>
  </p>
-  <h1>Projects with Unactioned PRs</h2>
+  <p><b>Projects with Unactioned PRs</b></p>
   <p>Here are the projects that have unactioned PRs, defined as being those projects with PRs
      with more than ${old_pr_days} days of inactivity, that are not in
      <a href="https://symphonyoss.atlassian.net/wiki/display/FM/Archived">Archived state</a>:</p>
@@ -67,20 +70,13 @@
     <blockquote>
 [#if projects_with_unactioned_prs?? && projects_with_unactioned_prs?size > 0]
      <table width="600px" border=1 cellspacing=0>
-      <thead>
-        <tr bgcolor="#CCCCCC">
-          <th>Project</th>
-          <th>Lifecycle State</th>
-          <th>Repositories</th>
-          <th>Project Leads</th>
-        </tr>
-      </thead>
+[@project_table_head /]
       <tbody>
 [#list projects_with_unactioned_prs as project_with_unactioned_prs]
-        [@render_project_row project_with_unactioned_prs.activity_name
-                             project_with_unactioned_prs.state
-                             inactive_project.github-urls
-                             inactive_project.project_leads /]
+  [@render_project_row project_with_unactioned_prs.activity_name
+                       project_with_unactioned_prs.state
+                       inactive_project.github-urls
+                       inactive_project.project_leads /]
 [/#list]
        </tbody>
      </table>
