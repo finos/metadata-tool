@@ -71,7 +71,7 @@
       :languages     languages
     })))
 
-;####TODO: THIS ISN'T RIGHT - IT DOUBLE COUNTS!
+;####TODO: THIS ISN'T RIGHT - IT DOUBLE COUNTS!  FIX POST-LAUNCH.
 (defn- accumulate-github-stats
   [github-repos]
   (if-not (empty? github-repos)

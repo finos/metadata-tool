@@ -44,7 +44,7 @@
 ;    "gen-project-meta-for-website"                        tgn/gen-project-meta-for-website
     "gen-clabot-whitelist"                                tgn/gen-clabot-whitelist
     "gen-catalogue-data"                                  tgn/gen-catalogue-data
-    "email-inactive-projects-reports"                     trp/email-inactive-projects-reports
+    "email-pmc-reports"                                   trp/email-pmc-reports
 ;    "email-active-projects-with-unactioned-prs-report"    trp/email-active-projects-with-unactioned-prs-report
 ;    "email-active-projects-with-unactioned-issues-report" trp/email-active-projects-with-unactioned-issues-report
   })

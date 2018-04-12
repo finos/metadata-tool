@@ -200,13 +200,10 @@
 
 (defn- check-bitergia-projects
   []
-  (let [project-names                         (set (map :activity-name (md/projects-metadata)))
-        projects-missing-from-bitergia-git    (sort (set/difference project-names (set (bi/all-projects-git))))
-        projects-missing-from-bitergia-github (sort (set/difference project-names (set (bi/all-projects-github))))]
-    (doall (map #(println "⚠️ Project" % "is missing from Bitergia's git index (expected if its repositories are empty).")
-                projects-missing-from-bitergia-git))
-    (doall (map #(println "⚠️ Project" % "is missing from Bitergia's github index (expected if its repositories have never had any issues or PRs).")
-                projects-missing-from-bitergia-github))))
+  (let [project-names                  (set (map :activity-name (md/projects-metadata)))
+        projects-missing-from-bitergia (sort (set/difference project-names (bi/all-projects)))]
+    (doall (map #(println "⚠️ Project" % "is missing from the Bitergia indexes.")
+                projects-missing-from-bitergia))))
 
 (defn check-remote
   "Performs checks that require API calls out to GitHub, JIRA, Bitergia, etc. (which may be rate limited)."

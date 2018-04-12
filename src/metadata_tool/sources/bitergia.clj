@@ -22,14 +22,16 @@
             [qbits.spandex         :as es]
             [metadata-tool.config  :as cfg]))
 
-(def ^:private bitergia-url           "https://symphonyoss.biterg.io")   ; Note: no trailing / or spandex will assplode!
-(def ^:private git-search-endpoint    "/data/git/_search")
-(def ^:private github-search-endpoint "/data/github_issues/_search")
+(def ^:private bitergia-url                 "https://symphonyoss.biterg.io")   ; Note: no trailing / or spandex will assplode!
+(def ^:private git-search-endpoint          "/data/git/_search")
+(def ^:private github-search-endpoint       "/data/github_issues/_search")
+(def ^:private wiki-search-endpoint         "/data/confluence/_search")
+(def ^:private mailing-list-search-endpoint "/data/mbox/_search")
 
-; Tunables
-(def inactive-project-days 180)   ; The age in days at which a project is considered "inactive"
-(def old-pr-days           60)    ; The age in days at which a PR is considered "old"
-(def old-issue-days        60)    ; The age in days at which an issue is considered "old"
+(def ^:private endpoints #{ git-search-endpoint
+                            github-search-endpoint
+                            wiki-search-endpoint
+                            mailing-list-search-endpoint })
 
 (defstate client
           :start (es/client {:hosts       [bitergia-url]
@@ -48,35 +50,31 @@
     }
   })
 
-(defn all-projects-git
-  "Returns the set of projects with git activity tracked in Bitergia."
-  []
-  (set (map :key (:buckets (:projects (:aggregations (:body (es/request client {:url    git-search-endpoint
-                                                                                :method :get
-                                                                                :body   query-all-projects}))))))))
-
-(defn all-projects-github
-  "Returns the set of projects with github issue / PR activity tracked in Bitergia."
-  []
-  (set (map :key (:buckets (:projects (:aggregations (:body (es/request client {:url    github-search-endpoint
-                                                                                :method :get
-                                                                                :body   query-all-projects}))))))))
+(defn- all-projects-for-endpoint
+  "Returns all known projects at the given endpoint."
+  [endpoint]
+  (if endpoint
+    (set (map :key
+              (:buckets (:projects (:aggregations (:body (es/request client { :url    endpoint
+                                                                              :method :get
+                                                                              :body   query-all-projects } )))))))))
 
 (defn all-projects
-  "Returns the set of projects with git or GitHub issue activity tracked in Bitergia."
+  "Returns the set of projects with activity tracked in Bitergia."
   []
-  (set/union (all-projects-git) (all-projects-github)))
+  (set (map all-projects-for-endpoint endpoints)))
 
 
-(def ^:private query-active-projects
-  "This ElasticSearch query returns active projects (those that have had a commit in the last 90 days)."
+(defn- recent-projects-query
+  "Returns an ElasticSearch query for all recent projects (those that have had a commit in the last threshold-in-days)."
+  [threshold-in-days]
   { :size 0
     :query {
       :constant_score {
          :filter {
             :range {
                :commit_date {
-                  :gte (str "now-" inactive-project-days "d/d")
+                  :gte (str "now-" threshold-in-days "d/d")
                }
             }
          }
@@ -99,26 +97,30 @@
     }
   })
 
-(defn active-projects
-  "Returns the set of active projects (those with git commit or GitHub activity in the last 90 days)."
-  []
-  (let [projects-with-git-activity    (set (map :key (:buckets (:projects (:aggregations (:body (es/request client {:url    git-search-endpoint
-                                                                                                                    :method :get
-                                                                                                                    :body   query-active-projects})))))))
-        projects-with-github-activity (set (map :key (:buckets (:projects (:aggregations (:body (es/request client {:url    github-search-endpoint
-                                                                                                                    :method :get
-                                                                                                                    :body   query-active-projects})))))))]
-    (set/union projects-with-git-activity projects-with-github-activity)))
+(defn- recent-projects-for-endpoint
+  [endpoint threshold-in-days]
+  (if endpoint
+    (set
+      (map :key (:buckets
+                  (:projects
+                    (:aggregations
+                      (:body (es/request client { :url    endpoint
+                                                  :method :get
+                                                  :body   (recent-projects-query threshold-in-days) } )))))))))
 
+(defn recent-projects
+  "Returns the set of recent projects (those with git commit or GitHub activity in the last threshold-in-days)."
+  [threshold-in-days]
+  (set (map #(recent-projects-for-endpoint % threshold-in-days) endpoints)))
 
 (defn inactive-projects
-  []
-  (set/difference (all-projects) (active-projects)))
+  [threshold-in-days]
+  (set/difference (all-projects) (recent-projects threshold-in-days)))
 
 
 (defn- old-github-issues-query
   "Returns the ElasticSearch query for old GitHub issues or PRs."
-  [age-in-days pr?]
+  [threshold-in-days pr?]
   { :size 0
     :query {
       :constant_score {
@@ -127,7 +129,7 @@
               :must [ {
                   :range {
                      :time_open_days {
-                        :gte (str age-in-days)
+                        :gte (str threshold-in-days)
                      }
                   }
                 }
@@ -158,24 +160,16 @@
     }
   })
 
-(def ^:private query-projects-with-old-prs
-  "This ElasticSearch query returns all projects that have old PRs."
-  (old-github-issues-query old-pr-days true))
-
 (defn projects-with-old-prs
-  "Returns the set of projects with old PRs."
-  []
-  (set (map :key (:buckets (:projects (:aggregations (:body (es/request client {:url    github-search-endpoint
-                                                                                :method :get
-                                                                                :body   query-projects-with-old-prs}))))))))
-
-(def ^:private query-projects-with-old-issues
-  "This ElasticSearch query returns all projects that have old issues."
-  (old-github-issues-query old-issue-days false))
+  "Returns the set of projects with PRs older than threshold-in-days."
+  [threshold-in-days]
+  (set (map :key (:buckets (:projects (:aggregations (:body (es/request client { :url    github-search-endpoint
+                                                                                 :method :get
+                                                                                 :body   (old-github-issues-query threshold-in-days true) } ))))))))
 
 (defn projects-with-old-issues
-  "Returns the set of projects with old issues."
-  []
-  (set (map :key (:buckets (:projects (:aggregations (:body (es/request client {:url    github-search-endpoint
-                                                                                :method :get
-                                                                                :body   query-projects-with-old-issues}))))))))
+  "Returns the set of projects with issues older than threshold-in-days."
+  [threshold-in-days]
+  (set (map :key (:buckets (:projects (:aggregations (:body (es/request client { :url    github-search-endpoint
+                                                                                 :method :get
+                                                                                 :body   (old-github-issues-query threshold-in-days false) } ))))))))
