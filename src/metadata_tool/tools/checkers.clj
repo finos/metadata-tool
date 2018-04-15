@@ -62,7 +62,8 @@
 
 (defn- check-approved-contributor-references
   []
-  (let [approved-contributor-person-ids         (seq (distinct (mapcat #(:person-id (:approved-contributors %)) (md/organizations-metadata))))
+  (let [approved-contributors                   (remove nil? (mapcat :approved-contributors (md/organizations-metadata)))
+        approved-contributor-person-ids         (seq (distinct (map :person-id approved-contributors)))
         invalid-approved-contributor-person-ids (filter #(nil? (md/person-metadata %)) approved-contributor-person-ids)]
     (doall (map #(println "❌ Person id" % "(used in an approved contributor) doesn't have metadata.") invalid-approved-contributor-person-ids))))
 
