@@ -97,7 +97,9 @@
           schema-id        [schema-type metadata-version]]
       (if metadata-version
         (sch/validate-json schema-id json-string)
-        (throw (Exception. (str "No metadataVersion property in " (.getCanonicalPath file))))))))
+        (throw (Exception. (str "No metadataVersion property.")))))
+    (catch Exception e
+      (throw (Exception. (str (.getCanonicalPath file) " failed to validate, due to " (.getMessage e)) e)))))
 
 (defn- validate-metadata-files
   [schema-type files]
