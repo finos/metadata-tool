@@ -91,8 +91,7 @@
               (mnt/stop)))
           (exit 1 (str "Unknown tool - available tools are:\n\t" (s/join "\n\t" c/tool-names))))))
     (catch Exception e
-      (st/print-cause-trace e)
-      (flush)
+      (log/error "metadata-tool finished unsuccessfully" e)
       (exit 2)))
   (log/info "metadata-tool finished successfully")
   (exit 0))
