@@ -29,6 +29,23 @@
             [metadata-tool.sources.metadata :as md]))
 
 
+; Utility fns
+(defn- type-to-string
+  [type]
+  (if-not (s/blank? type)
+    (s/lower-case (s/replace type "_" " "))))
+
+(defn- state-to-string
+  [state]
+  (if-not (s/blank? state)
+    (str (s/upper-case (first state))
+         (s/join (rest (s/lower-case state))))))
+
+(defn- activity-id-to-string
+  [activity]
+  (if activity
+    (str (:program-id activity) "/" (:activity-id activity))))
+
 ; Local (filesystem only, no API calls) checks
 
 (defn- check-syntax
@@ -73,31 +90,29 @@
         invalid-pmc-lead-person-ids (filter #(nil? (md/person-metadata %)) pmc-lead-person-ids)]
     (doall (map #(println "❌ Person id" % "(a PMC lead) doesn't have metadata.") invalid-pmc-lead-person-ids))))
 
-(defn- check-missing-working-group-chairs
+(defn- check-missing-lead-or-chair
   []
-  (let [working-groups-with-missing-chairs (filter #(empty? (:working-group-chairs %)) (md/working-groups-metadata))]
-    (doall (map #(println "⚠️ Working Group" (str (:program-id %) "/" (:activity-id %)) "doesn't have any chairs.") working-groups-with-missing-chairs))))
+  (let [activities-with-missing-lead-or-chair (filter #(s/blank? (:lead-or-chair %)) (md/activities-metadata))]
+    (doall (map #(if (= "ARCHIVED" (:state %))
+                   (println "⚠️ Archived" (type-to-string (:type %)) (activity-id-to-string %) "doesn't have a lead or chair.")
+                   (println "❌" (state-to-string (:state %)) (type-to-string (:type %)) (activity-id-to-string %) "doesn't have a lead or chair."))
+                 activities-with-missing-lead-or-chair))))
 
-(defn- check-working-group-chair-references
+(defn- check-lead-or-chair-references
   []
-  (let [working-group-chair-person-ids         (seq (distinct (mapcat :working-group-chairs (md/activities-metadata))))
-        invalid-working-group-chair-person-ids (filter #(nil? (md/person-metadata %)) working-group-chair-person-ids)]
-    (doall (map #(println "❌ Person id" % "(a Working Group chair) doesn't have metadata.") invalid-working-group-chair-person-ids))))
-
-(defn- check-project-chairs
-  []
-  (let [projects-with-chairs (sort-by :activity-id (filter :working-group-chairs (md/projects-metadata)))]
-    (doall (map #(println "⚠️ Project" (str (:program-id %) "/" (:activity-id %)) "has working group chairs.") projects-with-chairs))))
+  (let [lead-or-chair-person-ids                    (seq (distinct (remove nil? (map :lead-or-chair (md/activities-metadata)))))
+        invalid-lead-or-chair-person-ids-person-ids (filter #(nil? (md/person-metadata %)) lead-or-chair-person-ids)]
+    (doall (map #(println "❌ Person id" % "(a Project Lead or Working Group chair) doesn't have metadata.") invalid-lead-or-chair-person-ids-person-ids))))
 
 (defn- check-project-states
   []
   (let [projects-with-invalid-states (remove #(boolean (some #{(:state %)} ["INCUBATING" "RELEASED" "ARCHIVED"])) (md/projects-metadata))]
-    (doall (map #(println "❌ Project" (:activity-name %) "has an invalid state:" (:state %)) projects-with-invalid-states))))
+    (doall (map #(println "❌ Project" (activity-id-to-string %) "has an invalid state:" (:state %)) projects-with-invalid-states))))
 
 (defn- check-working-group-states
   []
   (let [working-groups-with-invalid-states (remove #(boolean (some #{(:state %)} ["OPERATING" "PAUSED" "ARCHIVED"])) (md/working-groups-metadata))]
-    (doall (map #(println "❌ Working Group" (str (:program-id %) "/" (:activity-id %)) "has an invalid state:" (:state %)) working-groups-with-invalid-states))))
+    (doall (map #(println "❌ Working Group" (activity-id-to-string %) "has an invalid state:" (:state %)) working-groups-with-invalid-states))))
 
 (defn- check-duplicate-github-urls
   []
@@ -114,8 +129,8 @@
   []
   (let [released-projects-without-release-dates    (filter #(and (= (:state %) "RELEASED") (nil? (:release-date %))) (md/projects-metadata))
         archived-activities-without-archived-dates (filter #(and (= (:state %) "ARCHIVED") (nil? (:archive-date %))) (md/activities-metadata))]
-    (doall (map #(println "❌ Project" (str (:program-id %) "/" (:activity-id %)) "is released, but has no release date") released-projects-without-release-dates))
-    (doall (map #(println "❌ Activity" (str (:program-id %) "/" (:activity-id %)) "is archived, but has no archive date") archived-activities-without-archived-dates))))
+    (doall (map #(println "❌ Project" (activity-id-to-string %) "is released, but has no release date") released-projects-without-release-dates))
+    (doall (map #(println "❌ Activity" (activity-id-to-string %) "is archived, but has no archive date") archived-activities-without-archived-dates))))
 
 (defn- check-github-coords
   []
@@ -151,9 +166,8 @@
   (check-affiliation-references)
   (check-approved-contributor-references)
   (check-pmc-lead-references)
-  (check-missing-working-group-chairs)
-  (check-working-group-chair-references)
-  (check-project-chairs)
+  (check-missing-lead-or-chair)
+  (check-lead-or-chair-references)
   (check-project-states)
   (check-working-group-states)
   (check-duplicate-github-urls)
@@ -169,7 +183,7 @@
 ; Local and remote (filesystem and/or API call) checks
 
 
-(defn- check-project-leads
+(defn- check-repo-admins
   []
   (let [activities-with-github-urls (remove #(empty? (:github-urls %)) (md/activities-metadata))]
     (doall
@@ -177,8 +191,8 @@
               (map (fn [github-url]
                      (if (empty? (gh/admin-logins github-url))
                        (if (= "ARCHIVED" (:state %))
-                         (println "⚠️ GitHub Repository" github-url "in archived" (s/lower-case (s/replace (:type %) "_" " ")) (str (:program-id %) "/" (:activity-id %)) "has no admins, or they haven't accepted their invitations yet.")
-                         (println "❌ GitHub Repository" github-url "in" (s/lower-case (s/replace (:type %) "_" " ")) (str (:program-id %) "/" (:activity-id %)) "has no admins, or they haven't accepted their invitations yet."))))
+                         (println "⚠️ GitHub Repository" github-url "in archived" (type-to-string (:type %)) (activity-id-to-string %) "has no admins, or they haven't accepted their invitations yet.")
+                         (println "❌ GitHub Repository" github-url "in" (type-to-string (:type %)) (activity-id-to-string %) "has no admins, or they haven't accepted their invitations yet."))))
                    (:github-urls %)))
            activities-with-github-urls))))
 
@@ -209,7 +223,7 @@
 (defn check-remote
   "Performs checks that require API calls out to GitHub, JIRA, Bitergia, etc. (which may be rate limited)."
   []
-  (check-project-leads)
+  (check-repo-admins)
   (check-metadata-for-collaborators)
   (check-metadata-for-repos)
   (check-bitergia-projects))
