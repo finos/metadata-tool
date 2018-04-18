@@ -30,7 +30,7 @@
                         ]
   :dependencies         [
                           [org.clojure/clojure                   "1.9.0"]
-                          [org.clojure/tools.cli                 "0.3.5"]
+                          [org.clojure/tools.cli                 "0.3.6"]
                           [org.clojure/tools.logging             "0.4.0"]
                           [ch.qos.logback/logback-classic        "1.2.3"]
                           [org.slf4j/jcl-over-slf4j              "1.7.25"]
