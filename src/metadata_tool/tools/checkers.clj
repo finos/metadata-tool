@@ -92,7 +92,7 @@
 
 (defn- check-missing-lead-or-chair
   []
-  (let [activities-with-missing-lead-or-chair (filter #(s/blank? (:lead-or-chair %)) (md/activities-metadata))]
+  (let [activities-with-missing-lead-or-chair (sort-by activity-id-to-string (filter #(s/blank? (:lead-or-chair %)) (md/activities-metadata)))]
     (doall (map #(if (= "ARCHIVED" (:state %))
                    (println "⚠️ Archived" (type-to-string (:type %)) (activity-id-to-string %) "doesn't have a lead or chair.")
                    (println "❌" (state-to-string (:state %)) (type-to-string (:type %)) (activity-id-to-string %) "doesn't have a lead or chair."))
