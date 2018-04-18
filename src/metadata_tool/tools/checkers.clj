@@ -94,8 +94,8 @@
   []
   (let [activities-with-missing-lead-or-chair (sort-by activity-id-to-string (filter #(s/blank? (:lead-or-chair %)) (md/activities-metadata)))]
     (doall (map #(if (= "ARCHIVED" (:state %))
-                   (println "⚠️ Archived" (type-to-string (:type %)) (activity-id-to-string %) "doesn't have a lead or chair.")
-                   (println "❌" (state-to-string (:state %)) (type-to-string (:type %)) (activity-id-to-string %) "doesn't have a lead or chair."))
+                   (println "⚠️ Archived" (type-to-string (:type %)) (activity-id-to-string %) "doesn't have a" (str (if (= "PROJECT" (:type %)) "lead" "chair") "."))
+                   (println "❌" (state-to-string (:state %)) (type-to-string (:type %)) (activity-id-to-string %) "doesn't have a" (str (if (= "PROJECT" (:type %)) "lead" "chair") ".")))
                  activities-with-missing-lead-or-chair))))
 
 (defn- check-lead-or-chair-references
