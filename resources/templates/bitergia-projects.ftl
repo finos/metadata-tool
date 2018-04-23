@@ -3,15 +3,31 @@
   "Wiki" : {
     "confluence" : [ "https://finosfoundation.atlassian.net/wiki/" ],
     "meta"       : { "title" : "Wiki" }
-  },
-  "Symphony Program Public Mailing List" : {[#-- ####TODO: NEED A BETTER WAY OF HANDLING PROGRAM-LEVEL MAILING LISTS!  https://github.com/chaoss/grimoirelab/issues/83 may help here --]
-    "mbox"       : [ "dev /home/bitergia/mboxes/barnowl_symphony_dev" ],
-    "meta"       : { "title"   : "Symphony Program Public Mailing List",
-                     "program" : "Symphony" }
-  },
+  },[#-- ####TODO: NEED A BETTER WAY OF HANDLING PROGRAM-LEVEL DATA --]
   "Foundation" : {
     "confluence" : [ "FINOS" ],
-    "meta"       : { "title" : "Foundation" }
+    "meta"       : { "title" : "Foundation Wiki" }
+  },
+  "FDC3 Program" : {
+    "confluence" : [ "FDC3" ],
+    "meta"       : { "title"   : "FDC3 Program Wiki",
+                     "program" : "FDC3" }
+  },
+  "Hadouken Program" : {
+    "confluence" : [ "HAD" ],
+    "meta"       : { "title"   : "Hadouken Program Wiki",
+                     "program" : "Hadouken" }
+  },
+  "Symphony Program" : {
+    "confluence" : [ "SYM" ],
+    "mbox"       : [ "dev /home/bitergia/mboxes/barnowl_symphony_dev" ],
+    "meta"       : { "title"   : "Symphony Program",
+                     "program" : "Symphony" }
+  },
+  "Voice Program" : {
+    "confluence" : [ "VOICE" ],
+    "meta"       : { "title"   : "Voice Program",
+                     "program" : "Voice" }
   }[#if activities?? && activities?size > 0],
   [#list activities as activity]
   "${activity.activity_name}" : {[#if activity.github_urls?? && activity.github_urls?size > 0]
