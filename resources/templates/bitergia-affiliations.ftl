@@ -21,10 +21,10 @@
       [/#if]
     [/#list]
   [/#if]
-  [#if person.github_user_ids?? && person.github_user_ids?size > 0]
+  [#if person.github_logins?? && person.github_logins?size > 0]
   github:
-    [#list person.github_user_ids as github_user_id]
-    - ${github_user_id}
+    [#list person.github_logins as github_login]
+    - ${github_login}
     [/#list]
   [/#if]
   [#if person.confluence_usernames?? && person.confluence_usernames?size > 0]
