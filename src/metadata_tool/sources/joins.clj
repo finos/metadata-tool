@@ -32,15 +32,15 @@
   (if (and activity
            (seq (:github-urls activity)))
     (assoc activity
-           :project-leads (seq
-                            (sort-by :full-name
-                              (map md/person-metadata-by-github-login
-                                   (distinct
-                                     (remove nil?
-                                       (mapcat gh/admin-logins (:github-urls activity)))))))
-            :committers   (seq
-                            (sort-by :full-name
-                              (map md/person-metadata-by-github-login
-                                   (distinct
-                                     (remove nil?
-                                       (mapcat gh/committer-logins (:github-urls activity))))))))))
+           :admins      (seq
+                          (sort-by :full-name
+                            (map md/person-metadata-by-github-login
+                                 (distinct
+                                   (remove nil?
+                                     (mapcat gh/admin-logins (:github-urls activity)))))))
+            :committers (seq
+                          (sort-by :full-name
+                            (map md/person-metadata-by-github-login
+                                 (distinct
+                                   (remove nil?
+                                     (mapcat gh/committer-logins (:github-urls activity))))))))))

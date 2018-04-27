@@ -92,7 +92,7 @@
 
 (defn- check-missing-lead-or-chair
   []
-  (let [activities-with-missing-lead-or-chair (sort-by activity-id-to-string (filter #(s/blank? (:lead-or-chair %)) (md/activities-metadata)))]
+  (let [activities-with-missing-lead-or-chair (sort-by activity-id-to-string (filter #(nil? (:lead-or-chair %)) (md/activities-metadata)))]
     (doall (map #(if (= "ARCHIVED" (:state %))
                    (println "⚠️ Archived" (type-to-string (:type %)) (activity-id-to-string %) "doesn't have a" (str (if (= "PROJECT" (:type %)) "lead" "chair") "."))
                    (println "❌" (state-to-string (:state %)) (type-to-string (:type %)) (activity-id-to-string %) "doesn't have a" (str (if (= "PROJECT" (:type %)) "lead" "chair") ".")))
@@ -100,7 +100,7 @@
 
 (defn- check-lead-or-chair-references
   []
-  (let [lead-or-chair-person-ids                    (seq (distinct (remove nil? (map :lead-or-chair (md/activities-metadata)))))
+  (let [lead-or-chair-person-ids                    (seq (distinct (remove nil? (map #(:person-id (:lead-or-chair %)) (md/activities-metadata)))))
         invalid-lead-or-chair-person-ids-person-ids (filter #(nil? (md/person-metadata %)) lead-or-chair-person-ids)]
     (doall (map #(println "❌ Person id" % "(a Project Lead or Working Group chair) doesn't have metadata.") invalid-lead-or-chair-person-ids-person-ids))))
 

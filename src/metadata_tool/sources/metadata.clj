@@ -202,6 +202,7 @@
                        :activity-id        %
                        :tags               (if-let [current-tags (:tags activity)]      ; Normalise tags to lower case, de-dupe and sort
                                              (seq (sort (distinct (map s/lower-case (remove s/blank? current-tags))))))
+                       :lead-or-chair      (person-metadata (:lead-or-chair activity))
                        :github-urls        (program-activity-github-urls program activity)
                        :mailing-lists      (map expand-mailing-list-address (:mailing-list-addresses activity))
                        :confluence-spaces  (map expand-confluence-space-key (:confluence-space-keys activity))))

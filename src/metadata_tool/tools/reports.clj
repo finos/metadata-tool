@@ -53,7 +53,7 @@
                        test-email-address)]
       (log/debug "Sending email to" to-address "with subject:" subject)
 ;####TEST!!!!  Just to be 1000% sure we don't start spamming anyone.
-(if-not (= "peter@symphony.foundation" to-address)
+(if-not (= "peter@finos.org" to-address)
   (throw (Exception. (str "BAD EMAIL ADDRESS " to-address))))
       (email/send-message email-config
                           { :from         from-address
@@ -73,28 +73,40 @@
 
 (defn email-pmc-reports
   []
-  (let [now-str                                 (tf/unparse (tf/formatter "yyyy-MM-dd h:mmaa ZZZ") (tm/now))
-        all-programs                            (md/programs-metadata)
-        inactive-unarchived-projects-metadata   (group-by :program-id
-                                                          (remove #(= "ARCHIVED" (:state %))
-                                                                  (remove nil?
-                                                                          (map #(j/activity-with-team (md/activity-metadata-by-name %))
-                                                                               (bi/inactive-projects inactive-project-days)))))
-        unarchived-projects-with-unactioned-prs (group-by :program-id
-                                                        (remove #(= "ARCHIVED" (:state %))
-                                                                (remove nil?
-                                                                        (map #(j/activity-with-team (md/activity-metadata-by-name %))
-                                                                             (bi/projects-with-old-prs old-pr-days)))))]
+  (let [now-str                                        (tf/unparse (tf/formatter "yyyy-MM-dd h:mmaa ZZZ") (tm/now))
+        all-programs                                   (md/programs-metadata)
+        inactive-unarchived-activities-metadata        (group-by :program-id
+                                                                 (remove #(= "ARCHIVED" (:state %))
+                                                                         (remove nil?
+                                                                                 (map md/activity-metadata-by-name
+                                                                                      (bi/inactive-projects inactive-project-days)))))
+        unarchived-activities-with-unactioned-prs      (group-by :program-id
+                                                                 (remove #(= "ARCHIVED" (:state %))
+                                                                         (remove nil?
+                                                                                 (map md/activity-metadata-by-name
+                                                                                      (bi/projects-with-old-prs old-pr-days)))))
+        archived-activities-that-arent-github-archived (group-by :program-id
+                                                                 (remove #(some identity
+                                                                                (map (fn [gh-url] (:archived (gh/repo gh-url)))   ;####TODO: CONFIRM THAT :archived IS THE RIGHT GH API PROPERTY NAME
+                                                                                     (:github-urls %)))
+                                                                         (filter #(= "ARCHIVED" (:state %))
+                                                                                 (md/activities-metadata))))
+        activities-with-repos-without-issues-support   (group-by :program-id
+                                                                 (filter #(some identity (map (fn [gh-url] (not (:issues-enabled (gh/repo gh-url))))   ;####TODO: CONFIRM THAT :archived IS THE RIGHT GH API PROPERTY NAME
+                                                                                              (:github-urls %)))
+                                                                         (md/activities-metadata)))]
     (log/info "Emailing" (count all-programs) "PMC reports...")
     (doall (map #(send-email-to-pmc (:program-id %)
                                     (str "PMC Report for " (:program-short-name %) ", as at " now-str)
                                     (tem/render "emails/pmc-report.ftl"
-                                                { :now                          now-str
-                                                  :inactive-days                inactive-project-days
-                                                  :old-pr-days                  old-pr-days
-                                                  :program                      %
-                                                  :inactive-projects            (get (:program-id %) inactive-unarchived-projects-metadata)
-                                                  :projects-with-unactioned-prs (get (:program-id %) unarchived-projects-with-unactioned-prs)
-                                                   } ))
+                                                { :now                                            now-str
+                                                  :inactive-days                                  inactive-project-days
+                                                  :old-pr-days                                    old-pr-days
+                                                  :program                                        %
+                                                  :inactive-activities                            (get (:program-id %) inactive-unarchived-activities-metadata)
+                                                  :activities-with-unactioned-prs                 (get (:program-id %) unarchived-activities-with-unactioned-prs)
+                                                  :archived-activities-that-arent-github-archived (get (:program-id %) archived-activities-that-arent-github-archived)
+                                                  :activities-with-repos-without-issues-support   (get (:program-id %) activities-with-repos-without-issues-support)
+                                                } ))
                 all-programs))
     (log/info "PMC reports sent.")))
