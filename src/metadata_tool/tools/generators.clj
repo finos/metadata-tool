@@ -41,6 +41,12 @@
                        { :people (md/people-metadata-with-organizations) }))
   (flush))
 
+(defn gen-bitergia-organization-data
+  []
+  (println (tem/render "bitergia-organizations.ftl"
+                       { :organizations (md/organizations-metadata) }))
+  (flush))
+
 (defn gen-bitergia-project-data
   []
   (println (tem/render "bitergia-projects.ftl"

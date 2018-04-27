@@ -39,6 +39,7 @@
 ;    "list-projects-with-old-prs"                          tls/list-projects-with-old-prs
 ;    "list-active-projects-with-old-prs"                   tls/list-active-projects-with-old-prs
     "gen-bitergia-affiliation-data"                       tgn/gen-bitergia-affiliation-data
+    "gen-bitergia-organization-data"                      tgn/gen-bitergia-organization-data
     "gen-bitergia-project-data"                           tgn/gen-bitergia-project-data
 ;    "gen-project-metadata"                                tgn/gen-project-metadata
 ;    "gen-project-meta-for-website"                        tgn/gen-project-meta-for-website

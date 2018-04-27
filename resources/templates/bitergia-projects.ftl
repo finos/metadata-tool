@@ -1,8 +1,7 @@
 [#ftl output_format="JSON"]
 {
-  "Wiki" : {
-    "confluence" : [ "https://finosfoundation.atlassian.net/wiki/" ],
-    "meta"       : { "title" : "Wiki" }
+  "unknown" : {
+    "confluence" : [ "https://finosfoundation.atlassian.net/wiki/" ]
   },[#-- ####TODO: NEED A BETTER WAY OF HANDLING PROGRAM-LEVEL DATA --]
   "Foundation" : {
     "confluence" : [ "FINOS" ],
