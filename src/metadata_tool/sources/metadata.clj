@@ -196,16 +196,17 @@
       (remove nil?
         (map #(if-let [activity (read-metadata-file (str program-metadata-directory "/" program-id "/" % "/" activity-filename))]
                 (assoc activity
-                       :program-id         program-id
-                       :program-name       (:program-name program)
-                       :program-short-name (:program-short-name program)
-                       :activity-id        %
-                       :tags               (if-let [current-tags (:tags activity)]      ; Normalise tags to lower case, de-dupe and sort
-                                             (seq (sort (distinct (map s/lower-case (remove s/blank? current-tags))))))
-                       :lead-or-chair      (person-metadata (:lead-or-chair activity))
-                       :github-urls        (program-activity-github-urls program activity)
-                       :mailing-lists      (map expand-mailing-list-address (:mailing-list-addresses activity))
-                       :confluence-spaces  (map expand-confluence-space-key (:confluence-space-keys activity))))
+                       :program-id              program-id
+                       :program-name            (:program-name program)
+                       :program-short-name      (:program-short-name program)
+                       :activity-id             %
+                       :tags                    (if-let [current-tags (:tags activity)]      ; Normalise tags to lower case, de-dupe and sort
+                                                  (seq (sort (distinct (map s/lower-case (remove s/blank? current-tags))))))
+                       :lead-or-chair-person-id (:lead-or-chair activity)
+                       :lead-or-chair           (person-metadata (:lead-or-chair activity))
+                       :github-urls             (program-activity-github-urls program activity)
+                       :mailing-lists           (map expand-mailing-list-address (:mailing-list-addresses activity))
+                       :confluence-spaces       (map expand-confluence-space-key (:confluence-space-keys activity))))
              (program-activities program-id))))))
 
 (defn- program-metadata-fn
