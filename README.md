@@ -12,7 +12,8 @@ For now the metadata tool is available in source form only, so fire up your favo
 ## Configuration
 
 metadata tool is configured via a single [EDN](https://github.com/edn-format/edn) file that's specified on the command
-line.  This configuration file contains credentials for GitHub and JIRA.
+line.  This configuration file contains credentials for GitHub, Bitergia, and the tool's email account (used for sending
+email reports).
 
 See [the sample `config.edn` file](https://github.com/finos/metadata-tool/blob/master/resources/config.edn) for details.
 
