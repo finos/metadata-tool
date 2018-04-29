@@ -56,37 +56,36 @@
 
 (defn- build-github-repo-data
   [repo-url]
-  (if-not (s/blank? repo-url)
-    (let [repo          (gh/repo          repo-url)
-          collaborators (gh/collaborators repo-url)
+  (if-let [repo (gh/repo repo-url)]
+    (let [collaborators (gh/collaborators repo-url)
           languages     (gh/languages     repo-url)]
-    {
-      :name          (get repo :name              "")
-      :description   (get repo :description       "")
-      :url           repo-url
-      :heat          (+ (* (count collaborators)  5)
-                        (* (get repo :forks    0) 4)
-                        (* (get repo :stars    0) 1)
-                        (* (get repo :watchers 0) 1))
-      :watchers      (get repo :watchers-count    0)
-      :size          (get repo :size              0)
-      :collaborators (count collaborators)
-      :stars         (get repo :stargazers-count  0)
-      :forks         (get repo :forks-count       0)
-      :open-issues   (get repo :open-issues-count 0)
-      :languages     languages
-    })))
+      {
+        :name          (or (:name        repo) "")
+        :description   (or (:description repo) "")
+        :url           repo-url
+        :heat          (+ (* (count collaborators)           4)
+                          (* (or (:forks_count      repo) 0) 5)
+                          (* (or (:stargazers_count repo) 0) 1)
+                          (* (or (:watchers_count   repo) 0) 1))
+        :watchers      (or (:watchers_count    repo) 0)
+        :size          (or (:size              repo) 0)
+        :collaborators (count collaborators)
+        :stars         (or (:stargazers_count  repo) 0)
+        :forks         (or (:forks_count       repo) 0)
+        :open-issues   (or (:open_issues_count repo) 0)
+        :languages     languages
+      })
+    (log/warn "Unable to retrieve GitHub repository metadata for" repo-url)))
 
-;####TODO: THIS ISN'T RIGHT - IT DOUBLE COUNTS!  FIX POST-LAUNCH.
 (defn- accumulate-github-stats
   [github-repos]
   (if-not (empty? github-repos)
     {
       :heat          (apply +                      (map :heat          github-repos))
-      :watchers      (apply +                      (map :watchers      github-repos))
+      :watchers      (apply +                      (map :watchers      github-repos))   ; ####TODO: Fix double counting
       :size          (apply +                      (map :size          github-repos))
-      :collaborators (apply +                      (map :collaborators github-repos))
-      :stars         (apply +                      (map :stars         github-repos))
+      :collaborators (apply +                      (map :collaborators github-repos))   ; ####TODO: Fix double counting
+      :stars         (apply +                      (map :stars         github-repos))   ; ####TODO: Fix double counting
       :forks         (apply +                      (map :forks         github-repos))
       :open-issues   (apply +                      (map :open-issues   github-repos))
       :languages     (apply (partial merge-with +) (map :languages     github-repos))
@@ -96,7 +95,7 @@
   []
   (let [activities-data (for [program-metadata  (md/programs-metadata)
                               activity-metadata (:activities program-metadata)]
-                          (let [github-repos (map build-github-repo-data (:github-urls activity-metadata))]
+                          (let [github-repos (remove nil? (map build-github-repo-data (:github-urls activity-metadata)))]
                             (assoc activity-metadata
                                    :program-name            (:program-name           program-metadata)
                                    :program-short-name      (:program-short-name     program-metadata)

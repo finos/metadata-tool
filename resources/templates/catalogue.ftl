@@ -21,16 +21,16 @@
       "gitHubRepos"          : [
       [#list activity.github_repos as github_repo]
         {
-          "name"          : "${github_repo.name!}",
-          "description"   : "${github_repo.description!}",
+          "name"          : "${github_repo.name}",
+          "description"   : "${github_repo.description}",
           "gitHubURL"     : "${github_repo.url}",
-          "heat"          : ${(github_repo.heat!0)?c},
-          "watchers"      : ${(github_repo.watchers!0)?c},
-          "size"          : ${(github_repo.size!0)?c},
-          "collaborators" : ${(github_repo.collaborators!0)?c},
-          "stars"         : ${(github_repo.stars!0)?c},
-          "forks"         : ${(github_repo.forks!0)?c},
-          "openIssues"    : ${(github_repo.open_issues!0)?c}[#if github_repo.languages??],
+          "heat"          : ${github_repo.heat?c},
+          "watchers"      : ${github_repo.watchers?c},
+          "size"          : ${github_repo.size?c},
+          "collaborators" : ${github_repo.collaborators?c},
+          "stars"         : ${github_repo.stars?c},
+          "forks"         : ${github_repo.forks?c},
+          "openIssues"    : ${github_repo.open_issues?c}[#if github_repo.languages??],
           "languages"     : {
           [#list github_repo.languages?keys as language_name]
             "${language_name}" : ${github_repo.languages[language_name]?c}[#if language_name != github_repo.languages?keys?last],[/#if]
@@ -40,13 +40,13 @@
       [/#list]
       ][/#if][#if activity.cumulative_github_stats??],
       "cumulativeGitHubStats" : {
-        "heat"          : ${(activity.cumulative_github_stats.heat!0)?c},
-        "watchers"      : ${(activity.cumulative_github_stats.watchers!0)?c},
-        "size"          : ${(activity.cumulative_github_stats.size!0)?c},
-        "collaborators" : ${(activity.cumulative_github_stats.collaborators!0)?c},
-        "stars"         : ${(activity.cumulative_github_stats.stars!0)?c},
-        "forks"         : ${(activity.cumulative_github_stats.forks!0)?c},
-        "openIssues"    : ${(activity.cumulative_github_stats.open_issues!0)?c}[#if activity.cumulative_github_stats.languages?? && activity.cumulative_github_stats.languages?size > 0],
+        "heat"          : ${activity.cumulative_github_stats.heat?c},
+        "watchers"      : ${activity.cumulative_github_stats.watchers?c},
+        "size"          : ${activity.cumulative_github_stats.size?c},
+        "collaborators" : ${activity.cumulative_github_stats.collaborators?c},
+        "stars"         : ${activity.cumulative_github_stats.stars?c},
+        "forks"         : ${activity.cumulative_github_stats.forks?c},
+        "openIssues"    : ${activity.cumulative_github_stats.open_issues?c}[#if activity.cumulative_github_stats.languages?? && activity.cumulative_github_stats.languages?size > 0],
         "languages"     : {
         [#list activity.cumulative_github_stats.languages?keys as language_name]
           "${language_name}" : ${(activity.cumulative_github_stats.languages[language_name]!0)?c}[#if language_name != activity.cumulative_github_stats.languages?keys?last],[/#if]
