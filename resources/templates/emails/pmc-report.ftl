@@ -28,7 +28,7 @@
           <td>[@render_type activity.type /]</td>
           <td>[@render_state activity.state /]</td>
           <td>[#if activity.github_urls?? && activity.github_urls?size > 0][#list activity.github_urls as github_url]
-            <a style="font-family: courier, monospace;" href="${github_url}">${github_url?keep_after("github.com/")}</a>[#if github_url != activity.github_urls?last]<br/>[/#if]
+            <a class="github" href="${github_url}">${github_url?keep_after("github.com/")}</a>[#if github_url != activity.github_urls?last]<br/>[/#if]
           [/#list][#else]
             This [@render_type activity.type /] has no GitHub repositories.
           [/#if]</td>
@@ -47,21 +47,43 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <style>
-  body {
-    font-family: Montserrat, san-serif;
-    font-weight: 500;
-  }
-  table, th, td {
-    border: 1px solid #acacac;
-    border-collapse: collapse;
-  }
-  th, td {
-    padding: 2px;
-  }
-  th {
-    background-color: #acacac;
-  }
+  <style type="text/css">
+    @import url('https://fonts.googleapis.com/css?family=Montserrat');
+    body {
+      font-family: 'Montserrat', Verdana, san-serif;
+      font-size: medium;
+      font-weight: 500;
+    }
+    h1, h2, h3 {
+      font-family: 'Montserrat', Verdana, san-serif;
+    }
+    p {
+      font-family: 'Montserrat', Verdana, san-serif;
+      font-size: medium;
+      font-weight: 500;
+    }
+    p.footnote {
+      font-size: small;
+      text-align: center;
+    }
+    b.finos {
+      color: #0086bf;
+    }
+    a.github {
+      font-family: 'Courier New', Courier, monospace;
+    }
+    table, th, td {
+      border: 1px solid #acacac;
+      border-collapse: collapse;
+    }
+    th, td {
+      font-family: 'Montserrat', Verdana, san-serif;
+      font-size: medium;
+      padding: 2px;
+    }
+    th {
+      background-color: #acacac;
+    }
   </style>
 </head>
 <body>
@@ -165,10 +187,10 @@
   <p>All Projects and Working Groups seem to be operating smoothly.&nbsp;&nbsp;🎉</p>
   <hr/>
 [/#if]
-  <p style="font-size: small; text-align: center;">Need help? Raise a <a href="https://finosfoundation.atlassian.net/secure/CreateIssue.jspa?pid=10000&issuetype=10001">HELP issue</a>
+  <p class="footnote">Need help? Raise a <a href="https://finosfoundation.atlassian.net/secure/CreateIssue.jspa?pid=10000&issuetype=10001">HELP issue</a>
     or send an email to <a href="mailto:help@finos.org">help@finos.org</a>.
     <br/>&nbsp;<br/>
-    Copyright 2018 <b style="color:#0086bf">FINOS</b><br/>
+    Copyright 2018 <b class="finos">FINOS</b><br/>
     Content in this email is licensed under the <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 license</a>.<br/>
     Code in this email is licensed under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 license</a>.</p>
 </body>
