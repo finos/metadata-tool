@@ -57,7 +57,7 @@ Available tools:
 
 ## License
 
-Copyright © 2017 FINOS Foundation
+Copyright 2017 Fintech Open Source Foundation
 
 Distributed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 

@@ -1,5 +1,5 @@
 ;
-; Copyright © 2017 FINOS Foundation
+; Copyright 2017 Fintech Open Source Foundation
 ; SPDX-License-Identifier: Apache-2.0
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");

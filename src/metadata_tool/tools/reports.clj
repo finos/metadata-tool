@@ -1,5 +1,5 @@
 ;
-; Copyright © 2017 FINOS Foundation
+; Copyright 2017 Fintech Open Source Foundation
 ; SPDX-License-Identifier: Apache-2.0
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,9 +52,6 @@
                        to-address
                        test-email-address)]
       (log/debug "Sending email to" to-address "with subject:" subject)
-;####TEST!!!!  Just to be 1000% sure we don't start spamming anyone.
-(if-not (= "peter@finos.org" to-address)
-  (throw (Exception. (str "BAD EMAIL ADDRESS " to-address))))
       (email/send-message email-config
                           { :from         from-address
                             :to           to-address

@@ -1,5 +1,5 @@
 ;
-; Copyright © 2017 FINOS Foundation
+; Copyright 2017 Fintech Open Source Foundation
 ; SPDX-License-Identifier: Apache-2.0
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,5 +40,3 @@
                        (throw (Exception. (str "Temp directory " result " is not a directory."))))
                      (throw (Exception. (str "Temp directory " result " does not exist."))))))
 
-;(defstate not-a-project-list
-;		  :start (list "Foundation Infrastructure" "Documentation and Examples"))
