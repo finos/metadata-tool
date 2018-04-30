@@ -51,18 +51,18 @@
   })
 
 (defn- all-projects-for-endpoint
-  "Returns all known projects at the given endpoint."
+  "Returns the names of all known projects at the given endpoint."
   [endpoint]
   (if endpoint
-    (set (map :key
+    (set (map #(s/trim (:key %))
               (:buckets (:projects (:aggregations (:body (es/request client { :url    endpoint
                                                                               :method :get
                                                                               :body   query-all-projects } )))))))))
 
 (defn all-projects
-  "Returns the set of projects with activity tracked in Bitergia."
+  "Returns the set of project names with activity tracked in Bitergia."
   []
-  (set (map all-projects-for-endpoint endpoints)))
+  (set (mapcat all-projects-for-endpoint endpoints)))
 
 
 (defn- recent-projects-query
@@ -97,25 +97,27 @@
     }
   })
 
-(defn- recent-projects-for-endpoint
+(defn- recently-active-projects-for-endpoint
   [endpoint threshold-in-days]
   (if endpoint
     (set
-      (map :key (:buckets
-                  (:projects
-                    (:aggregations
-                      (:body (es/request client { :url    endpoint
-                                                  :method :get
-                                                  :body   (recent-projects-query threshold-in-days) } )))))))))
+      (map #(s/trim (:key %))
+           (:buckets
+             (:projects
+               (:aggregations
+                 (:body (es/request client { :url    endpoint
+                                             :method :get
+                                             :body   (recent-projects-query threshold-in-days) } )))))))))
 
-(defn recent-projects
-  "Returns the set of recent projects (those with git commit or GitHub activity in the last threshold-in-days)."
+(defn recently-active-projects
+  "Returns the set of recently active project names (those with activity in any data source in the last threshold-in-days)."
   [threshold-in-days]
-  (set (map #(recent-projects-for-endpoint % threshold-in-days) endpoints)))
+  (set (mapcat #(recently-active-projects-for-endpoint % threshold-in-days) endpoints)))
 
 (defn inactive-projects
+  "Returns the set of inactive project names (those with no activity in any data source in the last threshold-in-days)."
   [threshold-in-days]
-  (set/difference (all-projects) (recent-projects threshold-in-days)))
+  (set/difference (all-projects) (recently-active-projects threshold-in-days)))
 
 
 (defn- old-github-issues-query
@@ -161,15 +163,17 @@
   })
 
 (defn projects-with-old-prs
-  "Returns the set of projects with PRs older than threshold-in-days."
+  "Returns the set of project names with PRs older than threshold-in-days."
   [threshold-in-days]
-  (set (map :key (:buckets (:projects (:aggregations (:body (es/request client { :url    github-search-endpoint
-                                                                                 :method :get
-                                                                                 :body   (old-github-issues-query threshold-in-days true) } ))))))))
+  (set (map #(s/trim (:key %))
+            (:buckets (:projects (:aggregations (:body (es/request client { :url    github-search-endpoint
+                                                                            :method :get
+                                                                            :body   (old-github-issues-query threshold-in-days true) } ))))))))
 
 (defn projects-with-old-issues
-  "Returns the set of projects with issues older than threshold-in-days."
+  "Returns the set of project names with issues older than threshold-in-days."
   [threshold-in-days]
-  (set (map :key (:buckets (:projects (:aggregations (:body (es/request client { :url    github-search-endpoint
-                                                                                 :method :get
-                                                                                 :body   (old-github-issues-query threshold-in-days false) } ))))))))
+  (set (map #(s/trim (:key %))
+            (:buckets (:projects (:aggregations (:body (es/request client { :url    github-search-endpoint
+                                                                            :method :get
+                                                                            :body   (old-github-issues-query threshold-in-days false) } ))))))))

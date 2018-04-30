@@ -24,7 +24,6 @@
             [cheshire.core                  :as ch]
             [clj-time.core                  :as tm]
             [clj-time.format                :as tf]
-            [metadata-tool.utils            :as u]
             [metadata-tool.config           :as cfg]
             [metadata-tool.sources.github   :as gh]
             [metadata-tool.sources.bitergia :as bi]

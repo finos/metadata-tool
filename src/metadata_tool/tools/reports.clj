@@ -29,9 +29,9 @@
             [metadata-tool.sources.bitergia :as bi]
             [metadata-tool.sources.joins    :as j]))
 
-(def ^:private inactive-project-days 180)   ; The age in days at which a project is considered "inactive"
-(def ^:private old-pr-days           60)    ; The age in days at which a PR is considered "old"
-(def ^:private old-issue-days        60)    ; The age in days at which an issue is considered "old"
+(def ^:private inactive-project-threshold-days 180)   ; The threshold (days) at which a project is considered "inactive"
+(def ^:private old-pr-threshold-days           60)    ; The threshold (days) at which a PR is considered "old"
+(def ^:private old-issue-threshold-days        90)    ; The threshold (days) at which an issue is considered "old"
 
 (defstate email-config
           :start (:email cfg/config))
@@ -79,34 +79,42 @@
                                                                  (remove #(= "ARCHIVED" (:state %))
                                                                          (remove nil?
                                                                                  (map md/activity-metadata-by-name
-                                                                                      (bi/inactive-projects inactive-project-days)))))
+                                                                                      (bi/inactive-projects inactive-project-threshold-days)))))
         unarchived-activities-with-unactioned-prs      (group-by :program-id
                                                                  (remove #(= "ARCHIVED" (:state %))
                                                                          (remove nil?
                                                                                  (map md/activity-metadata-by-name
-                                                                                      (bi/projects-with-old-prs old-pr-days)))))
+                                                                                      (bi/projects-with-old-prs old-pr-threshold-days)))))
+        unarchived-activities-with-unactioned-issues   (group-by :program-id
+                                                                 (remove #(= "ARCHIVED" (:state %))
+                                                                         (remove nil?
+                                                                                 (map md/activity-metadata-by-name
+                                                                                      (bi/projects-with-old-issues old-issue-threshold-days)))))
         archived-activities-that-arent-github-archived (group-by :program-id
                                                                  (remove #(some identity
-                                                                                (map (fn [gh-url] (:archived (gh/repo gh-url)))   ;####TODO: CONFIRM THAT :archived IS THE RIGHT GH API PROPERTY NAME
+                                                                                (map (fn [gh-url] (:archived (gh/repo gh-url)))
                                                                                      (:github-urls %)))
-                                                                         (filter #(= "ARCHIVED" (:state %))
+                                                                         (filter #(and (= "ARCHIVED" (:state %))
+                                                                                       (pos? (count (:github-urls %))))
                                                                                  (md/activities-metadata))))
         activities-with-repos-without-issues-support   (group-by :program-id
-                                                                 (filter #(some identity (map (fn [gh-url] (not (:issues-enabled (gh/repo gh-url))))   ;####TODO: CONFIRM THAT :archived IS THE RIGHT GH API PROPERTY NAME
+                                                                 (filter #(some identity (map (fn [gh-url] (not (:has_issues (gh/repo gh-url))))  ; Note underscore in :has_issues!
                                                                                               (:github-urls %)))
                                                                          (md/activities-metadata)))]
-    (log/info "Emailing" (count all-programs) "PMC reports...")
+    (log/info "Sending" (count all-programs) "PMC reports...")
     (doall (map #(send-email-to-pmc (:program-id %)
-                                    (str "PMC Report for " (:program-short-name %) ", as at " now-str)
+                                    (str (:program-short-name %) " PMC Report as at " now-str)
                                     (tem/render "emails/pmc-report.ftl"
                                                 { :now                                            now-str
-                                                  :inactive-days                                  inactive-project-days
-                                                  :old-pr-days                                    old-pr-days
+                                                  :inactive-days                                  inactive-project-threshold-days
+                                                  :old-pr-threshold-days                          old-pr-threshold-days
+                                                  :old-issue-threshold-days                       old-issue-threshold-days
                                                   :program                                        %
-                                                  :inactive-activities                            (get (:program-id %) inactive-unarchived-activities-metadata)
-                                                  :activities-with-unactioned-prs                 (get (:program-id %) unarchived-activities-with-unactioned-prs)
-                                                  :archived-activities-that-arent-github-archived (get (:program-id %) archived-activities-that-arent-github-archived)
-                                                  :activities-with-repos-without-issues-support   (get (:program-id %) activities-with-repos-without-issues-support)
+                                                  :inactive-activities                            (seq (sort-by :activity-name (get inactive-unarchived-activities-metadata        (:program-id %))))
+                                                  :activities-with-unactioned-prs                 (seq (sort-by :activity-name (get unarchived-activities-with-unactioned-prs      (:program-id %))))
+                                                  :activities-with-unactioned-issues              (seq (sort-by :activity-name (get unarchived-activities-with-unactioned-issues   (:program-id %))))
+                                                  :archived-activities-that-arent-github-archived (seq (sort-by :activity-name (get archived-activities-that-arent-github-archived (:program-id %))))
+                                                  :activities-with-repos-without-issues-support   (seq (sort-by :activity-name (get activities-with-repos-without-issues-support   (:program-id %))))
                                                 } ))
                 all-programs))
-    (log/info "PMC reports sent.")))
+    (log/info (count all-programs) "PMC reports sent.")))

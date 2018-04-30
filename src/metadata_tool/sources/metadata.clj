@@ -238,10 +238,15 @@
   [activity-id]
   (filter #(= activity-id (:activity-id %)) activities-metadata))
 
-(defn activity-metadata-by-name
-  "The metadata for a specific activity, identified by name."
+(defn- activity-metadata-by-name-fn
   [activity-name]
-  (filter #(= activity-name (:activity-name %)) activities-metadata))
+  (if-not (s/blank? activity-name)
+    (if-let [result (first (filter #(= activity-name (:activity-name %)) (activities-metadata)))]
+      result
+      (log/warn "Could not find metadata for" activity-name))))
+(def activity-metadata-by-name
+  "The metadata for a specific activity, identified by name."
+  (memoize activity-metadata-by-name-fn))
 
 (defn projects-metadata
   "A seq containing the metadata of all activities of type PROJECT, regardless of program."

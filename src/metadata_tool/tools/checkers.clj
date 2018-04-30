@@ -21,7 +21,6 @@
             [clojure.tools.logging          :as log]
             [clojure.java.io                :as io]
             [mount.core                     :as mnt :refer [defstate]]
-            [metadata-tool.utils            :as u]
             [metadata-tool.config           :as cfg]
             [metadata-tool.sources.github   :as gh]
             [metadata-tool.sources.bitergia :as bi]
