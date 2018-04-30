@@ -1,15 +1,4 @@
 [#ftl output_format="HTML"]
-[#macro activity_table_head]
-      <thead>
-        <tr>
-          <th>Activity</th>
-          <th>Type</th>
-          <th><a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530756/Project+and+Working+Group+Lifecycles">Lifecycle State</a></th>
-          <th>GitHub Repositories</th>
-          <th>Project Lead/Working Group Chair</th>
-        </tr>
-      </thead>
-[/#macro]
 [#macro render_type type]
   [#if type = "PROJECT"]Project[#elseif type = "WORKING_GROUP"]Working Group[/#if]
 [/#macro]
@@ -22,7 +11,22 @@
     [#case "ARCHIVED"]<a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived">Archived</a>[#break]
   [/#switch]
 [/#macro]
-[#macro render_activity_row activity]
+[#macro render_table title description_html activities]
+  <p><b>${title}</b></p>
+  <p>${description_html?no_esc}</p>
+  <blockquote>
+    <table width="100%" border=1 cellspacing=0 cellpadding=1>
+      <thead>
+        <tr>
+          <th>Activity</th>
+          <th>Type</th>
+          <th><a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530756/Project+and+Working+Group+Lifecycles">Lifecycle State</a></th>
+          <th>GitHub Repositories</th>
+          <th>Project Lead/Working Group Chair</th>
+        </tr>
+      </thead>
+      <tbody>
+    [#list activities as activity]
         <tr>
           <td>${activity.activity_name}</td>
           <td>[@render_type activity.type /]</td>
@@ -43,6 +47,11 @@
             [#if activity.type = "PROJECT"]⚠️ This project has no lead.[#elseif activity.type = "WORKING_GROUP"]⚠️ This working group has no chair.[/#if]
           [/#if]</td>
         </tr>
+    [/#list]
+      </tbody>
+    </table>
+  </blockquote>
+  <hr/>
 [/#macro]
 <html>
 <head>
@@ -98,99 +107,44 @@
      (activities_with_unactioned_issues?? && activities_with_unactioned_issues?size > 0) ||
      (archived_activities_that_arent_github_archived?? && archived_activities_that_arent_github_archived?size > 0) ||
      (activities_with_repos_without_issues_support?? && activities_with_repos_without_issues_support?size > 0)]
+
   [#if inactive_activities?? && inactive_activities?size > 0]
-  <p><b>Inactive Activities</b></p>
-  <p>Here are inactive Projects and Working Groups, defined as being those
-     with no git commit or GitHub issue/PR activity in the last ${inactive_days}
-     days, that are not in
-     <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived">Archived state</a>:</p>
-  <blockquote>
-    <table width="100%" border=1 cellspacing=0 cellpadding=1>
-[@activity_table_head /]
-      <tbody>
-    [#list inactive_activities as activity]
-[@render_activity_row activity /]
-    [/#list]
-      </tbody>
-      </table>
-  </blockquote>
-  <hr/>
+    [@render_table "Inactive Activities"
+                   "Here are inactive Projects and Working Groups, defined as being those with no git commit or GitHub issue/PR activity in the last ${inactive_days} days, that are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
+                   inactive_activities /]
   [/#if]
+
   [#if activities_with_unactioned_prs?? && activities_with_unactioned_prs?size > 0]
-  <p><b>Activities with Unactioned PRs</b></p>
-  <p>Here are the Projects and Working Groups that have unactioned PRs, defined as being those
-     with PRs with more than ${old_pr_threshold_days} days of inactivity, that are not in
-     <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived">Archived state</a>:</p>
-  <blockquote>
-    <table width="100%" border=1 cellspacing=0>
-[@activity_table_head /]
-      <tbody>
-    [#list activities_with_unactioned_prs as activity]
-[@render_activity_row activity /]
-    [/#list]
-      </tbody>
-    </table>
-  </blockquote>
-  <hr/>
+    [@render_table "Activities with Unactioned PRs"
+                   "Here are the Projects and Working Groups that have unactioned PRs, defined as being those with PRs with more than ${old_pr_threshold_days} days of inactivity, that are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
+                   activities_with_unactioned_prs /]
   [/#if]
+
   [#if activities_with_unactioned_issues?? && activities_with_unactioned_issues?size > 0]
-  <p><b>Activities with Unactioned Issues</b></p>
-  <p>Here are the Projects and Working Groups that have unactioned issues, defined as being those
-     with issues with more than ${old_issue_threshold_days} days of inactivity, that are not in
-     <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived">Archived state</a>:</p>
-  <blockquote>
-    <table width="100%" border=1 cellspacing=0>
-[@activity_table_head /]
-      <tbody>
-    [#list activities_with_unactioned_issues as activity]
-[@render_activity_row activity /]
-    [/#list]
-      </tbody>
-    </table>
-  </blockquote>
-  <hr/>
+    [@render_table "Activities with Unactioned Issues"
+                   "Here are the Projects and Working Groups that have unactioned issues, defined as being those with issues with more than ${old_issue_threshold_days} days of inactivity, that are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
+                   activities_with_unactioned_issues /]
   [/#if]
+
   [#if archived_activities_that_arent_github_archived?? && archived_activities_that_arent_github_archived?size > 0]
-  <p><b>Archived Activities that Aren't Archived in GitHub</b></p>
-  <p>Here are the <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived">Archived</a>
-     Projects and Working Groups that have GitHub repositories that haven't been archived (set to read-only)
-     in GitHub yet:</p>
-  <blockquote>
-    <table width="100%" border=1 cellspacing=0>
-[@activity_table_head /]
-      <tbody>
-    [#list archived_activities_that_arent_github_archived as activity]
-[@render_activity_row activity /]
-    [/#list]
-      </tbody>
-    </table>
-  </blockquote>
-  <hr/>
+    [@render_table "Archived Activities that Aren't Archived in GitHub"
+                   "Here are the <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived</a> Projects and Working Groups that have GitHub repositories that haven't been archived (set to read-only) in GitHub yet:"
+                   archived_activities_that_arent_github_archived /]
   [/#if]
+
   [#if activities_with_repos_without_issues_support?? && activities_with_repos_without_issues_support?size > 0]
-  <p><b>Activities that Have GitHub Repositories Without Issue Tracking Enabled</b></p>
-  <p>Here are the Projects and Working Groups that have GitHub repositories that don't
-     have issue tracking enabled:</p>
-  <blockquote>
-    <table width="100%" border=1 cellspacing=0>
-[@activity_table_head /]
-      <tbody>
-    [#list activities_with_repos_without_issues_support as activity]
-[@render_activity_row activity /]
-    [/#list]
-      </tbody>
-    </table>
-  </blockquote>
-  <hr/>
+    [@render_table "Activities that Have GitHub Repositories Without Issue Tracking Enabled"
+                   "Here are the Projects and Working Groups that have GitHub repositories without issue tracking enabled:"
+                   activities_with_repos_without_issues_support /]
   [/#if]
 [#else]
-  <p>All Projects and Working Groups seem to be operating smoothly.&nbsp;&nbsp;🎉</p>
+  <p>None of the ${program.program_short_name} Program's Projects and/or Working Groups have any of the issues described on <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/Automated+Reports">the wiki</a>.&nbsp;&nbsp;🎉</p>
   <hr/>
 [/#if]
   <p class="footnote">Need help? Raise a <a href="https://finosfoundation.atlassian.net/secure/CreateIssue.jspa?pid=10000&issuetype=10001">HELP issue</a>
     or send an email to <a href="mailto:help@finos.org">help@finos.org</a>.
     <br/>&nbsp;<br/>
-    Copyright 2018 <b class="finos">FINOS</b><br/>
+    Copyright 2018 <b class="finos">Fintech Open Source Foundation</b><br/>
     Content in this email is licensed under the <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 license</a>.<br/>
     Code in this email is licensed under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 license</a>.</p>
 </body>
