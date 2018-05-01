@@ -56,9 +56,7 @@
             (if email-override
               [to-addresses       cc-addresses from-address       reply-to-address]      ; Only use the passed in values if the --email-override switch has been provided
               [test-email-address nil          test-email-address test-email-address])]  ; Otherwise use the test email address
-      (log/debug "Sending email to" to-addresses "with subject:" subject)
-;####TEST!!!!
-(if-not (= "peter@finos.org" to-addresses) (throw (Exception. (str "BAD TO ADDRESS: " to-addresses))))
+      (log/info "Sending email to" to-addresses "with subject:" subject)
       (email/send-message email-config
                           { :from     from-address
                             :reply-to reply-to-address

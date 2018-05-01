@@ -60,17 +60,17 @@
 (defstate metadata-directory
           :start (if-not (s/blank? (:metadata-directory cfg/config))
                    (do
-                     (log/debug "Using local metadata directory at" (:metadata-directory cfg/config))
+                     (log/info "Using local metadata directory at" (:metadata-directory cfg/config))
                      (:metadata-directory cfg/config))
                    (let [result (str cfg/temp-directory
                                        (if (not (s/ends-with? cfg/temp-directory "/")) "/")
                                        "finos-metadata-" (java.util.UUID/randomUUID))
-                         _      (log/debug "Cloning metadata repository to" result)
+                         _      (log/info "Cloning metadata repository to" result)
                          repo   (git/with-credentials ^String username
                                                       ^String password
                                                       (git/git-clone (str "https://github.com/" org-name "/" metadata-repo-name) result))]
                      (when-not (s/blank? github-revision)
-                       (log/debug "Checking out revision" github-revision)
+                       (log/info "Checking out revision" github-revision)
                        (git/git-checkout repo github-revision))
                      (rm-rf (io/file (str result "/.git/")))    ; De-gitify the local clone so we can't accidentally mess with it
                      result))

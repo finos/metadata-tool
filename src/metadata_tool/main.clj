@@ -79,7 +79,7 @@
                                                    (a/read-config (io/resource "config.edn")))
                                                  :metadata-directory (:metadata-directory options)
                                                  :github-revision    (:github-revision    options)
-                                                 :email-override     (:email-override     options))))
+                                                 :email-override     (boolean (:email-override options)))))
       (let [tools-to-run (map s/lower-case arguments)]
         (if (every? (set c/tool-names) tools-to-run)
           (try
