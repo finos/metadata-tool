@@ -15,12 +15,12 @@
 ; limitations under the License.
 ;
 
-(defproject org.symphonyoss/metadata-tool "0.1.0-SNAPSHOT"
+(defproject org.finos/metadata-tool "0.1.0-SNAPSHOT"
   :description          "A simple tool that provides various functions on Foundation metadata."
-  :url                  "https://github.com/symphonyoss/ssf-metadata/tools/metadata-tool"
+  :url                  "https://github.com/finos/metadata-tool"
   :license              {:name "Apache License, Version 2.0"
                          :url  "http://www.apache.org/licenses/LICENSE-2.0"}
-  :min-lein-version     "2.5.0"
+  :min-lein-version     "2.7.1"
   :repositories         [
                           ["sonatype-snapshots" {:url "https://oss.sonatype.org/content/groups/public" :snapshots true}]
                           ["jitpack"            {:url "https://jitpack.io"                             :snapshots true}]
@@ -50,7 +50,7 @@
   :managed-dependencies [
                           ; The following dependencies are inherited but have conflicting or old versions, so we "pin" the versions here
                           [joda-time/joda-time "2.9.9"]
-                          [clj-http            "3.8.0"]
+                          [clj-http            "3.9.0"]
                         ]
   :profiles             {
                           :dev     {:dependencies [[midje      "1.9.1"]]
