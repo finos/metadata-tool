@@ -102,11 +102,18 @@
      <a href="https://metrics.finos.org/app/kibana?#/dashboard/C_ESCo_projects?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-2y,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))"/>${program.program_short_name} Program's metrics dashboard</a>
      also provides more insight into the activity of the Program's Projects and Working Groups.</p>
   <hr/>
-[#if (inactive_activities?? && inactive_activities?size > 0) ||
+[#if (unarchived_activities_without_leads?? && unarchived_activities_without_leads?size > 0) ||
+     (inactive_activities?? && inactive_activities?size > 0) ||
      (activities_with_unactioned_prs?? && activities_with_unactioned_prs?size > 0) ||
      (activities_with_unactioned_issues?? && activities_with_unactioned_issues?size > 0) ||
      (archived_activities_that_arent_github_archived?? && archived_activities_that_arent_github_archived?size > 0) ||
      (activities_with_repos_without_issues_support?? && activities_with_repos_without_issues_support?size > 0)]
+
+  [#if unarchived_activities_without_leads?? && unarchived_activities_without_leads?size > 0]
+    [@render_table "Activities Without a Lead/Chair"
+                   "Here are Projects and Working Groups that are missing a lead or chair, and that are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
+                   unarchived_activities_without_leads /]
+  [/#if]
 
   [#if inactive_activities?? && inactive_activities?size > 0]
     [@render_table "Inactive Activities"
@@ -141,8 +148,9 @@
   <p>None of the ${program.program_short_name} Program's Projects and/or Working Groups have any of the issues described on <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/Automated+Reports">the wiki</a>.&nbsp;&nbsp;🎉</p>
   <hr/>
 [/#if]
-  <p class="footnote">Need help? Have an idea for a new validation? Raise a <a href="https://finosfoundation.atlassian.net/secure/CreateIssue.jspa?pid=10000&issuetype=10001">HELP issue</a>
-    or send an email to <a href="mailto:help@finos.org">help@finos.org</a>.
+  <p class="footnote">Need help? Raise a <a href="https://finosfoundation.atlassian.net/secure/CreateIssue.jspa?pid=10000&issuetype=10001">HELP issue</a>
+    or send an email to <a href="mailto:help@finos.org">help@finos.org</a>.<br/>
+    Have an idea for improving this report? Raise <a href="https://github.com/finos/metadata-tool/issues">an enhancement request</a>.
     <br/>&nbsp;<br/>
     Copyright 2018 <b class="finos">Fintech Open Source Foundation</b><br/>
     Content in this email is licensed under the <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 license</a>.<br/>

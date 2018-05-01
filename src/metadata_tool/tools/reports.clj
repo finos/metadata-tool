@@ -55,7 +55,7 @@
     (let [[to-addresses cc-addresses from-address reply-to-address]
             (if email-override
               [to-addresses       cc-addresses from-address       reply-to-address]      ; Only use the passed in values if the --email-override switch has been provided
-              [test-email-address nil          test-email-address test-email-address])]  ; Otherwise use the test email address
+              [test-email-address nil          test-email-address test-email-address])]  ; Otherwise use the test email address throughout
       (log/info "Sending email to" to-addresses "with subject:" subject)
       (email/send-message email-config
                           { :from     from-address
@@ -79,6 +79,10 @@
   []
   (let [now-str                                        (tf/unparse (tf/formatter "yyyy-MM-dd h:mmaa ZZZ") (tm/now))
         all-programs                                   (md/programs-metadata)
+        unarchived-activities-without-leads            (group-by :program-id
+                                                                 (remove #(= "ARCHIVED" (:state %))
+                                                                   (filter #(s/blank? (:lead-or-chair-person-id %))
+                                                                     (md/activities-metadata))))
         inactive-unarchived-activities-metadata        (group-by :program-id
                                                                  (remove #(= "ARCHIVED" (:state %))
                                                                          (remove nil?
@@ -105,7 +109,6 @@
                                                                  (filter #(some identity (map (fn [gh-url] (not (:has_issues (gh/repo gh-url))))  ; Note underscore in :has_issues!
                                                                                               (:github-urls %)))
                                                                          (md/activities-metadata)))]
-    (log/info "Sending" (count all-programs) "PMC reports...")
     (doall (map #(send-email-to-pmc (:program-id %)
                                     (str (:program-short-name %) " PMC Report as at " now-str)
                                     (tem/render "emails/pmc-report.ftl"
@@ -114,11 +117,11 @@
                                                   :old-pr-threshold-days                          old-pr-threshold-days
                                                   :old-issue-threshold-days                       old-issue-threshold-days
                                                   :program                                        %
+                                                  :unarchived-activities-without-leads            (seq (sort-by :activity-name (get unarchived-activities-without-leads            (:program-id %))))
                                                   :inactive-activities                            (seq (sort-by :activity-name (get inactive-unarchived-activities-metadata        (:program-id %))))
                                                   :activities-with-unactioned-prs                 (seq (sort-by :activity-name (get unarchived-activities-with-unactioned-prs      (:program-id %))))
                                                   :activities-with-unactioned-issues              (seq (sort-by :activity-name (get unarchived-activities-with-unactioned-issues   (:program-id %))))
                                                   :archived-activities-that-arent-github-archived (seq (sort-by :activity-name (get archived-activities-that-arent-github-archived (:program-id %))))
                                                   :activities-with-repos-without-issues-support   (seq (sort-by :activity-name (get activities-with-repos-without-issues-support   (:program-id %))))
                                                 } ))
-                all-programs))
-    (log/info (count all-programs) "PMC reports sent.")))
+                all-programs))))
