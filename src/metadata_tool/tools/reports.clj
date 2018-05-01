@@ -36,7 +36,7 @@
 (defstate email-config
           :start (:email cfg/config))
 
-(defstate from-address
+(defstate email-user
           :start (:user email-config))
 
 (defstate email-override
@@ -45,28 +45,37 @@
 (defstate test-email-address
           :start (:test-email-address email-config))
 
+(def ^:private program-liaison-email-address "program-liaison@finos.org")
+
 (defn- send-email
-  ([to-address subject body] (send-email to-address from-address subject body))
-  ([to-address from-address subject body]
-    (let [to-address (if email-override
-                       to-address
-                       test-email-address)]
-      (log/debug "Sending email to" to-address "with subject:" subject)
+  "Sends a UTF8 HTML email to the given to-addresses (which can be either a string or a vector of strings)."
+  [to-addresses subject body & { :keys [ cc-addresses from-address reply-to-address ]
+                                   :or { from-address      email-user
+                                         reply-to-address  email-user }}]
+    (let [[to-addresses cc-addresses from-address reply-to-address]
+            (if email-override
+              [to-addresses       cc-addresses from-address       reply-to-address]      ; Only use the passed in values if the --email-override switch has been provided
+              [test-email-address nil          test-email-address test-email-address])]  ; Otherwise use the test email address
+      (log/debug "Sending email to" to-addresses "with subject:" subject)
+;####TEST!!!!
+(if-not (= "peter@finos.org" to-addresses) (throw (Exception. (str "BAD TO ADDRESS: " to-addresses))))
       (email/send-message email-config
-                          { :from         from-address
-                            :to           to-address
-                            :subject      subject
-                            :body         [{ :type    "text/html; charset=\"UTF-8\""
-                                             :content body }] } ))))
+                          { :from     from-address
+                            :reply-to reply-to-address
+                            :to       to-addresses
+                            :cc       cc-addresses
+                            :subject  subject
+                            :body     [{ :type    "text/html; charset=\"UTF-8\""
+                                         :content body }] } )))
 
 (defn- send-email-to-pmc
-  ([program-id subject body] (send-email-to-pmc program-id from-address subject body))
-  ([program-id from-address subject body]
-     (if-not (s/blank? program-id)
-       (send-email (:pmc-mailing-list-address (md/program-metadata program-id))
-                   from-address
-                   subject
-                   body))))
+  [program-id subject body]
+  (if-not (s/blank? program-id)
+    (send-email (:pmc-mailing-list-address (md/program-metadata program-id))
+                subject
+                body
+                :cc-addresses     program-liaison-email-address
+                :reply-to-address program-liaison-email-address)))
 
 (defn email-pmc-reports
   []

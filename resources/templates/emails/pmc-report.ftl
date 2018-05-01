@@ -110,7 +110,7 @@
 
   [#if inactive_activities?? && inactive_activities?size > 0]
     [@render_table "Inactive Activities"
-                   "Here are inactive Projects and Working Groups, defined as being those with no git commit or GitHub issue/PR activity in the last ${inactive_days} days, that are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
+                   "Here are inactive Projects and Working Groups, defined as being those with no git, GitHub, Confluence, or mailing list activity in the last ${inactive_days} days, that are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
                    inactive_activities /]
   [/#if]
 
@@ -141,7 +141,7 @@
   <p>None of the ${program.program_short_name} Program's Projects and/or Working Groups have any of the issues described on <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/Automated+Reports">the wiki</a>.&nbsp;&nbsp;🎉</p>
   <hr/>
 [/#if]
-  <p class="footnote">Need help? Raise a <a href="https://finosfoundation.atlassian.net/secure/CreateIssue.jspa?pid=10000&issuetype=10001">HELP issue</a>
+  <p class="footnote">Need help? Have an idea for a new validation? Raise a <a href="https://finosfoundation.atlassian.net/secure/CreateIssue.jspa?pid=10000&issuetype=10001">HELP issue</a>
     or send an email to <a href="mailto:help@finos.org">help@finos.org</a>.
     <br/>&nbsp;<br/>
     Copyright 2018 <b class="finos">Fintech Open Source Foundation</b><br/>
