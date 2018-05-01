@@ -49,7 +49,8 @@ Options:
       --email-override                Overrides the default email behaviour of using a test email address for all outbound emails (DO NOT USE UNLESS YOU REALLY KNOW WHAT YOU'RE DOING!).
   -h, --help
 
-Available tools:<list of currently available tools is displayed here - this list will change as new tools are developed>
+Available tools:
+<list of currently available tools is displayed here - this list will change as new tools are developed>
 ```
 
 ## Developer Information
