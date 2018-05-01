@@ -7,7 +7,7 @@
 [![Dependencies Status](https://versions.deps.co/finos/metadata-tool/status.svg)](https://versions.deps.co/finos/metadata-tool)
 [![License](https://img.shields.io/github/license/finos/metadata-tool.svg)](https://github.com/finos/metadata-tool/blob/master/LICENSE)
 
-An easily extensible command line tool for performing various tasks with FINOS Foundation metadata.
+A command line tool for performing various tasks with [FINOS](https://www.finos.org/) metadata.
 
 ## Installation
 
