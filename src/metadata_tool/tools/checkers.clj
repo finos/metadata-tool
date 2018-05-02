@@ -230,7 +230,6 @@
 
 
 
-
 ; Convenience fn for performing all checks
 
 (defn check
