@@ -59,6 +59,13 @@ Available tools:
 
 [Bug Tracker](https://github.com/finos/metadata-tool/issues)
 
+### Branching Structure
+
+This project has two permanent branches called `master` and `dev`.  `master` is a
+[GitHub protected branch](https://help.github.com/articles/about-protected-branches/) and cannot be pushed to directly -
+all pushes (from project team members) and pull requests (from the wider community) must be made against the `dev`
+branch.  The project team will periodically merge outstanding changes from `dev` to `master`.
+
 ## License
 
 Copyright 2017 Fintech Open Source Foundation
