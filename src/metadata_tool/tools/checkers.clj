@@ -203,30 +203,29 @@
                    (println "❌ GitHub login" % "doesn't have any metadata."))
                 github-logins))))
 
-(defn- check-metadata-for-repos
+(defn- check-github-repos
   []
   (let [github-repo-urls       (set (map s/lower-case (remove s/blank? (mapcat #(gh/repos-urls (:github-url %)) (md/programs-metadata)))))
         metadata-repo-urls     (set (map s/lower-case (remove s/blank? (mapcat :github-urls (md/activities-metadata)))))
         repos-without-metadata (sort (set/difference github-repo-urls metadata-repo-urls))
-        metadata-without-repo  (sort (set/difference metadata-repo-urls github-repo-urls))]
+        metadatas-without-repo (sort (set/difference metadata-repo-urls github-repo-urls))]
     (doall (map #(println "❌ GitHub repo" % "has no metadata.") repos-without-metadata))
-    (doall (map #(println "❌ GitHub repo" % "has metadata, but does not exist in GitHub.") metadata-without-repo))))
+    (doall (map #(println "❌ GitHub repo" % "has metadata, but does not exist in GitHub.") metadatas-without-repo))))
 
 (defn- check-bitergia-projects
   []
-  (let [project-names                  (set (map :activity-name (md/projects-metadata)))
-        projects-missing-from-bitergia (sort (set/difference project-names (bi/all-projects)))]
-    (doall (map #(println "⚠️ Project" % "is missing from the Bitergia indexes.")
-                projects-missing-from-bitergia))))
+  (let [activity-names                   (set (map :activity-name (md/projects-metadata)))
+        activities-missing-from-bitergia (sort (set/difference activity-names (bi/all-projects)))]
+    (doall (map #(println "⚠️ Activity" % "is missing from the Bitergia indexes.")
+                activities-missing-from-bitergia))))
 
 (defn check-remote
   "Performs checks that require API calls out to GitHub, JIRA, Bitergia, etc. (which may be rate limited)."
   []
   (check-repo-admins)
   (check-metadata-for-collaborators)
-  (check-metadata-for-repos)
+  (check-github-repos)
   (check-bitergia-projects))
-
 
 
 
