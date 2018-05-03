@@ -203,6 +203,11 @@
                    (println "❌ GitHub login" % "doesn't have any metadata."))
                 github-logins))))
 
+(defn- check-github-orgs
+  []
+  (let [programs-with-invalid-github-orgs (filter #(nil? (gh/org (:github-org %))) (remove #(nil? (:github-org %)) (md/programs-metadata)))]
+    (doall (map #(println "❌ Program" (:program-name %) "has an invalid GitHub org:" (:github-org %)) programs-with-invalid-github-orgs))))
+
 (defn- check-github-repos
   []
   (let [github-repo-urls       (set (map s/lower-case (remove s/blank? (mapcat #(gh/repos-urls (:github-url %)) (md/programs-metadata)))))
@@ -224,6 +229,7 @@
   []
   (check-repo-admins)
   (check-metadata-for-collaborators)
+  (check-github-orgs)
   (check-github-repos)
   (check-bitergia-projects))
 
