@@ -25,29 +25,16 @@
 ; Map of (lowercase) tool names to tool fns
 (def ^:private tools
   {
-    "check-local"                                         tch/check-local
-    "check"                                               tch/check
-    "list-schemas"                                        tls/list-schemas
-    "list-people-with-clas"                               tls/list-people-with-clas
-;    "list-projects"                                       tls/list-projects
-;    "list-project-leads"                                  tls/list-project-leads
-;    "list-projects-repos-and-team"                        tls/list-projects-repos-and-team
-;    "list-project-contrib-history"                        tls/list-project-contrib-history-csv
-;    "list-org-users"                                      tls/list-org-users
-;    "list-active-projects"                                tls/list-active-projects
-;    "list-inactive-projects"                              tls/list-inactive-projects
-;    "list-projects-with-old-prs"                          tls/list-projects-with-old-prs
-;    "list-active-projects-with-old-prs"                   tls/list-active-projects-with-old-prs
-    "gen-bitergia-affiliation-data"                       tgn/gen-bitergia-affiliation-data
-    "gen-bitergia-organization-data"                      tgn/gen-bitergia-organization-data
-    "gen-bitergia-project-data"                           tgn/gen-bitergia-project-data
-;    "gen-project-metadata"                                tgn/gen-project-metadata
-;    "gen-project-meta-for-website"                        tgn/gen-project-meta-for-website
-    "gen-clabot-whitelist"                                tgn/gen-clabot-whitelist
-    "gen-catalogue-data"                                  tgn/gen-catalogue-data
-    "email-pmc-reports"                                   trp/email-pmc-reports
-;    "email-active-projects-with-unactioned-prs-report"    trp/email-active-projects-with-unactioned-prs-report
-;    "email-active-projects-with-unactioned-issues-report" trp/email-active-projects-with-unactioned-issues-report
+    "check-local"                    tch/check-local
+    "check"                          tch/check
+    "list-schemas"                   tls/list-schemas
+    "list-people-with-clas"          tls/list-people-with-clas
+    "gen-bitergia-affiliation-data"  tgn/gen-bitergia-affiliation-data
+    "gen-bitergia-organization-data" tgn/gen-bitergia-organization-data
+    "gen-bitergia-project-data"      tgn/gen-bitergia-project-data
+    "gen-clabot-whitelist"           tgn/gen-clabot-whitelist
+    "gen-catalogue-data"             tgn/gen-catalogue-data
+    "email-pmc-reports"              trp/email-pmc-reports
   })
 
 (def tool-names (sort (keys tools)))
