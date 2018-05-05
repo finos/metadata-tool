@@ -106,6 +106,7 @@
      (inactive_activities?? && inactive_activities?size > 0) ||
      (activities_with_unactioned_prs?? && activities_with_unactioned_prs?size > 0) ||
      (activities_with_unactioned_issues?? && activities_with_unactioned_issues?size > 0) ||
+     (unarchived_activities_with_non_standard_licenses?? && unarchived_activities_with_non_standard_licenses?size > 0) ||
      (archived_activities_that_arent_github_archived?? && archived_activities_that_arent_github_archived?size > 0) ||
      (activities_with_repos_without_issues_support?? && activities_with_repos_without_issues_support?size > 0)]
 
@@ -131,6 +132,12 @@
     [@render_table "Activities with Unactioned Issues"
                    "Here are the Projects and Working Groups that have unactioned issues, defined as being those with issues with more than ${old_issue_threshold_days} days of inactivity, that are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
                    activities_with_unactioned_issues /]
+  [/#if]
+
+  [#if unarchived_activities_with_non_standard_licenses?? && unarchived_activities_with_non_standard_licenses?size > 0]
+    [@render_table "Activities with GitHub Repositories with Non-standard Licenses"
+                   "Here are the Projects and Working Groups that have GitHub repositories that are neither <a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache 2.0</a> nor <a href='https://creativecommons.org/licenses/by/4.0/'>Creative Commons Attribution 4.0 International</a> licensed according to GitHub, and that are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
+                   unarchived_activities_with_non_standard_licenses /]
   [/#if]
 
   [#if archived_activities_that_arent_github_archived?? && archived_activities_that_arent_github_archived?size > 0]

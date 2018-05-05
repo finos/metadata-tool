@@ -122,14 +122,32 @@
   [repo-url]
   (map :login (committers repo-url)))
 
+(defn- org-fn
+  "Returns information on the given org, or nil if it doesn't exist."
+  [org-url]
+  (log/debug "Requesting org information for" org-url)
+  (if-not (s/blank? org-url)
+    (let [[org-name] (parse-github-url-path org-url)]
+      (if-not (s/blank? org-name)
+        (try
+          (to/specific-org org-name opts)
+          (catch clojure.lang.ExceptionInfo ei
+            (if-not (= 404 (:status (ex-data ei)))
+              (throw ei))))))))
+(def org (memoize org-fn))
+
 (defn- repos-fn
-  "Returns all repos in the given org."
+  "Returns all public repos in the given org, or nil if there aren't any."
   [org-url]
   (log/debug "Requesting repositories for" org-url)
   (if-not (s/blank? org-url)
     (let [[org-name] (parse-github-url-path org-url)]
       (if-not (s/blank? org-name)
-        (tr/org-repos org-name opts)))))
+        (try
+          (remove :private (tr/org-repos org-name opts))
+          (catch clojure.lang.ExceptionInfo ei
+            (if-not (= 404 (:status (ex-data ei)))
+              (throw ei))))))))
 (def repos (memoize repos-fn))
 
 (defn repos-urls
@@ -139,16 +157,17 @@
     (map :html_url (repos org-url))))
 
 (defn- repo-fn
-  "Retrieve the data for a specific repo."
+  "Retrieve the data for a specific public repo, or nil if it's private or invalid."
   [repo-url]
   (log/debug "Requesting repository details for" repo-url)
   (if repo-url
     (let [[org repo] (parse-github-url-path repo-url)]
       (if (and (not (s/blank? org))
                (not (s/blank? repo)))
-        (tr/specific-repo org repo opts)))))
+        (let [result (tr/specific-repo org repo opts)]
+          (if-not (:private result)
+            result))))))
 (def repo (memoize repo-fn))
-
 
 (defn- languages-fn
   "Retrieve the languages data for a specific repo."
@@ -160,4 +179,3 @@
                (not (s/blank? repo)))
         (tr/languages org repo opts)))))
 (def languages (memoize languages-fn))
-

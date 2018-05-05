@@ -77,51 +77,60 @@
 
 (defn email-pmc-reports
   []
-  (let [now-str                                        (tf/unparse (tf/formatter "yyyy-MM-dd h:mmaa ZZZ") (tm/now))
-        all-programs                                   (md/programs-metadata)
-        unarchived-activities-without-leads            (group-by :program-id
-                                                                 (remove #(= "ARCHIVED" (:state %))
-                                                                   (filter #(s/blank? (:lead-or-chair-person-id %))
-                                                                     (md/activities-metadata))))
-        inactive-unarchived-activities-metadata        (group-by :program-id
-                                                                 (remove #(= "ARCHIVED" (:state %))
-                                                                         (remove nil?
-                                                                                 (map md/activity-metadata-by-name
-                                                                                      (bi/inactive-projects inactive-project-threshold-days)))))
-        unarchived-activities-with-unactioned-prs      (group-by :program-id
-                                                                 (remove #(= "ARCHIVED" (:state %))
-                                                                         (remove nil?
-                                                                                 (map md/activity-metadata-by-name
-                                                                                      (bi/projects-with-old-prs old-pr-threshold-days)))))
-        unarchived-activities-with-unactioned-issues   (group-by :program-id
-                                                                 (remove #(= "ARCHIVED" (:state %))
-                                                                         (remove nil?
-                                                                                 (map md/activity-metadata-by-name
-                                                                                      (bi/projects-with-old-issues old-issue-threshold-days)))))
-        archived-activities-that-arent-github-archived (group-by :program-id
-                                                                 (remove #(some identity
-                                                                                (map (fn [gh-url] (:archived (gh/repo gh-url)))
-                                                                                     (:github-urls %)))
-                                                                         (filter #(and (= "ARCHIVED" (:state %))
-                                                                                       (pos? (count (:github-urls %))))
-                                                                                 (md/activities-metadata))))
-        activities-with-repos-without-issues-support   (group-by :program-id
-                                                                 (filter #(some identity (map (fn [gh-url] (not (:has_issues (gh/repo gh-url))))  ; Note underscore in :has_issues!
-                                                                                              (:github-urls %)))
-                                                                         (md/activities-metadata)))]
+  (let [now-str                                          (tf/unparse (tf/formatter "yyyy-MM-dd h:mmaa ZZZ") (tm/now))
+        all-programs                                     (md/programs-metadata)
+        unarchived-activities-without-leads              (group-by :program-id
+                                                                   (remove #(= "ARCHIVED" (:state %))
+                                                                     (filter #(s/blank? (:lead-or-chair-person-id %))
+                                                                       (md/activities-metadata))))
+        inactive-unarchived-activities-metadata          (group-by :program-id
+                                                                   (remove #(= "ARCHIVED" (:state %))
+                                                                           (remove nil?
+                                                                                   (map md/activity-metadata-by-name
+                                                                                        (bi/inactive-projects inactive-project-threshold-days)))))
+        unarchived-activities-with-unactioned-prs        (group-by :program-id
+                                                                   (remove #(= "ARCHIVED" (:state %))
+                                                                           (remove nil?
+                                                                                   (map md/activity-metadata-by-name
+                                                                                        (bi/projects-with-old-prs old-pr-threshold-days)))))
+        unarchived-activities-with-unactioned-issues     (group-by :program-id
+                                                                   (remove #(= "ARCHIVED" (:state %))
+                                                                           (remove nil?
+                                                                                   (map md/activity-metadata-by-name
+                                                                                        (bi/projects-with-old-issues old-issue-threshold-days)))))
+        unarchived-activities-with-non-standard-licenses (group-by :program-id
+                                                                   (filter #(some identity (map (fn [gh-url]
+                                                                                                  (let [gh-repo-license (s/lower-case (str (:spdx_id (:license (gh/repo gh-url)))))]  ; Note underscore in :spdx_id!
+                                                                                                    (and (not= gh-repo-license "apache-2.0")
+                                                                                                         (not= gh-repo-license "cc-by-4.0" ))))
+                                                                                                (:github-urls %)))
+                                                                           (remove #(= "ARCHIVED" (:state %)) (md/activities-metadata))))
+        archived-activities-that-arent-github-archived   (group-by :program-id
+                                                                   (remove #(some identity
+                                                                                  (map (fn [gh-url] (:archived (gh/repo gh-url)))
+                                                                                       (:github-urls %)))
+                                                                           (filter #(and (= "ARCHIVED" (:state %))
+                                                                                         (pos? (count (:github-urls %))))
+                                                                                   (md/activities-metadata))))
+        activities-with-repos-without-issues-support     (group-by :program-id
+                                                                   (filter #(some identity (map (fn [gh-url] (not (:has_issues (gh/repo gh-url))))  ; Note underscore in :has_issues!
+                                                                                                (:github-urls %)))
+                                                                           (md/activities-metadata)))
+        ]
     (doall (map #(send-email-to-pmc (:program-id %)
                                     (str (:program-short-name %) " PMC Report as at " now-str)
                                     (tem/render "emails/pmc-report.ftl"
-                                                { :now                                            now-str
-                                                  :inactive-days                                  inactive-project-threshold-days
-                                                  :old-pr-threshold-days                          old-pr-threshold-days
-                                                  :old-issue-threshold-days                       old-issue-threshold-days
-                                                  :program                                        %
-                                                  :unarchived-activities-without-leads            (seq (sort-by :activity-name (get unarchived-activities-without-leads            (:program-id %))))
-                                                  :inactive-activities                            (seq (sort-by :activity-name (get inactive-unarchived-activities-metadata        (:program-id %))))
-                                                  :activities-with-unactioned-prs                 (seq (sort-by :activity-name (get unarchived-activities-with-unactioned-prs      (:program-id %))))
-                                                  :activities-with-unactioned-issues              (seq (sort-by :activity-name (get unarchived-activities-with-unactioned-issues   (:program-id %))))
-                                                  :archived-activities-that-arent-github-archived (seq (sort-by :activity-name (get archived-activities-that-arent-github-archived (:program-id %))))
-                                                  :activities-with-repos-without-issues-support   (seq (sort-by :activity-name (get activities-with-repos-without-issues-support   (:program-id %))))
+                                                { :now                                              now-str
+                                                  :inactive-days                                    inactive-project-threshold-days
+                                                  :old-pr-threshold-days                            old-pr-threshold-days
+                                                  :old-issue-threshold-days                         old-issue-threshold-days
+                                                  :program                                          %
+                                                  :unarchived-activities-without-leads              (seq (sort-by :activity-name (get unarchived-activities-without-leads              (:program-id %))))
+                                                  :inactive-activities                              (seq (sort-by :activity-name (get inactive-unarchived-activities-metadata          (:program-id %))))
+                                                  :activities-with-unactioned-prs                   (seq (sort-by :activity-name (get unarchived-activities-with-unactioned-prs        (:program-id %))))
+                                                  :activities-with-unactioned-issues                (seq (sort-by :activity-name (get unarchived-activities-with-unactioned-issues     (:program-id %))))
+                                                  :unarchived-activities-with-non-standard-licenses (seq (sort-by :activity-name (get unarchived-activities-with-non-standard-licenses (:program-id %))))
+                                                  :archived-activities-that-arent-github-archived   (seq (sort-by :activity-name (get archived-activities-that-arent-github-archived   (:program-id %))))
+                                                  :activities-with-repos-without-issues-support     (seq (sort-by :activity-name (get activities-with-repos-without-issues-support     (:program-id %))))
                                                 } ))
                 all-programs))))
