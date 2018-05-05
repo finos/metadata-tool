@@ -225,7 +225,11 @@
 
 (defn- check-bitergia-projects
   []
-  (let [activity-names                   (set (map :activity-name (md/projects-metadata)))
+  (let [activity-names                   (set (map :activity-name
+                                                   (remove #(and (nil? (seq (:github-repos           %)))
+                                                                 (nil? (seq (:mailing-list-addresses %)))
+                                                                 (nil? (seq (:confluence-space-keys  %))))
+                                                           (md/activities-metadata))))
         activities-missing-from-bitergia (sort (set/difference activity-names (bi/all-projects)))]
     (doall (map #(println "⚠️ Activity" (activity-to-string (md/activity-metadata-by-name %)) "is missing from the Bitergia indexes.")
                 activities-missing-from-bitergia))))
