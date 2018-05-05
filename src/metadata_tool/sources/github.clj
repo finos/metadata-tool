@@ -85,16 +85,23 @@
   (if-not (s/blank? url)
     (remove s/blank? (s/split (:path (uri/uri url)) #"/"))))
 
+(defmacro ^:private call-gh
+  [& body]
+  `(try
+     ~@body
+     (catch clojure.lang.ExceptionInfo ei#
+       (if-not (= 404 (:status (ex-data ei#)))
+         (throw ei#)))))
 
 (defn- collaborators-fn
-  "Returns the collaborators for the given repo, or for all repos if none is provided."
+  "Returns the collaborators for the given repo, or nil if the URL is invalid."
   [repo-url]
   (log/debug "Requesting repository collaborators for" repo-url)
   (if-not (s/blank? repo-url)
     (let [[org repo] (parse-github-url-path repo-url)]
       (if (and (not (s/blank? org))
                (not (s/blank? repo)))
-        (remove #(some #{(:login %)} org-admins) (tr/collaborators org repo opts))))))
+        (remove #(some #{(:login %)} org-admins) (call-gh (tr/collaborators org repo opts)))))))
 (def collaborators (memoize collaborators-fn))
 
 (defn collaborator-logins
@@ -129,11 +136,7 @@
   (if-not (s/blank? org-url)
     (let [[org-name] (parse-github-url-path org-url)]
       (if-not (s/blank? org-name)
-        (try
-          (to/specific-org org-name opts)
-          (catch clojure.lang.ExceptionInfo ei
-            (if-not (= 404 (:status (ex-data ei)))
-              (throw ei))))))))
+        (call-gh (to/specific-org org-name opts))))))
 (def org (memoize org-fn))
 
 (defn- repos-fn
@@ -143,11 +146,7 @@
   (if-not (s/blank? org-url)
     (let [[org-name] (parse-github-url-path org-url)]
       (if-not (s/blank? org-name)
-        (try
-          (remove :private (tr/org-repos org-name opts))
-          (catch clojure.lang.ExceptionInfo ei
-            (if-not (= 404 (:status (ex-data ei)))
-              (throw ei))))))))
+        (remove :private (call-gh (tr/org-repos org-name opts)))))))
 (def repos (memoize repos-fn))
 
 (defn repos-urls
@@ -164,7 +163,7 @@
     (let [[org repo] (parse-github-url-path repo-url)]
       (if (and (not (s/blank? org))
                (not (s/blank? repo)))
-        (let [result (tr/specific-repo org repo opts)]
+        (let [result (call-gh (tr/specific-repo org repo opts))]
           (if-not (:private result)
             result))))))
 (def repo (memoize repo-fn))
@@ -177,5 +176,5 @@
     (let [[org repo] (parse-github-url-path repo-url)]
       (if (and (not (s/blank? org))
                (not (s/blank? repo)))
-        (tr/languages org repo opts)))))
+        (call-gh (tr/languages org repo opts))))))
 (def languages (memoize languages-fn))
