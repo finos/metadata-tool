@@ -190,7 +190,7 @@
 
 (defn- check-repo-admins
   []
-  (let [activities-with-github-urls (remove #(empty? (:github-urls %)) (md/activities-metadata))]
+  (let [activities-with-github-urls (sort-by activity-to-string (remove #(empty? (:github-urls %)) (md/activities-metadata)))]
     (doall
       (map #(doall
               (map (fn [github-url]
