@@ -50,7 +50,8 @@
 (defn gen-bitergia-project-data
   []
   (println (tem/render "bitergia-projects.ftl"
-                       { :activities (md/activities-metadata) }))
+                       { :programs   (md/programs-metadata)
+                         :activities (md/activities-metadata) }))
   (flush))
 
 
