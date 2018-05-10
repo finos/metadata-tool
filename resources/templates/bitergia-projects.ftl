@@ -9,7 +9,7 @@
     "confluence" : [ "https://finosfoundation.atlassian.net/wiki/" ]
   },
   "Foundation" : {
-    "meta"       : { "title" : "Foundation Wiki" },
+    "meta"       : { "title" : "Foundation" },
     "confluence" : [ "FINOS" ],
     "mbox"       : [ "announce /home/bitergia/mboxes/barnowl_symphony_announce" ]
   }[#if programs?? && programs?size > 0],[#list programs as program]
