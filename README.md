@@ -1,12 +1,12 @@
-<img align="right" width="40%" src="https://www.finos.org/hubfs/FINOS/finos-logo/FINOS_Icon_Wordmark_Name_RGB_horizontal.png">
-
-# metadata tool
-
 [![Build Status](https://travis-ci.com/finos/metadata-tool.svg?token=pqqpLyKQyKTy9sWFPywW&branch=master)](https://travis-ci.com/finos/metadata-tool)
 [![Open Issues](https://img.shields.io/github/issues/finos/metadata-tool.svg)](https://github.com/finos/metadata-tool/issues)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/finos/metadata-tool.svg)](http://isitmaintained.com/project/finos/metadata-tool "Average time to resolve an issue")
 [![Dependencies Status](https://versions.deps.co/finos/metadata-tool/status.svg)](https://versions.deps.co/finos/metadata-tool)
 [![License](https://img.shields.io/github/license/finos/metadata-tool.svg)](https://github.com/finos/metadata-tool/blob/master/LICENSE)
+
+<img align="right" width="40%" src="https://www.finos.org/hubfs/FINOS/finos-logo/FINOS_Icon_Wordmark_Name_RGB_horizontal.png">
+
+# metadata tool
 
 A command line tool for performing various tasks with [Fintech Open Source Foundation (FINOS)](https://www.finos.org/) metadata.
 
