@@ -1,4 +1,5 @@
 <img align="right" width="40%" src="https://www.finos.org/hubfs/FINOS/finos-logo/FINOS_Icon_Wordmark_Name_RGB_horizontal.png">
+
 # metadata tool
 
 [![Build Status](https://travis-ci.com/finos/metadata-tool.svg?token=pqqpLyKQyKTy9sWFPywW&branch=master)](https://travis-ci.com/finos/metadata-tool)
