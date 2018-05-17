@@ -20,7 +20,7 @@ metadata tool is configured via a single [EDN](https://github.com/edn-format/edn
 line.  This configuration file contains credentials for GitHub, Bitergia, and the tool's email account (used for sending
 email reports).
 
-See [the sample `config.edn` file](https://github.com/finos/metadata-tool/blob/master/resources/config.edn) for details.
+See [the default `config.edn` file](https://github.com/finos/metadata-tool/blob/master/resources/config.edn) for details.
 
 This file is loaded using the [aero](https://github.com/juxt/aero) library, which offers quite a bit
 of flexibility around how values are specified in the file (they can be read from environment variables,
