@@ -15,15 +15,16 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.main
-  (:require [clojure.string        :as s]
-            [clojure.java.io       :as io]
-            [clojure.stacktrace    :as st]
-            [clojure.tools.cli     :as cli]
-            [clojure.tools.logging :as log]
-            [aero.core             :as a]
-            [mount.core            :as mnt :refer [defstate]]
-            [metadata-tool.config  :as cfg]
-            [metadata-tool.core    :as c])
+  (:require [clojure.string          :as s]
+            [clojure.java.io         :as io]
+            [clojure.stacktrace      :as st]
+            [clojure.tools.cli       :as cli]
+            [clojure.tools.logging   :as log]
+            [aero.core               :as a]
+            [mount.core              :as mnt :refer [defstate]]
+            [metadata-tool.exit-code :as ec]
+            [metadata-tool.config    :as cfg]
+            [metadata-tool.core      :as c])
   (:gen-class))
 
 (def ^:private cli-opts
@@ -58,12 +59,13 @@
        (s/join \newline errors)))
 
 (defn- exit
-  ([status-code] (exit status-code nil))
-  ([status-code message]
-   (when-not (s/blank? message)
-     (println message)
-     (flush))
-   (System/exit status-code)))
+  ([exit-code] (exit exit-code nil))
+  ([exit-code message]
+    (ec/set-exit-code exit-code)
+    (when-not (s/blank? message)
+      (println message)
+      (flush))
+    (System/exit (ec/get-exit-code))))
 
 (defn -main
   [& args]
