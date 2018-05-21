@@ -222,7 +222,7 @@
   (let [github-urls   (mapcat :github-urls (md/activities-metadata))
         github-logins (sort (distinct (mapcat gh/collaborator-logins github-urls)))]
     (doall (map #(if-not (md/person-metadata-by-github-login %)
-                   (println "ℹ️ GitHub login" % "doesn't have any metadata."))
+                   (println "⚠️ GitHub login" % "doesn't have any metadata."))
                 github-logins))))
 
 (defn- check-github-orgs
