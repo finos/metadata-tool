@@ -212,7 +212,7 @@
               (map (fn [github-url]
                      (if (empty? (gh/admin-logins github-url))
                        (if (= "ARCHIVED" (:state %))
-                         (println "⚠️ GitHub Repository" github-url "in archived" (type-to-string (:type %)) (activity-to-string %) "has no admins, or they haven't accepted their invitations yet.")
+                         (println "ℹ️ GitHub Repository" github-url "in archived" (type-to-string (:type %)) (activity-to-string %) "has no admins, or they haven't accepted their invitations yet.")
                          (println "⚠️ GitHub Repository" github-url "in" (type-to-string (:type %)) (activity-to-string %) "has no admins, or they haven't accepted their invitations yet."))))
                    (:github-urls %)))
            activities-with-github-urls))))
@@ -222,7 +222,7 @@
   (let [github-urls   (mapcat :github-urls (md/activities-metadata))
         github-logins (sort (distinct (mapcat gh/collaborator-logins github-urls)))]
     (doall (map #(if-not (md/person-metadata-by-github-login %)
-                   (println "ℹ️ GitHub login" % "doesn't have any metadata."))
+                   (println "⚠️ GitHub login" % "doesn't have any metadata."))
                 github-logins))))
 
 (defn- check-github-orgs
@@ -237,8 +237,8 @@
         metadata-repo-urls     (set (map s/lower-case (remove s/blank? (mapcat :github-urls (md/activities-metadata)))))
         repos-without-metadata (sort (set/difference github-repo-urls metadata-repo-urls))
         metadatas-without-repo (sort (set/difference metadata-repo-urls github-repo-urls))]
-    (doall (map #(println "ℹ️ GitHub repo" % "has no metadata.") repos-without-metadata))
-    (doall (map #(println "ℹ️ GitHub repo" % "has metadata, but does not exist in GitHub.") metadatas-without-repo))))
+    (doall (map #(println "⚠️ GitHub repo" % "has no metadata.") repos-without-metadata))
+    (doall (map #(println "⚠️ GitHub repo" % "has metadata, but does not exist in GitHub.") metadatas-without-repo))))
 
 (defn- check-bitergia-projects
   []

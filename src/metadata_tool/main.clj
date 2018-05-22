@@ -63,8 +63,8 @@
   ([exit-code message]
     (ec/set-exit-code exit-code)
     (when-not (s/blank? message)
-      (println message)
-      (flush))
+      (println message))
+    (flush)
     (System/exit (ec/get-exit-code))))
 
 (defn -main
@@ -87,7 +87,8 @@
           (try
             (mnt/start)
             (doall (map #(do (log/info "Running tool" %)
-                             (c/run-tool %))
+                             (c/run-tool %)
+                             (flush))
                         arguments))
             (finally
               (mnt/stop)))
