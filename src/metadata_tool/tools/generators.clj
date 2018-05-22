@@ -32,27 +32,23 @@
 (defn gen-clabot-whitelist
   []
   (println (tem/render "clabot-whitelist.ftl"
-                        { :github-ids (sort (mapcat :github-logins (md/people-with-clas))) }))
-  (flush))
+                        { :github-ids (sort (mapcat :github-logins (md/people-with-clas))) })))
 
 (defn gen-bitergia-affiliation-data
   []
   (println (tem/render "bitergia-affiliations.ftl"
-                       { :people (md/people-metadata-with-organizations) }))
-  (flush))
+                       { :people (md/people-metadata-with-organizations) })))
 
 (defn gen-bitergia-organization-data
   []
   (println (tem/render "bitergia-organizations.ftl"
-                       { :organizations (md/organizations-metadata) }))
-  (flush))
+                       { :organizations (md/organizations-metadata) })))
 
 (defn gen-bitergia-project-data
   []
   (println (tem/render "bitergia-projects.ftl"
                        { :programs   (md/programs-metadata)
-                         :activities (md/activities-metadata) }))
-  (flush))
+                         :activities (md/activities-metadata) })))
 
 
 (defn- build-github-repo-data
@@ -105,6 +101,5 @@
                                    :cumulative-github-stats (accumulate-github-stats github-repos))))]
     (println (tem/render "catalogue.ftl"
                          { :activities activities-data
-                           :all-tags   (md/all-activity-tags) })))
-  (flush))
+                           :all-tags   (md/all-activity-tags) }))))
 

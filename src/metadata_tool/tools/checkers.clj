@@ -212,7 +212,7 @@
               (map (fn [github-url]
                      (if (empty? (gh/admin-logins github-url))
                        (if (= "ARCHIVED" (:state %))
-                         (println "⚠️ GitHub Repository" github-url "in archived" (type-to-string (:type %)) (activity-to-string %) "has no admins, or they haven't accepted their invitations yet.")
+                         (println "ℹ️ GitHub Repository" github-url "in archived" (type-to-string (:type %)) (activity-to-string %) "has no admins, or they haven't accepted their invitations yet.")
                          (println "⚠️ GitHub Repository" github-url "in" (type-to-string (:type %)) (activity-to-string %) "has no admins, or they haven't accepted their invitations yet."))))
                    (:github-urls %)))
            activities-with-github-urls))))
