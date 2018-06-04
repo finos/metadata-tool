@@ -28,9 +28,10 @@
             [tentacles.users       :as tu]
             [metadata-tool.config  :as cfg]))
 
-(def ^:private org-name           "finos")
+(def ^:private metadata-org-name  "finos")
 (def ^:private metadata-repo-name "metadata")
 (def ^:private org-admins         #{"ssf-admin" "finos-admin"})
+(def ^:private ignored-repo-names #{"clabot-config"})
 
 (defn- rm-rf
   [^java.io.File file]
@@ -52,7 +53,7 @@
           :start (str username ":" password))
 
 (defstate opts
-          :start {:throw-exceptions true :all-pages true :per-page 100 :auth auth :user-agent (str org-name " metadata tool")})
+          :start {:throw-exceptions true :all-pages true :per-page 100 :auth auth :user-agent (str metadata-org-name " metadata tool")})
 
 (defstate github-revision
           :start (:github-revision cfg/config))
@@ -68,7 +69,7 @@
                          _      (log/info "Cloning metadata repository to" result)
                          repo   (git/with-credentials ^String username
                                                       ^String password
-                                                      (git/git-clone (str "https://github.com/" org-name "/" metadata-repo-name) result))]
+                                                      (git/git-clone (str "https://github.com/" metadata-org-name "/" metadata-repo-name) result))]
                      (when-not (s/blank? github-revision)
                        (log/info "Checking out revision" github-revision)
                        (git/git-checkout repo github-revision))
@@ -146,7 +147,7 @@
   (if-not (s/blank? org-url)
     (let [[org-name] (parse-github-url-path org-url)]
       (if-not (s/blank? org-name)
-        (remove :private (call-gh (tr/org-repos org-name opts)))))))
+        (remove #(some #{(:name %)} ignored-repo-names) (remove :private (call-gh (tr/org-repos org-name opts))))))))
 (def repos (memoize repos-fn))
 
 (defn repos-urls
