@@ -179,3 +179,10 @@
                (not (s/blank? repo)))
         (call-gh (tr/languages org repo opts))))))
 (def languages (memoize languages-fn))
+
+(defn- user-fn
+  "Retrieve the data for a specific GitHub username, or nil if it's invalid."
+  [username]
+  (if username
+    (call-gh (tu/user username opts))))
+(def user (memoize user-fn))
