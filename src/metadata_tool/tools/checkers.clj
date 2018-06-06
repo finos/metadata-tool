@@ -244,7 +244,7 @@
   []
   (let [all-github-logins     (distinct (remove s/blank? (mapcat :github-logins (md/people-metadata))))
         invalid-github-logins (sort (filter #(nil? (gh/user %)) all-github-logins))]
-    (doall (map #(println "⚠️ GitHub username" % "is invalid.") invalid-github-logins))))
+    (doall (map #(println "ℹ️ GitHub username" % "is invalid (note: may be preserved for historical purposes).") invalid-github-logins))))
 
 (defn- check-bitergia-projects
   []
