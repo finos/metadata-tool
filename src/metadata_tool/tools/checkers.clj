@@ -240,6 +240,12 @@
     (doall (map #(println "⚠️ GitHub repo" % "has no metadata.") repos-without-metadata))
     (doall (map #(println "⚠️ GitHub repo" % "has metadata, but does not exist in GitHub.") metadatas-without-repo))))
 
+(defn- check-github-logins
+  []
+  (let [all-github-logins     (distinct (remove s/blank? (mapcat :github-logins (md/people-metadata))))
+        invalid-github-logins (sort (filter #(nil? (gh/user %)) all-github-logins))]
+    (doall (map #(println "⚠️ GitHub username" % "is invalid.") invalid-github-logins))))
+
 (defn- check-bitergia-projects
   []
   (let [activity-names                   (set (map :activity-name
@@ -258,6 +264,7 @@
   (check-metadata-for-collaborators)
   (check-github-orgs)
   (check-github-repos)
+  (check-github-logins)
   (check-bitergia-projects))
 
 
