@@ -20,7 +20,6 @@
             [clojure.tools.logging :as log]
             [mount.core            :as mnt :refer [defstate]]
             [lambdaisland.uri      :as uri]
-            [cheshire.core         :as ch]
             [clj-jgit.porcelain    :as git]
             [tentacles.core        :as tc]
             [tentacles.repos       :as tr]
