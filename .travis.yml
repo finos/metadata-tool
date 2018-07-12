@@ -4,5 +4,6 @@ lein: 2.8.1
 jdk:
   - oraclejdk8
   - oraclejdk9
+  - oraclejdk10
 
 script: lein check
