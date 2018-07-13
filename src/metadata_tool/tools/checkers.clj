@@ -254,7 +254,7 @@
                                                                  (nil? (seq (:confluence-space-keys  %))))
                                                            (md/activities-metadata))))
         activities-missing-from-bitergia (sort (set/difference activity-names (bi/all-projects)))]
-    (doall (map #(println "ℹ️ Activity" (activity-to-string (md/activity-metadata-by-name %)) "is missing from the Bitergia indexes.")
+    (doall (map #(println "ℹ️ Activity" (activity-to-string (md/activity-metadata-by-name %)) "is missing from the Bitergia indexes (this is normal if there's been no activity in GitHub, Confluence, and the mailing lists yet).")
                 activities-missing-from-bitergia))))
 
 (defn check-remote
