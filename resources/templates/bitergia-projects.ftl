@@ -33,6 +33,10 @@
     "github"     : [
       [#list activity.github_urls as github_url]
                      "${github_url}"[#if github_url != activity.github_urls?last],[/#if]
+      [/#list]],
+    "github:prs"     : [
+      [#list activity.github_urls as github_url]
+                     "${github_url}"[#if github_url != activity.github_urls?last],[/#if]
       [/#list]
                    ][/#if][#if activity.confluence_space_keys?? && activity.confluence_space_keys?size > 0],
     "confluence" : [
