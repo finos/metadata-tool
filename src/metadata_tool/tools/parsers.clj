@@ -50,7 +50,7 @@
 
 ; (metadata-tool.tools.parsers/rowToUser t1)
 (defn rowToUser
-    [row]
+    [row program activity meetingDate]
     (let [items   (sel/select (sel/child (sel/tag :tr) (sel/tag :td)) row)
           id      (resolveUser (first items))
           orgItem (second items)
@@ -59,25 +59,31 @@
                         (:content orgItem))
           ghid    (if (> (count items) 2) (:content (nth items 2)) nil)]
         (flatten
-            [id org ghid])))
+            [id org ghid program activity meetingDate])))
 
 ; (metadata-tool.tools.parsers/users (metadata-tool.sources.confluence/meetingRoster (metadata-tool.sources.confluence/pageId metadata-tool.tools.parsers/minute)))
 
 (def url "https://finosfoundation.atlassian.net/wiki/spaces/DT/pages/329383945/kdb+Working+Group")
 
 (defn users
-    [html]
+    [html program activity meetingDate]
     (let [tableHtml (tableHtml html)]
         (if (empty? tableHtml)
             []
             (let [table     (html/as-hickory (html/parse tableHtml))
                   selector  (sel/tag :tr)
                   rows      (sel/select selector table)]
-                    (map #(rowToUser %) rows)))))
+                    (map #(rowToUser % program activity meetingDate) rows)))))
+
+(defn parseDate
+    [title]
+    title)
 
 ; (metadata-tool.tools.parsers/meetingsRosters metadata-tool.tools.parsers/url)
 (defn meetingsRosters
     [program activity url]
-    (map 
-        #(users (cfl/meetingRoster %))
-        (cfl/meetingsIds (cfl/pageId url))))
+    (let [pageId (cfl/pageId url)
+          meetingDate (parseDate (cfl/pageTitle pageId))]
+        (map 
+            #(users (cfl/meetingRoster %) program activity meetingDate)
+            (cfl/meetingsIds pageId))))
