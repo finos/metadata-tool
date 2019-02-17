@@ -14,3 +14,7 @@ lib/
 .shell_history
 *.log
 /config.edn
+.classpath
+.project
+.settings
+.vscode

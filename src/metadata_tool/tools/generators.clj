@@ -15,19 +15,21 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.tools.generators
-  (:require [clojure.string                 :as s]
-            [clojure.set                    :as set]
-            [clojure.pprint                 :as pp]
-            [clojure.tools.logging          :as log]
-            [clojure.java.io                :as io]
-            [mount.core                     :as mnt :refer [defstate]]
-            [cheshire.core                  :as ch]
-            [metadata-tool.config           :as cfg]
-            [metadata-tool.template         :as tem]
-            [metadata-tool.sources.github   :as gh]
-            [metadata-tool.sources.bitergia :as bi]
-            [metadata-tool.sources.schemas  :as sch]
-            [metadata-tool.sources.metadata :as md]))
+  (:require [clojure.string                   :as s]
+            [clojure.set                      :as set]
+            [clojure.pprint                   :as pp]
+            [clojure.tools.logging            :as log]
+            [clojure.java.io                  :as io]
+            [mount.core                       :as mnt :refer [defstate]]
+            [cheshire.core                    :as ch]
+            [metadata-tool.tools.parsers      :as psrs]
+            [metadata-tool.config             :as cfg]
+            [metadata-tool.template           :as tem]
+            [metadata-tool.sources.confluence :as cfl]
+            [metadata-tool.sources.github     :as gh]
+            [metadata-tool.sources.bitergia   :as bi]
+            [metadata-tool.sources.schemas    :as sch]
+            [metadata-tool.sources.metadata   :as md]))
 
 (defn gen-clabot-whitelist
   []
@@ -103,3 +105,14 @@
                          { :activities activities-data
                            :all-tags   (md/all-activity-tags) }))))
 
+(defn gen-meeting-roster-data
+  []
+  (let [roster-data
+    (for [program-metadata (md/programs-metadata)
+          activity-metadata (:activities program-metadata)]
+          (if-let [pageUrl  (:confluence-page activity-metadata)]
+              (psrs/meetingsRosters
+                (:program-name program-metadata)
+                (:activity-name activity-metadata)
+                pageUrl)))]
+            (pp/pprint (remove nil? roster-data))))

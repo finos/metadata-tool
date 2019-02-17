@@ -13,6 +13,12 @@
     :password #env BITERGIA_PASSWORD
   }
 
+  :confluence
+  {
+    :username #env CONFLUENCE_USER
+    :password #env CONFLUENCE_PASSWORD
+  }
+
   :email
   {
     :host               #or [#env SMTP_SERVER "smtp.gmail.com"]
