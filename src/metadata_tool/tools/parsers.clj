@@ -24,6 +24,27 @@
 ; Meeting minute
 (def minute "https://finosfoundation.atlassian.net/wiki/spaces/DT/pages/486080560/kdb+WG+Minutes+-+2018.09.05")
 
+; (metadata-tool.tools.parsers/users (metadata-tool.sources.confluence/meetingRoster (metadata-tool.sources.confluence/pageId metadata-tool.tools.parsers/minute)))
+
+(def url "https://finosfoundation.atlassian.net/wiki/spaces/DT/pages/329383945/kdb+Working+Group")
+
+(def skipPages ["template" "archive"])
+
+(defn parseDate
+    [title]
+    title)
+
+(defn idAndTitle
+    [payload]
+    {:id (:id payload) :title (:title payload)})
+
+(defn skipPage
+    [pageTitle]
+    (> (count 
+        (filter #(s/includes? 
+            (s/upper-case pageTitle) 
+            (s/upper-case %)) skipPages)) 0))
+
 ; (metadata-tool.tools.parsers/tableHtml (metadata-tool.sources.confluence/meetingRoster (metadata-tool.sources.confluence/pageId metadata-tool.tools.parsers/minute)))
 ; (metadata-tool.tools.parsers/tableHtml (metadata-tool.sources.confluence/meetingRoster (metadata-tool.sources.confluence/pageId metadata-tool.sources.confluence/url)))
 (defn tableHtml
@@ -46,7 +67,9 @@
             (let [userKey (get (:attrs (first userElement)) (keyword "ri:userkey"))
                   body (:body (cfl/cget (str "user?expand=email&key=" userKey)))]
                 [(:email body) (:displayName body)])
-            (:content element))))
+            (if-let [name (:content element)]
+                [nil name]
+                nil))))
 
 ; (metadata-tool.tools.parsers/rowToUser t1)
 (defn rowToUser
@@ -58,29 +81,16 @@
                         (:content (first (sel/select sel/last-child orgItem)))
                         (:content orgItem))
           ghid    (if (> (count items) 2) (:content (nth items 2)) nil)]
-        (flatten
-            [id org ghid program activity meetingDate])))
-
-; (metadata-tool.tools.parsers/users (metadata-tool.sources.confluence/meetingRoster (metadata-tool.sources.confluence/pageId metadata-tool.tools.parsers/minute)))
-
-(def url "https://finosfoundation.atlassian.net/wiki/spaces/DT/pages/329383945/kdb+Working+Group")
-
-(def skipPages ["template" "archive"])
-
-(defn parseDate
-    [title]
-    title)
-
-(defn idAndTitle
-    [payload]
-    {:id (:id payload) :title (:title payload)})
-
-(defn skipPage
-    [pageTitle]
-    (> (count 
-        (filter #(s/includes? 
-            (s/upper-case pageTitle) 
-            (s/upper-case %)) skipPages)) 0))
+        (if-not (and (nil? id) (nil? org) (nil? ghid))    
+            {
+                :email (first id)
+                :name (apply str (second id))
+                :org (apply str org)
+                :ghid (apply str ghid)
+                :program program
+                :activity activity
+                :meetingDate meetingDate}
+            nil)))
 
 (defn meetingRoster
     [tableHtml pageTitle program activity]
@@ -120,6 +130,6 @@
     [program activity url]
     (let [pageId   (cfl/pageId url)
           subPages (idsAndTitles pageId)]
-        (map 
+        (remove nil? (flatten (map 
             #(parsePage % program activity)
-            subPages)))
+            subPages)))))
