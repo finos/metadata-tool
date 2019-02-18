@@ -85,10 +85,10 @@
           id         (resolve-user (first items))
           name       (second id)
           orgItem    (second items)
+          select-leaf   (sel/not (sel/has-child sel/any))
           org        (or 
                         (:content (first (sel/select sel/last-child orgItem)))
-                        (:content orgItem))
-          select-leaf   (sel/not (sel/has-child sel/any))
+                        (:content (first (sel/select select-leaf orgItem))))
           ghid          (if (> (count items) 2) (:content (first (sel/select select-leaf (nth items 2)))) nil)
           user-by-gh    (md/person-metadata-by-github-login-fn ghid)
           user-by-name  (md/person-metadata-by-fullname-fn name)
@@ -96,7 +96,7 @@
         (if-not (or
             (some #(= name %) ignore-names)
             (and 
-                (nil? id)
+                (nil? name)
                 (nil? org)
                 (nil? ghid))) {
                 :email (or 
@@ -111,7 +111,7 @@
                     (:organization-name (first (md/current-affiliations (:person-id user-by-email))))
                     (:organization-name (first (md/current-affiliations (:person-id user-by-name))))
                     (:organization-name (first (md/current-affiliations (:person-id user-by-gh))))
-                    (:content (first (sel/select select-leaf org))))
+                    org)
                 :ghid (or
                     (first (:github-logins user-by-email))
                     (first (:github-logins user-by-name))
