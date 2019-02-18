@@ -82,14 +82,23 @@
                         (:content (first (sel/select sel/last-child orgItem)))
                         (:content orgItem))
           ghid        (if (> (count items) 2) (:content (nth items 2)) nil)
-          userByGh    (md/person-metadata-by-github-login-fn ghid)
-          userByEmail (md/person-metadata-by-email-address-fn ghid)]
+          user-by-gh    (md/person-metadata-by-github-login-fn ghid)
+          user-by-email (md/person-metadata-by-email-address-fn (first id))]
         (if-not (and (nil? id) (nil? org) (nil? ghid))    
             {
-                :email (first id)
-                :name (apply str (second id))
-                :org (apply str org)
-                :ghid (apply str ghid)
+                :email (or 
+                    (first (:email-addresses user-by-email))
+                    (first (:email-addresses user-by-gh))
+                    (first id))
+                :name (or
+                    (:full-name user-by-email)
+                    (:full-name user-by-gh)
+                    (apply str (second id)))
+                :org (or
+                    (:organization-name (first (md/current-affiliations (:person-id user-by-email))))
+                    (:organization-name (first (md/current-affiliations (:person-id user-by-gh))))
+                    (apply str org))
+                :ghid ghid
                 :program program
                 :activity activity
                 :meeting-date meeting-date}
