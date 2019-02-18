@@ -17,6 +17,8 @@
 (ns metadata-tool.tools.parsers
     (:require [clojure.string                       :as s]
               [hickory.core                         :as html]
+              [clojure.java.io                      :as io]
+              [clojure.pprint                       :as pp]
               [hickory.select                       :as sel]
               [metadata-tool.sources.confluence     :as cfl]
               [metadata-tool.sources.metadata       :as md]
@@ -29,11 +31,21 @@
 
 (def url "https://finosfoundation.atlassian.net/wiki/spaces/DT/pages/329383945/kdb+Working+Group")
 
-(def skip-pages ["template" "archive"])
+(def skip-pages ["template" "archive" "YYYY-MM-DD"])
+
+(def years ["2019" "2018" "2017" "2016"])
 
 (defn parse-date
     [title]
-    title)
+    (let [title-parsed (s/replace title "." "-")
+          indexes (filter #(>= % 0) (remove nil? (map #(s/index-of title-parsed %) years)))]
+        (if (not-empty indexes)
+            (first (s/split
+                (subs
+                    title-parsed
+                    (first indexes))
+                #" "))
+        title)))
 
 (defn id-and-title
     [payload]
@@ -63,12 +75,13 @@
 ; (metadata-tool.tools.parsers/resolve-user t1)
 (defn resolve-user
     [element]
-    (let [user-element (sel/select (sel/descendant (sel/tag (keyword "ri:user"))) element)]
+    (let [user-element (sel/select (sel/descendant (sel/tag (keyword "ri:user"))) element)
+          select-leaf (sel/not (sel/has-child sel/any))]
         (if (not-empty user-element)
             (let [user-key (get (:attrs (first user-element)) (keyword "ri:userkey"))
                   body (:body (cfl/cget (str "user?expand=email&key=" user-key)))]
                 [(:email body) (:displayName body)])
-            (if-let [name (:content element)]
+            (if-let [name (:content (first (sel/select select-leaf element)))]
                 [nil name]
                 nil))))
 
@@ -81,9 +94,15 @@
           org        (or 
                         (:content (first (sel/select sel/last-child orgItem)))
                         (:content orgItem))
-          ghid        (if (> (count items) 2) (:content (nth items 2)) nil)
+          select-leaf   (sel/not (sel/has-child sel/any))
+          ghid          (if (> (count items) 2) (:content (first (sel/select select-leaf (nth items 2)))) nil)
           user-by-gh    (md/person-metadata-by-github-login-fn ghid)
           user-by-email (md/person-metadata-by-email-address-fn (first id))]
+        (println "==============")
+        (pp/pprint user-by-gh)
+        (println "-------")
+        (pp/pprint user-by-email)
+        (println "==============")
         (if-not (and (nil? id) (nil? org) (nil? ghid))    
             {
                 :email (or 
@@ -97,8 +116,11 @@
                 :org (or
                     (:organization-name (first (md/current-affiliations (:person-id user-by-email))))
                     (:organization-name (first (md/current-affiliations (:person-id user-by-gh))))
-                    (apply str org))
-                :ghid ghid
+                    (:content (first (sel/select select-leaf org))))
+                :ghid (or
+                    (:organization-name (first (md/current-affiliations (:person-id user-by-email))))
+                    (:organization-name (first (md/current-affiliations (:person-id user-by-gh))))
+                    ghid)
                 :program program
                 :activity activity
                 :meeting-date meeting-date}
@@ -145,3 +167,14 @@
         (remove nil? (flatten (map 
             #(parse-page % program activity)
             sub-pages)))))
+
+(defn roster-to-csv
+    [roster-data]
+    (with-open [writer (io/writer "roster-data.csv")]
+        (.write writer "email, name, org, github ID, program, activity, date\n")
+        (doall 
+        (map 
+            #(.write writer (str (s/join ", " (vals %)) "\n")) 
+            roster-data))
+        (.flush writer)))
+              

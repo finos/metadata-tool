@@ -17,15 +17,28 @@
 (ns metadata-tool.sources.confluence
     (:require [clojure.string        :as s]
               [clj-http.client       :as http]
+              [clj-http.conn-mgr     :as conn]
               [metadata-tool.config  :as cfg]
               ))
 
 (def host "https://finosfoundation.atlassian.net")
 
+(def cm (conn/make-reusable-conn-manager {}))
+(def client
+    (:http-client
+        (http/get host {
+            :connection-manager cm 
+            :cache true})))
+
 (defn cget [& args]
-    (http/get (str host "/wiki/rest/api/" (apply str args))
-        {:basic-auth [(:username (:confluence cfg/config)) (:password (:confluence cfg/config))]}))
-        
+    (http/get (str host "/wiki/rest/api/" (apply str args)) {
+        :basic-auth [
+            (:username (:confluence cfg/config))
+            (:password (:confluence cfg/config))]
+        :connection-manager cm 
+        :http-client client
+        :cache true
+        :as :json}))
 
 ; (metadata-tool.sources.confluence/page-id metadata-tool.sources.confluence/url)
 (defn page-id

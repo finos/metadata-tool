@@ -109,14 +109,17 @@
 (defn gen-meeting-roster-data
   []
   (let [roster-data
-    (for [program-metadata (md/programs-metadata)
-          activity-metadata (:activities program-metadata)]
-          (if-let [pageUrl  (:confluence-page activity-metadata)]
-              (psrs/meetings-rosters
-                (:program-name program-metadata)
-                (:activity-name activity-metadata)
-                pageUrl)))]
-            (pp/pprint (remove nil? roster-data))))
-            ; (with-open [writer (io/writer "roster-data.csv")]
-            ;   (csv/write-csv writer
-            ;     (remove nil? roster-data)))))
+        (remove nil? (flatten
+          (for [program-metadata (md/programs-metadata)
+                activity-metadata (:activities program-metadata)]
+            (let [program-name (:program-name program-metadata)
+                  activity-name (:activity-name activity-metadata)
+                  page-url  (:confluence-page activity-metadata)]
+              ; (println (str "Parsing " program-name " + " activity-name + " + " page-url))
+              (if-let [page-url  (:confluence-page activity-metadata)]
+                (psrs/meetings-rosters
+                  program-name
+                  activity-name
+                  page-url))))))]
+      (pp/pprint roster-data)
+      (psrs/roster-to-csv roster-data)))
