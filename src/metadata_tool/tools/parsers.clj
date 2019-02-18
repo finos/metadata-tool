@@ -24,16 +24,13 @@
               [metadata-tool.sources.metadata       :as md]
               ))
 
-; Meeting minute
-(def minute "https://finosfoundation.atlassian.net/wiki/spaces/DT/pages/486080560/kdb+WG+Minutes+-+2018.09.05")
-
-; (metadata-tool.tools.parsers/users (metadata-tool.sources.confluence/meeting-roster (metadata-tool.sources.confluence/page-id metadata-tool.tools.parsers/minute)))
-
-(def url "https://finosfoundation.atlassian.net/wiki/spaces/DT/pages/329383945/kdb+Working+Group")
-
 (def skip-pages ["template" "archive" "YYYY-MM-DD"])
 
 (def years ["2019" "2018" "2017" "2016"])
+
+(def ignore-names ["Individual's name"])
+
+(def not-nil? (complement nil?))
 
 (defn parse-date
     [title]
@@ -58,8 +55,6 @@
             (s/upper-case page-title) 
             (s/upper-case %)) skip-pages)) 0))
 
-; (metadata-tool.tools.parsers/table-html (metadata-tool.sources.confluence/meeting-roster (metadata-tool.sources.confluence/page-id metadata-tool.tools.parsers/minute)))
-; (metadata-tool.tools.parsers/table-html (metadata-tool.sources.confluence/meeting-roster (metadata-tool.sources.confluence/page-id metadata-tool.sources.confluence/url)))
 (defn table-html
     [html]
     (let [first-table (str (first (s/split html #"</table>")) "</table>")
@@ -72,7 +67,6 @@
                 (> (count after-h2-title) 1)
                 (second after-h2-title)))))
 
-; (metadata-tool.tools.parsers/resolve-user t1)
 (defn resolve-user
     [element]
     (let [user-element (sel/select (sel/descendant (sel/tag (keyword "ri:user"))) element)
@@ -82,14 +76,14 @@
                   body (:body (cfl/cget (str "user?expand=email&key=" user-key)))]
                 [(:email body) (:displayName body)])
             (if-let [name (:content (first (sel/select select-leaf element)))]
-                [nil name]
+                [nil (s/trim (apply str name))]
                 nil))))
 
-; (metadata-tool.tools.parsers/row-to-user t1)
 (defn row-to-user
     [row program activity meeting-date]
     (let [items      (sel/select (sel/child (sel/tag :tr) (sel/tag :td)) row)
           id         (resolve-user (first items))
+          name       (second id)
           orgItem    (second items)
           org        (or 
                         (:content (first (sel/select sel/last-child orgItem)))
@@ -97,30 +91,34 @@
           select-leaf   (sel/not (sel/has-child sel/any))
           ghid          (if (> (count items) 2) (:content (first (sel/select select-leaf (nth items 2)))) nil)
           user-by-gh    (md/person-metadata-by-github-login-fn ghid)
+          user-by-name  (md/person-metadata-by-fullname-fn name)
           user-by-email (md/person-metadata-by-email-address-fn (first id))]
-        (println "==============")
-        (pp/pprint user-by-gh)
-        (println "-------")
-        (pp/pprint user-by-email)
-        (println "==============")
-        (if-not (and (nil? id) (nil? org) (nil? ghid))    
-            {
+        (if-not (or
+            (some #(= name %) ignore-names)
+            (and 
+                (nil? id)
+                (nil? org)
+                (nil? ghid))) {
                 :email (or 
-                    (first (:email-addresses user-by-email))
+                    (first (:email-addresses user-by-name))
                     (first (:email-addresses user-by-gh))
                     (first id))
                 :name (or
                     (:full-name user-by-email)
                     (:full-name user-by-gh)
-                    (apply str (second id)))
+                    name)
                 :org (or
                     (:organization-name (first (md/current-affiliations (:person-id user-by-email))))
+                    (:organization-name (first (md/current-affiliations (:person-id user-by-name))))
                     (:organization-name (first (md/current-affiliations (:person-id user-by-gh))))
                     (:content (first (sel/select select-leaf org))))
                 :ghid (or
-                    (:organization-name (first (md/current-affiliations (:person-id user-by-email))))
-                    (:organization-name (first (md/current-affiliations (:person-id user-by-gh))))
-                    ghid)
+                    (first (:github-logins user-by-email))
+                    (first (:github-logins user-by-name))
+                    (first (:github-logins user-by-gh)))
+                    ; TODO - cannot rely on GitHub data as third column;
+                    ; right now it contains all sorts of data
+                    ; ghid)
                 :program program
                 :activity activity
                 :meeting-date meeting-date}
@@ -150,7 +148,6 @@
                         activity)))
             [])))
 
-; (metadata-tool.tools.parsers/ids-and-titles (metadata-tool.sources.confluence/page-id metadata-tool.sources.confluence/url))
 (defn ids-and-titles
     [id]
     (let [children (map #(id-and-title %) (cfl/children id))]
@@ -159,7 +156,6 @@
                 children
                 (map #(ids-and-titles (:id %)) children)))))
 
-; (metadata-tool.tools.parsers/meetings-rosters metadata-tool.tools.parsers/url)
 (defn meetings-rosters
     [program activity url]
     (let [page-id   (cfl/page-id url)

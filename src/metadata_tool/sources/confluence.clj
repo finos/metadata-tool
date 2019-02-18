@@ -40,22 +40,17 @@
         :cache true
         :as :json}))
 
-; (metadata-tool.sources.confluence/page-id metadata-tool.sources.confluence/url)
 (defn page-id
     [url]
     (nth 
         (s/split (s/replace url host "") #"/")
         5))
 
-; (metadata-tool.sources.confluence/content (metadata-tool.sources.confluence/page-id metadata-tool.sources.confluence/url))
 (defn content
     [id]
-    ; TODO - Invoke HTML parsing here
     (:value (:storage (:body (:body 
         (cget "content/" id "?expand=body.storage"))))))
 
-; (metadata-tool.sources.confluence/children (metadata-tool.sources.confluence/page-id metadata-tool.sources.confluence/url))
-; (metadata-tool.sources.confluence/children "notn")
 (defn children
     [id]
     (try

@@ -158,14 +158,28 @@
   "Person metadata of the given GitHub login, or nil if there is none."
   (memoize person-metadata-by-github-login-fn))
 
+(defn lower-emails
+  [item]
+  (map #(s/lower-case %) (:email-addresses item)))
+
 (defn person-metadata-by-email-address-fn
     [email-address]
     (if email-address
-      (first (filter #(some #{email-address} (:email-addresses %)) (people-metadata)))))
+      (first (filter #(some 
+                        #{(s/lower-case email-address)}
+                        (lower-emails %)) (people-metadata)))))
 (def person-metadata-by-email-address
   "Person metadata of the given email address, or nil if there is none."
   (memoize person-metadata-by-email-address-fn))
   
+(defn person-metadata-by-fullname-fn
+  [full-name]
+  (if full-name
+    (first (filter #(= full-name (:full-name %)) (people-metadata)))))
+(def person-metadata-by-fullname
+  "Person metadata of the given fullname, or nil if there is none."
+  (memoize person-metadata-by-email-address-fn))
+
 (defn- program-activities
   "A seq of the ids of all activities in the given program."
   [program-id]

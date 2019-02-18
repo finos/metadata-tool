@@ -110,16 +110,20 @@
   []
   (let [roster-data
         (remove nil? (flatten
-          (for [program-metadata (md/programs-metadata)
-                activity-metadata (:activities program-metadata)]
-            (let [program-name (:program-name program-metadata)
-                  activity-name (:activity-name activity-metadata)
-                  page-url  (:confluence-page activity-metadata)]
-              ; (println (str "Parsing " program-name " + " activity-name + " + " page-url))
-              (if-let [page-url  (:confluence-page activity-metadata)]
+          (for [program-metadata (md/programs-metadata)]
+            (let [program-name (:program-name program-metadata)]
+              (if-let [pmcConfluencePage (:pmc-confluence-page program-metadata)]
                 (psrs/meetings-rosters
                   program-name
-                  activity-name
-                  page-url))))))]
-      (pp/pprint roster-data)
+                  (str program-name " PMC")
+                  pmcConfluencePage))
+              (for [activity-metadata (:activities program-metadata)]
+                (let [activity-name (:activity-name activity-metadata)
+                page-url  (:confluence-page activity-metadata)]
+                  (if-let [page-url  (:confluence-page activity-metadata)]
+                    (psrs/meetings-rosters
+                      program-name
+                      activity-name
+                      page-url))))))))]
+      ; (pp/pprint roster-data)
       (psrs/roster-to-csv roster-data)))
