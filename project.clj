@@ -38,6 +38,7 @@
                           [org.slf4j/jul-to-slf4j                "1.7.25"]
                           [cheshire                              "5.8.0"]
                           [aero                                  "1.1.3"]
+                          [org.clojure/data.csv                  "0.1.4"]
                           [mount                                 "0.1.12"]
                           [enlive                                "1.1.6"]
                           [hickory                               "0.7.1"]

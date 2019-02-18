@@ -20,6 +20,7 @@
             [clojure.pprint                   :as pp]
             [clojure.tools.logging            :as log]
             [clojure.java.io                  :as io]
+            [clojure.data.csv                 :as csv]
             [mount.core                       :as mnt :refer [defstate]]
             [cheshire.core                    :as ch]
             [metadata-tool.tools.parsers      :as psrs]
@@ -116,3 +117,6 @@
                 (:activity-name activity-metadata)
                 pageUrl)))]
             (pp/pprint (remove nil? roster-data))))
+            ; (with-open [writer (io/writer "roster-data.csv")]
+            ;   (csv/write-csv writer
+            ;     (remove nil? roster-data)))))
