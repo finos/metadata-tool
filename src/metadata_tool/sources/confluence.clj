@@ -26,6 +26,10 @@
     (http/get (str host "/wiki/rest/api/" (apply str args))
         {:basic-auth [(:username (:confluence cfg/config)) (:password (:confluence cfg/config))]}))
 
+(defn pageTitle
+    [id]
+    (:title (:body (cget "content/" id))))
+
 ; (metadata-tool.sources.confluence/pageId metadata-tool.sources.confluence/url)
 (defn pageId
     [url]
@@ -50,10 +54,14 @@
         ; tried with (:status (:data e))
         (catch Exception e [])))
 
+(defn idAndTitle
+    [payload]
+    {:id (:id payload) :title (:title payload)})
+
 ; (metadata-tool.sources.confluence/meetingsIds (metadata-tool.sources.confluence/pageId metadata-tool.sources.confluence/url))
 (defn meetingsIds
     [id]
-    (let [children (map #(:id %) (children id))]
+    (let [children (map #(idAndTitle %) (children id))]
             (flatten (concat 
                 children
-                (map #(meetingsIds %) children)))))
+                (map #(meetingsIds (:id %)) children)))))

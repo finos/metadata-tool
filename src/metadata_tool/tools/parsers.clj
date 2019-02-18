@@ -65,9 +65,14 @@
 
 (def url "https://finosfoundation.atlassian.net/wiki/spaces/DT/pages/329383945/kdb+Working+Group")
 
+(defn parseDate
+    [title]
+    title)
+
 (defn users
-    [html program activity meetingDate]
-    (let [tableHtml (tableHtml html)]
+    [html pageTitle program activity]
+    (let [tableHtml (tableHtml html)
+          meetingDate (parseDate pageTitle)]
         (if (empty? tableHtml)
             []
             (let [table     (html/as-hickory (html/parse tableHtml))
@@ -75,15 +80,15 @@
                   rows      (sel/select selector table)]
                     (map #(rowToUser % program activity meetingDate) rows)))))
 
-(defn parseDate
-    [title]
-    title)
+(defn parsePage
+    [pageData program activity]
+    (users 
+        (cfl/meetingRoster (:id pageData)) (:title pageData) program activity))
 
 ; (metadata-tool.tools.parsers/meetingsRosters metadata-tool.tools.parsers/url)
 (defn meetingsRosters
     [program activity url]
-    (let [pageId (cfl/pageId url)
-          meetingDate (parseDate (cfl/pageTitle pageId))]
+    (let [pageId (cfl/pageId url)]
         (map 
-            #(users (cfl/meetingRoster %) program activity meetingDate)
+            #(parsePage % program activity)
             (cfl/meetingsIds pageId))))
