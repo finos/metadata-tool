@@ -28,7 +28,7 @@
 
 (def years ["2019" "2018" "2017" "2016"])
 
-(def ignore-names ["Individual's name"])
+(def ignore-names ["Individual's name" "Other Attendees" "FINOS Foundation"])
 
 (def not-nil? (complement nil?))
 
