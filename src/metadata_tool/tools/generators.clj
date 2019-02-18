@@ -106,24 +106,31 @@
                          { :activities activities-data
                            :all-tags   (md/all-activity-tags) }))))
 
+(defn- gen-activity-roster
+  [program-name activity-metadata]
+  (let [activity-name (:activity-name activity-metadata)]
+    (if-let [page-url (:confluence-page activity-metadata)]
+      (psrs/meetings-rosters
+        program-name
+        activity-name
+        page-url))))
+
+(defn- gen-program-roster
+  [program-metadata]
+  (let [program-name (:program-short-name program-metadata)] [
+    (if-let [pmc-confluence-page (:pmc-confluence-page program-metadata)]
+      (psrs/meetings-rosters
+        program-name
+        (str program-name " PMC")
+        pmc-confluence-page))
+    (map #(gen-activity-roster program-name %) (:activities program-metadata))]))
+
 (defn gen-meeting-roster-data
   []
-  (let [roster-data
-        (remove nil? (flatten
-          (for [program-metadata (md/programs-metadata)]
-            (let [program-name (:program-name program-metadata)]
-              (if-let [pmcConfluencePage (:pmc-confluence-page program-metadata)]
-                (psrs/meetings-rosters
-                  program-name
-                  (str program-name " PMC")
-                  pmcConfluencePage))
-              (for [activity-metadata (:activities program-metadata)]
-                (let [activity-name (:activity-name activity-metadata)
-                page-url  (:confluence-page activity-metadata)]
-                  (if-let [page-url  (:confluence-page activity-metadata)]
-                    (psrs/meetings-rosters
-                      program-name
-                      activity-name
-                      page-url))))))))]
-      ; (pp/pprint roster-data)
+  (let [programs (md/programs-metadata)
+        roster-data
+          (remove nil? (flatten
+            (map 
+              #(gen-program-roster %)
+              programs)))]
       (psrs/roster-to-csv roster-data)))
