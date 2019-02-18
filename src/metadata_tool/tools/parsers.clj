@@ -18,69 +18,72 @@
     (:require [clojure.string                       :as s]
               [hickory.core                         :as html]
               [hickory.select                       :as sel]
-              [metadata-tool.sources.confluence      :as cfl]
+              [metadata-tool.sources.confluence     :as cfl]
+              [metadata-tool.sources.metadata       :as md]
               ))
 
 ; Meeting minute
 (def minute "https://finosfoundation.atlassian.net/wiki/spaces/DT/pages/486080560/kdb+WG+Minutes+-+2018.09.05")
 
-; (metadata-tool.tools.parsers/users (metadata-tool.sources.confluence/meetingRoster (metadata-tool.sources.confluence/pageId metadata-tool.tools.parsers/minute)))
+; (metadata-tool.tools.parsers/users (metadata-tool.sources.confluence/meeting-roster (metadata-tool.sources.confluence/page-id metadata-tool.tools.parsers/minute)))
 
 (def url "https://finosfoundation.atlassian.net/wiki/spaces/DT/pages/329383945/kdb+Working+Group")
 
-(def skipPages ["template" "archive"])
+(def skip-pages ["template" "archive"])
 
-(defn parseDate
+(defn parse-date
     [title]
     title)
 
-(defn idAndTitle
+(defn id-and-title
     [payload]
     {:id (:id payload) :title (:title payload)})
 
-(defn skipPage
-    [pageTitle]
+(defn skip-page
+    [page-title]
     (> (count 
         (filter #(s/includes? 
-            (s/upper-case pageTitle) 
-            (s/upper-case %)) skipPages)) 0))
+            (s/upper-case page-title) 
+            (s/upper-case %)) skip-pages)) 0))
 
-; (metadata-tool.tools.parsers/tableHtml (metadata-tool.sources.confluence/meetingRoster (metadata-tool.sources.confluence/pageId metadata-tool.tools.parsers/minute)))
-; (metadata-tool.tools.parsers/tableHtml (metadata-tool.sources.confluence/meetingRoster (metadata-tool.sources.confluence/pageId metadata-tool.sources.confluence/url)))
-(defn tableHtml
+; (metadata-tool.tools.parsers/table-html (metadata-tool.sources.confluence/meeting-roster (metadata-tool.sources.confluence/page-id metadata-tool.tools.parsers/minute)))
+; (metadata-tool.tools.parsers/table-html (metadata-tool.sources.confluence/meeting-roster (metadata-tool.sources.confluence/page-id metadata-tool.sources.confluence/url)))
+(defn table-html
     [html]
-    (let [firstTable (str (first (s/split html #"</table>")) "</table>")
-            afterH1Title (s/split firstTable #"<h1>Attendees</h1>")
-            afterH2Title (s/split firstTable #"<h2>Attendees</h2>")]
+    (let [first-table (str (first (s/split html #"</table>")) "</table>")
+            after-h1-title (s/split first-table #"<h1>Attendees</h1>")
+            after-h2-title (s/split first-table #"<h2>Attendees</h2>")]
         (if 
-            (> (count afterH1Title) 1)
-            (second afterH1Title)
+            (> (count after-h1-title) 1)
+            (second after-h1-title)
             (if 
-                (> (count afterH2Title) 1)
-                (second afterH2Title)))))
+                (> (count after-h2-title) 1)
+                (second after-h2-title)))))
 
-; (metadata-tool.tools.parsers/resolveUser t1)
-(defn resolveUser
+; (metadata-tool.tools.parsers/resolve-user t1)
+(defn resolve-user
     [element]
-    (let [userElement (sel/select (sel/descendant (sel/tag (keyword "ri:user"))) element)]
-        (if (not-empty userElement)
-            (let [userKey (get (:attrs (first userElement)) (keyword "ri:userkey"))
-                  body (:body (cfl/cget (str "user?expand=email&key=" userKey)))]
+    (let [user-element (sel/select (sel/descendant (sel/tag (keyword "ri:user"))) element)]
+        (if (not-empty user-element)
+            (let [user-key (get (:attrs (first user-element)) (keyword "ri:userkey"))
+                  body (:body (cfl/cget (str "user?expand=email&key=" user-key)))]
                 [(:email body) (:displayName body)])
             (if-let [name (:content element)]
                 [nil name]
                 nil))))
 
-; (metadata-tool.tools.parsers/rowToUser t1)
-(defn rowToUser
-    [row program activity meetingDate]
-    (let [items   (sel/select (sel/child (sel/tag :tr) (sel/tag :td)) row)
-          id      (resolveUser (first items))
-          orgItem (second items)
-          org     (or 
+; (metadata-tool.tools.parsers/row-to-user t1)
+(defn row-to-user
+    [row program activity meeting-date]
+    (let [items      (sel/select (sel/child (sel/tag :tr) (sel/tag :td)) row)
+          id         (resolve-user (first items))
+          orgItem    (second items)
+          org        (or 
                         (:content (first (sel/select sel/last-child orgItem)))
                         (:content orgItem))
-          ghid    (if (> (count items) 2) (:content (nth items 2)) nil)]
+          ghid        (if (> (count items) 2) (:content (nth items 2)) nil)
+          userByGh    (md/person-metadata-by-github-login-fn ghid)
+          userByEmail (md/person-metadata-by-email-address-fn ghid)]
         (if-not (and (nil? id) (nil? org) (nil? ghid))    
             {
                 :email (first id)
@@ -89,47 +92,47 @@
                 :ghid (apply str ghid)
                 :program program
                 :activity activity
-                :meetingDate meetingDate}
+                :meeting-date meeting-date}
             nil)))
 
-(defn meetingRoster
-    [tableHtml pageTitle program activity]
-    (let [meetingDate (parseDate pageTitle)
+(defn meeting-roster
+    [table-html page-title program activity]
+    (let [meeting-date (parse-date page-title)
           selector    (sel/tag :tr)]
-        (let [table (html/as-hickory (html/parse tableHtml))
+        (let [table (html/as-hickory (html/parse table-html))
               rows  (sel/select selector table)]
             (map 
-                #(rowToUser % program activity meetingDate)
+                #(row-to-user % program activity meeting-date)
                 rows))))
 
-(defn parsePage
-    [pageData program activity]
-    (let [content (cfl/content (:id pageData))
-          title (:title pageData)]
-        (if-not (skipPage title)
-            (let [tableHtml (tableHtml (cfl/content (:id pageData)))]
-                (if-not (empty? tableHtml)
-                    (meetingRoster 
-                        tableHtml
+(defn parse-page
+    [page-data program activity]
+    (let [content (cfl/content (:id page-data))
+          title (:title page-data)]
+        (if-not (skip-page title)
+            (let [table-html (table-html (cfl/content (:id page-data)))]
+                (if-not (empty? table-html)
+                    (meeting-roster 
+                        table-html
                         title
                         program
                         activity)))
             [])))
 
-; (metadata-tool.tools.parsers/idsAndTitles (metadata-tool.sources.confluence/pageId metadata-tool.sources.confluence/url))
-(defn idsAndTitles
+; (metadata-tool.tools.parsers/ids-and-titles (metadata-tool.sources.confluence/page-id metadata-tool.sources.confluence/url))
+(defn ids-and-titles
     [id]
-    (let [children (map #(idAndTitle %) (cfl/children id))]
+    (let [children (map #(id-and-title %) (cfl/children id))]
         (flatten
             (concat 
                 children
-                (map #(idsAndTitles (:id %)) children)))))
+                (map #(ids-and-titles (:id %)) children)))))
 
-; (metadata-tool.tools.parsers/meetingsRosters metadata-tool.tools.parsers/url)
-(defn meetingsRosters
+; (metadata-tool.tools.parsers/meetings-rosters metadata-tool.tools.parsers/url)
+(defn meetings-rosters
     [program activity url]
-    (let [pageId   (cfl/pageId url)
-          subPages (idsAndTitles pageId)]
+    (let [page-id   (cfl/page-id url)
+          sub-pages (ids-and-titles page-id)]
         (remove nil? (flatten (map 
-            #(parsePage % program activity)
-            subPages)))))
+            #(parse-page % program activity)
+            sub-pages)))))

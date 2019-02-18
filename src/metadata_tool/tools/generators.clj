@@ -112,7 +112,7 @@
     (for [program-metadata (md/programs-metadata)
           activity-metadata (:activities program-metadata)]
           (if-let [pageUrl  (:confluence-page activity-metadata)]
-              (psrs/meetingsRosters
+              (psrs/meetings-rosters
                 (:program-name program-metadata)
                 (:activity-name activity-metadata)
                 pageUrl)))]
