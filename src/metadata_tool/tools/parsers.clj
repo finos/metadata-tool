@@ -60,12 +60,17 @@
     (let [first-table (str (first (s/split html #"</table>")) "</table>")
             after-h1-title (s/split first-table #"<h1>Attendees</h1>")
             after-h2-title (s/split first-table #"<h2>Attendees</h2>")]
-        (if 
-            (> (count after-h1-title) 1)
-            (second after-h1-title)
-            (if 
-                (> (count after-h2-title) 1)
-                (second after-h2-title)))))
+        (let [payload
+                (if 
+                    (> (count after-h1-title) 1)
+                    (second after-h1-title)
+                    (if 
+                        (> (count after-h2-title) 1)
+                        (second after-h2-title)))]
+            (if (and
+                    payload
+                    (s/starts-with? (s/trim payload) "<table"))
+                (s/trim payload)))))
 
 (defn resolve-user
     [element]
@@ -87,8 +92,8 @@
           orgItem    (second items)
           select-leaf   (sel/not (sel/has-child sel/any))
           org        (or 
-                        (:content (first (sel/select sel/last-child orgItem)))
-                        (:content (first (sel/select select-leaf orgItem))))
+                        (apply str (:content (first (sel/select sel/last-child orgItem))))
+                        (apply str (:content (first (sel/select select-leaf orgItem)))))
           ghid          (if (> (count items) 2) (:content (first (sel/select select-leaf (nth items 2)))) nil)
           user-by-gh    (md/person-metadata-by-github-login-fn ghid)
           user-by-name  (md/person-metadata-by-fullname-fn name)
@@ -96,9 +101,9 @@
         (if-not (or
             (some #(= name %) ignore-names)
             (and 
-                (nil? name)
-                (nil? org)
-                (nil? ghid))) {
+                (s/blank? name)
+                (s/blank? org)
+                (s/blank? ghid))) {
                 :email (or 
                     (first (:email-addresses user-by-name))
                     (first (:email-addresses user-by-gh))
