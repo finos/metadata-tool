@@ -21,29 +21,27 @@
               [metadata-tool.config  :as cfg]
               ))
 
-(def host "https://finosfoundation.atlassian.net")
-
 (def cm (conn/make-reusable-conn-manager {}))
-(def client
+(defn client []
     (:http-client
-        (http/get host {
+        (http/get (:host (:confluence cfg/config)) {
             :connection-manager cm 
             :cache true})))
 
 (defn cget [& args]
-    (http/get (str host "/wiki/rest/api/" (apply str args)) {
+    (http/get (str (:host (:confluence cfg/config)) "/wiki/rest/api/" (apply str args)) {
         :basic-auth [
             (:username (:confluence cfg/config))
             (:password (:confluence cfg/config))]
         :connection-manager cm 
-        :http-client client
+        :http-client (client)
         :cache true
         :as :json}))
 
 (defn page-id
     [url]
     (nth 
-        (s/split (s/replace url host "") #"/")
+        (s/split (s/replace url (:host (:confluence cfg/config)) "") #"/")
         5))
 
 (defn content

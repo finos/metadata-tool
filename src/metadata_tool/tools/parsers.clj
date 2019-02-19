@@ -21,27 +21,9 @@
               [clojure.pprint                       :as pp]
               [hickory.select                       :as sel]
               [metadata-tool.sources.confluence     :as cfl]
+              [metadata-tool.config                 :as cfg]
               [metadata-tool.sources.metadata       :as md]
               ))
-
-(def skip-pages ["template" "archive" "YYYY-MM-DD"])
-
-(def years ["2019" "2018" "2017" "2016"])
-
-(def ignore-names ["Individual's name" "Other Attendees" "FINOS Foundation"])
-
-(def remove-from-names ["(PMC Lead)" "(Observer)" "(Chair)" "(Call-in User)" "(Deactivated)"])
-
-(def acronyms {
-    "Anton" "Anton Nikolaev"
-    "Saori" "Saori Fotenos"
-    "JT" "Jonathan Teper"
-    "Rhyddian" "Rhyddian Olds"
-    "Slava" "Slava Kryukov"
-    "Svyatoslav (Slava) Kryukov" "Slava Kryukov"
-    "Will Quan" "William Quan"
-    "Gab Columbro" "Gabriele Columbro"
-})
 
 (def not-nil? (complement nil?))
 
@@ -51,19 +33,22 @@
         nil
         (if (empty? to-remove)
             string
-            (if-let [acronym (get acronyms string)]
+            (if-let [acronym (get (:acronyms (:confluence cfg/config)) string)]
                 acronym
-                (parse-name
+                (s/trim (parse-name
                     (s/replace
                         string
                         (first to-remove)
                         "")
-                    (rest to-remove))))))
+                    (rest to-remove)))))))
 
 (defn parse-date
     [title]
     (let [title-parsed (s/replace title "." "-")
-          indexes (filter #(>= % 0) (remove nil? (map #(s/index-of title-parsed %) years)))]
+          indexes 
+            (filter #(>= % 0) 
+                (remove nil? (map #(s/index-of title-parsed %)
+                (:years (:confluence cfg/config)))))]
         (if (not-empty indexes)
             (first (s/split
                 (subs
@@ -81,7 +66,7 @@
     (> (count 
         (filter #(s/includes? 
             (s/upper-case page-title) 
-            (s/upper-case %)) skip-pages)) 0))
+            (s/upper-case %)) (:skip-pages (:confluence cfg/config)))) 0))
 
 (defn table-html
     [html]
@@ -116,7 +101,7 @@
     [row program activity meeting-date]
     (let [items      (sel/select (sel/child (sel/tag :tr) (sel/tag :td)) row)
           id         (resolve-user (first items))
-          name       (parse-name (second id) remove-from-names)
+          name       (parse-name (second id) (:remove-from-names (:confluence cfg/config)))
           orgItem    (second items)
           select-leaf   (sel/not (sel/has-child sel/any))
           org        (or 
@@ -127,7 +112,7 @@
           user-by-name  (md/person-metadata-by-fullname-fn name)
           user-by-email (md/person-metadata-by-email-address-fn (first id))]
         (if-not (or
-            (some #(= name %) ignore-names)
+            (some #(= name %) (:ignore-names (:confluence cfg/config)))
             (and 
                 (s/blank? name)
                 (s/blank? org)
