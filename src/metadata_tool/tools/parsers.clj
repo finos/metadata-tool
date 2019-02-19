@@ -35,12 +35,14 @@
             string
             (if-let [acronym (get (:acronyms (:confluence cfg/config)) string)]
                 acronym
-                (s/trim (parse-name
-                    (s/replace
-                        string
-                        (first to-remove)
-                        "")
-                    (rest to-remove)))))))
+                (s/replace 
+                    (s/trim (parse-name
+                        (s/replace
+                            string
+                            (first to-remove)
+                            "")
+                        (rest to-remove)))
+                    "\u00A0" "")))))
 
 (defn parse-date
     [title]
@@ -111,6 +113,11 @@
           user-by-gh    (md/person-metadata-by-github-login-fn ghid)
           user-by-name  (md/person-metadata-by-fullname-fn name)
           user-by-email (md/person-metadata-by-email-address-fn (first id))]
+        ; (if-not (s/blank? name)
+        ;     (let []
+        ;         (print (str "'" name "' '"))
+        ;         (print (Character/codePointAt name (dec (count name))))
+        ;         (println "'" )))
         (if-not (or
             (some #(= name %) (:ignore-names (:confluence cfg/config)))
             (and 
