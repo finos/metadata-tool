@@ -21,7 +21,7 @@
     :skip-pages ["template" "archive" "YYYY-MM-DD"]
     :years ["2019" "2018" "2017" "2016"]
     :ignore-names ["Individual's name" "Other Attendees" "FINOS Foundation" "TBD"]
-    :remove-from-names ["(PMC Lead)" "(Observer)" "(Chair)" "(Call-in User)"]
+    :remove-from-names ["(PMC Lead)" "(Observer)" "(Chair)" "(Call-in User)" "(Deactivated)"]
     :acronyms {
         "Anton" "Anton Nikolaev"
         "Saori" "Saori Fotenos"
@@ -31,6 +31,8 @@
         "Svyatoslav (Slava) Kryukov" "Slava Kryukov"
         "Will Quan" "William Quan"
         "Gab Columbro" "Gabriele Columbro"
+        "Nilesh Bhattad" "Nilesh R. Bhattad"
+        "Peter Smulovic" "Peter Smulovics"
     }
   }
 

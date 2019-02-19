@@ -27,6 +27,15 @@
 
 (def not-nil? (complement nil?))
 
+(defn parse-string
+    [string]
+    (if (s/blank? string)
+        nil
+        (s/replace
+            (s/trim string)
+            "\u00A0"
+            "")))
+
 (defn parse-name
     [string to-remove]
     (if (s/blank? string)
@@ -35,14 +44,12 @@
             string
             (if-let [acronym (get (:acronyms (:confluence cfg/config)) string)]
                 acronym
-                (s/replace 
-                    (s/trim (parse-name
+                    (parse-name
                         (s/replace
                             string
                             (first to-remove)
                             "")
-                        (rest to-remove)))
-                    "\u00A0" "")))))
+                        (rest to-remove))))))
 
 (defn parse-date
     [title]
@@ -103,7 +110,7 @@
     [row program activity meeting-date]
     (let [items      (sel/select (sel/child (sel/tag :tr) (sel/tag :td)) row)
           id         (resolve-user (first items))
-          name       (parse-name (second id) (:remove-from-names (:confluence cfg/config)))
+          name       (parse-name (parse-string (second id)) (:remove-from-names (:confluence cfg/config)))
           orgItem    (second items)
           select-leaf   (sel/not (sel/has-child sel/any))
           org        (or 
