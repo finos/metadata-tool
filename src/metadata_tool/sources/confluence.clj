@@ -21,14 +21,26 @@
               [metadata-tool.config  :as cfg]
               ))
 
+; TODO - sanitize payload, to speed up processing and avoid parse-string in parsers.clj
+; (defn remove-unwanted-chars
+;     [string]
+;     (if (s/blank? string)
+;         string
+;         (s/replace string "\u00A0" "")))
+; 
+; (defn sanitize-body [] (fn [req] (update req :body (remove-unwanted-chars req))))
+
 (def cm (conn/make-reusable-conn-manager {}))
 (defn client []
     (:http-client
+        ; (http/with-middleware [sanitize-body]
         (http/get (:host (:confluence cfg/config)) {
             :connection-manager cm 
             :cache true})))
+            ; :cache true}))))
 
 (defn cget [& args]
+    ; (http/with-middleware [sanitize-body]
     (http/get (str (:host (:confluence cfg/config)) "/wiki/rest/api/" (apply str args)) {
         :basic-auth [
             (:username (:confluence cfg/config))
@@ -37,6 +49,7 @@
         :http-client (client)
         :cache true
         :as :json}))
+        ; :as :json})))
 
 (defn page-id
     [url]

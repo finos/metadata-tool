@@ -30,7 +30,7 @@
 (defn parse-string
     [string]
     (if (s/blank? string)
-        nil
+        string
         (s/replace
             (s/trim string)
             "\u00A0"
@@ -117,6 +117,7 @@
                         (apply str (:content (first (sel/select sel/last-child orgItem))))
                         (apply str (:content (first (sel/select select-leaf orgItem)))))
           ghid          (if (> (count items) 2) (:content (first (sel/select select-leaf (nth items 2)))) nil)
+          ; TODO - build 1 filter, to speed up processing
           user-by-gh    (md/person-metadata-by-github-login-fn ghid)
           user-by-name  (md/person-metadata-by-fullname-fn name)
           user-by-email (md/person-metadata-by-email-address-fn (first id))]
