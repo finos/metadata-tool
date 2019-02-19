@@ -30,7 +30,35 @@
 
 (def ignore-names ["Individual's name" "Other Attendees" "FINOS Foundation"])
 
+(def remove-from-names ["(PMC Lead)" "(Observer)" "(Chair)" "(Call-in User)" "(Deactivated)"])
+
+(def acronyms {
+    "Anton" "Anton Nikolaev"
+    "Saori" "Saori Fotenos"
+    "JT" "Jonathan Teper"
+    "Rhyddian" "Rhyddian Olds"
+    "Slava" "Slava Kryukov"
+    "Svyatoslav (Slava) Kryukov" "Slava Kryukov"
+    "Will Quan" "William Quan"
+    "Gab Columbro" "Gabriele Columbro"
+})
+
 (def not-nil? (complement nil?))
+
+(defn parse-name
+    [string to-remove]
+    (if (s/blank? string)
+        nil
+        (if (empty? to-remove)
+            string
+            (if-let [acronym (get acronyms string)]
+                acronym
+                (parse-name
+                    (s/replace
+                        string
+                        (first to-remove)
+                        "")
+                    (rest to-remove))))))
 
 (defn parse-date
     [title]
@@ -88,7 +116,7 @@
     [row program activity meeting-date]
     (let [items      (sel/select (sel/child (sel/tag :tr) (sel/tag :td)) row)
           id         (resolve-user (first items))
-          name       (second id)
+          name       (parse-name (second id) remove-from-names)
           orgItem    (second items)
           select-leaf   (sel/not (sel/has-child sel/any))
           org        (or 
