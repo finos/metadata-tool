@@ -110,7 +110,7 @@
     [row program activity meeting-date]
     (let [items      (sel/select (sel/child (sel/tag :tr) (sel/tag :td)) row)
           id         (resolve-user (first items))
-          name       (parse-name (parse-string (second id)) (:remove-from-names (:confluence cfg/config)))
+          name       (parse-string (parse-name (parse-string (second id)) (:remove-from-names (:confluence cfg/config))))
           orgItem    (second items)
           select-leaf   (sel/not (sel/has-child sel/any))
           org        (or 
@@ -121,11 +121,11 @@
           user-by-gh    (md/person-metadata-by-github-login-fn ghid)
           user-by-name  (md/person-metadata-by-fullname-fn name)
           user-by-email (md/person-metadata-by-email-address-fn (first id))]
-        ; (if-not (s/blank? name)
-        ;     (let []
-        ;         (print (str "'" name "' '"))
-        ;         (print (Character/codePointAt name (dec (count name))))
-        ;         (println "'" )))
+        (if-not (s/blank? name)
+            (let []
+                (print (str "'" name "' '"))
+                (print (Character/codePointAt name (dec (count name))))
+                (println "'" )))
         (if-not (or
             (some #(= name %) (:ignore-names (:confluence cfg/config)))
             (and 
