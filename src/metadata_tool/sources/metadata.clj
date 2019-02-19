@@ -158,6 +158,29 @@
   "Person metadata of the given GitHub login, or nil if there is none."
   (memoize person-metadata-by-github-login-fn))
 
+(defn matches-person
+  [person ghid name email]
+  (or
+      (and
+        ; (try
+        (not (s/blank? ghid))
+          ; (catch Exception e (str ghid " " name " " email " - caught exception: " (.getMessage e))))
+        (some #{ghid} (:github-logins person)))
+      (and
+        (not (s/blank? name))
+        (= name (:full-name person)))
+      (and
+        (not (s/blank? email))
+        (some #{email} (:email-addresses person)))))
+  
+(defn person-metadata-by-fn
+  [ghid name email]
+  (if (or ghid name email)
+    (first (filter #(matches-person % ghid name email) (people-metadata)))))
+(def person-metadata-by
+  "Person metadata of either a given GitHub login, name or email address; returns nil if there is none."
+  (memoize person-metadata-by-fn))
+  
 (defn lower-emails
   [item]
   (map #(s/lower-case %) (:email-addresses item)))

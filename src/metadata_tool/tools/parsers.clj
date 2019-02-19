@@ -103,29 +103,27 @@
                   body (:body (cfl/cget (str "user?expand=email&key=" user-key)))]
                 [(:email body) (:displayName body)])
             (if-let [name (:content (first (sel/select select-leaf element)))]
-                [nil (s/trim (apply str name))]
+                [nil (parse-string (apply str name))]
                 nil))))
 
 (defn row-to-user
     [row program activity meeting-date]
     (let [items      (sel/select (sel/child (sel/tag :tr) (sel/tag :td)) row)
           id         (resolve-user (first items))
-          name       (parse-string (parse-name (parse-string (second id)) (:remove-from-names (:confluence cfg/config))))
+          email      (first id)
+          name       (parse-string (parse-name (second id) (:remove-from-names (:confluence cfg/config))))
           orgItem    (second items)
           select-leaf   (sel/not (sel/has-child sel/any))
           org        (or 
                         (apply str (:content (first (sel/select sel/last-child orgItem))))
                         (apply str (:content (first (sel/select select-leaf orgItem)))))
           ghid          (if (> (count items) 2) (:content (first (sel/select select-leaf (nth items 2)))) nil)
-          ; TODO - build 1 filter, to speed up processing
-          user-by-gh    (md/person-metadata-by-github-login-fn ghid)
-          user-by-name  (md/person-metadata-by-fullname-fn name)
-          user-by-email (md/person-metadata-by-email-address-fn (first id))]
-        (if-not (s/blank? name)
-            (let []
-                (print (str "'" name "' '"))
-                (print (Character/codePointAt name (dec (count name))))
-                (println "'" )))
+          user-by-md    (md/person-metadata-by-fn nil name email)]
+        ; (if-not (s/blank? name)
+        ;     (let []
+        ;         (println (str 
+        ;             "'" name "' '" org "' '" ghid 
+        ;             "(" (Character/codePointAt name (dec (count name))) ")"))))
         (if-not (or
             (some #(= name %) (:ignore-names (:confluence cfg/config)))
             (and 
@@ -133,22 +131,16 @@
                 (s/blank? org)
                 (s/blank? ghid))) {
                 :email (or 
-                    (first (:email-addresses user-by-name))
-                    (first (:email-addresses user-by-gh))
+                    (first (:email-addresses user-by-md))
                     (first id))
                 :name (or
-                    (:full-name user-by-email)
-                    (:full-name user-by-gh)
+                    (:full-name user-by-md)
                     name)
                 :org (or
-                    (:organization-name (first (md/current-affiliations (:person-id user-by-email))))
-                    (:organization-name (first (md/current-affiliations (:person-id user-by-name))))
-                    (:organization-name (first (md/current-affiliations (:person-id user-by-gh))))
+                    (:organization-name (first (md/current-affiliations (:person-id user-by-md))))
                     org)
                 :ghid (or
-                    (first (:github-logins user-by-email))
-                    (first (:github-logins user-by-name))
-                    (first (:github-logins user-by-gh)))
+                    (first (:github-logins user-by-md)))
                     ; TODO - cannot rely on GitHub data as third column;
                     ; right now it contains all sorts of data
                     ; ghid)
