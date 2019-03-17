@@ -41,8 +41,7 @@
 (defn page-id
     [url]
     (nth 
-        (s/split (s/replace url (:host (:confluence cfg/config)) "") #"/")
-        5))
+        (s/split url #"/") 4))
 
 (defn content
     [id]
