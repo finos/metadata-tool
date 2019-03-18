@@ -150,13 +150,58 @@
   []
   (sort-by :full-name (remove nil? (map person-metadata-with-organizations people))))
 
-(defn- person-metadata-by-github-login-fn
+(defn person-metadata-by-github-login-fn
   [github-login]
   (if github-login
     (first (filter #(some #{github-login} (:github-logins %)) (people-metadata)))))
 (def person-metadata-by-github-login
   "Person metadata of the given GitHub login, or nil if there is none."
   (memoize person-metadata-by-github-login-fn))
+
+(defn matches-person
+  [person ghid name email]
+  (or
+      (and
+        ; (try
+        (not (s/blank? ghid))
+          ; (catch Exception e (str ghid " " name " " email " - caught exception: " (.getMessage e))))
+        (some #{ghid} (:github-logins person)))
+      (and
+        (not (s/blank? name))
+        (= name (:full-name person)))
+      (and
+        (not (s/blank? email))
+        (some #{email} (:email-addresses person)))))
+  
+(defn person-metadata-by-fn
+  [ghid name email]
+  (if (or ghid name email)
+    (first (filter #(matches-person % ghid name email) (people-metadata)))))
+(def person-metadata-by
+  "Person metadata of either a given GitHub login, name or email address; returns nil if there is none."
+  (memoize person-metadata-by-fn))
+  
+(defn lower-emails
+  [item]
+  (map #(s/lower-case %) (:email-addresses item)))
+
+(defn person-metadata-by-email-address-fn
+    [email-address]
+    (if email-address
+      (first (filter #(some 
+                        #{(s/lower-case email-address)}
+                        (lower-emails %)) (people-metadata)))))
+(def person-metadata-by-email-address
+  "Person metadata of the given email address, or nil if there is none."
+  (memoize person-metadata-by-email-address-fn))
+  
+(defn person-metadata-by-fullname-fn
+  [full-name]
+  (if full-name
+    (first (filter #(= full-name (:full-name %)) (people-metadata)))))
+(def person-metadata-by-fullname
+  "Person metadata of the given fullname, or nil if there is none."
+  (memoize person-metadata-by-email-address-fn))
 
 (defn- program-activities
   "A seq of the ids of all activities in the given program."

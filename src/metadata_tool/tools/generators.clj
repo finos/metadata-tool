@@ -15,19 +15,22 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.tools.generators
-  (:require [clojure.string                 :as s]
-            [clojure.set                    :as set]
-            [clojure.pprint                 :as pp]
-            [clojure.tools.logging          :as log]
-            [clojure.java.io                :as io]
-            [mount.core                     :as mnt :refer [defstate]]
-            [cheshire.core                  :as ch]
-            [metadata-tool.config           :as cfg]
-            [metadata-tool.template         :as tem]
-            [metadata-tool.sources.github   :as gh]
-            [metadata-tool.sources.bitergia :as bi]
-            [metadata-tool.sources.schemas  :as sch]
-            [metadata-tool.sources.metadata :as md]))
+  (:require [clojure.string                   :as s]
+            [clojure.set                      :as set]
+            [clojure.pprint                   :as pp]
+            [clojure.tools.logging            :as log]
+            [clojure.java.io                  :as io]
+            [clojure.data.csv                 :as csv]
+            [mount.core                       :as mnt :refer [defstate]]
+            [cheshire.core                    :as ch]
+            [metadata-tool.tools.parsers      :as psrs]
+            [metadata-tool.config             :as cfg]
+            [metadata-tool.template           :as tem]
+            [metadata-tool.sources.confluence :as cfl]
+            [metadata-tool.sources.github     :as gh]
+            [metadata-tool.sources.bitergia   :as bi]
+            [metadata-tool.sources.schemas    :as sch]
+            [metadata-tool.sources.metadata   :as md]))
 
 (defn gen-clabot-whitelist
   []
@@ -103,3 +106,31 @@
                          { :activities activities-data
                            :all-tags   (md/all-activity-tags) }))))
 
+(defn- gen-activity-roster
+  [program-name activity-metadata]
+  (let [activity-name (:activity-name activity-metadata)]
+    (if-let [page-url (:confluence-page activity-metadata)]
+      (psrs/meetings-rosters
+        program-name
+        activity-name
+        page-url))))
+
+(defn- gen-program-roster
+  [program-metadata]
+  (let [program-name (:program-short-name program-metadata)] [
+    (if-let [pmc-confluence-page (:pmc-confluence-page program-metadata)]
+      (psrs/meetings-rosters
+        program-name
+        (str program-name " PMC")
+        pmc-confluence-page))
+    (map #(gen-activity-roster program-name %) (:activities program-metadata))]))
+
+(defn gen-meeting-roster-data
+  []
+  (let [programs (md/programs-metadata)
+        roster-data
+          (remove nil? (flatten
+            (map 
+              #(gen-program-roster %)
+              programs)))]
+      (psrs/roster-to-csv roster-data)))

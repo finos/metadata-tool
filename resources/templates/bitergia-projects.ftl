@@ -10,13 +10,15 @@
   },
   "Foundation" : {
     "meta"       : { "title" : "Foundation" },
-    "confluence" : [ "FINOS" ],
     "mbox"       : [ "announce /home/bitergia/mboxes/barnowl_symphony_announce" ]
   }[#if programs?? && programs?size > 0],[#list programs as program]
-  "${program.program_short_name} Program" : {
-    "meta"       : { "title"   : "${program.program_short_name} Program",
+  "${program.program_short_name} PMC" : {
+    "meta"       : { "title"   : "${program.program_short_name} PMC",
+    "type"       : "PMC",
                      "program" : "${program.program_short_name}" }[#if program.confluence_space_key??],
-    "confluence" : [ "${program.confluence_space_key}" ][/#if][#if program.program_mailing_list_address?? || program.pmc_mailing_list_address??],
+    [#if program.pmc_confluence_page??]
+    "confluence" : [ "https://finosfoundation.atlassian.net/wiki/ --filter-raw=data.ancestors._links.webui:${program.pmc_confluence_page}"],
+    [/#if]
     "mbox"       : [ [#if program.program_mailing_list_address??][@bitergia_address mailing_list_address=program.program_mailing_list_address /][/#if][#if program.program_mailing_list_address?? && program.pmc_mailing_list_address??],
                      [@bitergia_address mailing_list_address=program.pmc_mailing_list_address /][/#if] ][/#if]
   }[#if program.program_id != programs?last.program_id],[/#if][/#list][/#if][#if activities?? && activities?size > 0],[#list activities as activity]
@@ -25,6 +27,9 @@
                      "program" : "${activity.program_short_name}",
                      "state"   : "${activity.state}",
                      "type"    : "${activity.type}" }[#if activity.github_urls?? && activity.github_urls?size > 0],
+    [#if activity.confluence_page??]
+    "confluence" : [ "https://finosfoundation.atlassian.net/wiki/ --filter-raw=data.ancestors._links.webui:${activity.confluence_page}"],
+    [/#if]
     "git"        : [
       [#list activity.github_urls as github_url]
                      "${github_url}.git"[#if github_url != activity.github_urls?last],[/#if]
