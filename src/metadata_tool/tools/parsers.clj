@@ -183,6 +183,7 @@
 
 (defn meetings-rosters
     [program activity url]
+    (println (str "Generating meeting attendance for activity " activity))
     (let [page-id   (cfl/page-id url)
           sub-pages (ids-and-titles page-id)]
         (remove nil? (flatten (map 

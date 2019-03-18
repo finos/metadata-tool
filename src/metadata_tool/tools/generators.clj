@@ -118,6 +118,7 @@
 (defn- gen-program-roster
   [program-metadata]
   (let [program-name (:program-short-name program-metadata)] [
+    (println (str "Generating meeting attendance for program " program-name))
     (if-let [pmc-confluence-page (:pmc-confluence-page program-metadata)]
       (psrs/meetings-rosters
         program-name
