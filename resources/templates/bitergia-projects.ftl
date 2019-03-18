@@ -6,7 +6,8 @@
 [/#macro]
 {
   "unknown" : {
-    "confluence" : [ "https://finosfoundation.atlassian.net/wiki/" ]
+    "confluence" : [ "https://finosfoundation.atlassian.net/wiki/" ],
+    "jira"       : [ "http://finosfoundation.atlassian.net"]
   },
   "Foundation" : {
     "meta"       : { "title" : "Foundation" },
