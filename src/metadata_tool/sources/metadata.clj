@@ -233,7 +233,7 @@
       :url (str "https://finosfoundation.atlassian.net/wiki/spaces/" confluence-space-key "/overview")
     }))
 
-(defn- program-activities-metadata
+(defn program-activities-metadata
   "A seq containing the metadata of all activities in the given program."
   [program]
   (let [program-id (:program-id program)]

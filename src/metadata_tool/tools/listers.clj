@@ -40,4 +40,13 @@
   []
   (doall (map #(pp/pprint (:full-name %)) (sort-by :full-name (md/people-with-clas)))))
 
-
+(defn list-stale-projects
+  []
+  (let [program (:program cfg/config)]
+    (doall 
+      (map 
+        #(pp/pprint (:activity-name %))
+        (filter
+          #(true)
+          (sort-by :activity-name 
+            (md/program-activities-metadata program)))))))

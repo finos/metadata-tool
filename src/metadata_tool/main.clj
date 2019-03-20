@@ -36,6 +36,7 @@
     :validate [#(.exists      (io/file %)) "Must exist"
                #(.isDirectory (io/file %)) "Must be a directory"
                #(.canRead     (io/file %)) "Must be readable"]]
+   ["-p" "--program PROGRAM" "FINOS program to query stale-projects"]
    ["-r" "--github-revision REVISION" "GitHub revision of the metadata repository to checkout and use (optional, defaults to latest)"]
    [nil  "--email-override" "Overrides the default email behaviour of using a test email address for all outbound emails (DO NOT USE UNLESS YOU REALLY KNOW WHAT YOU'RE DOING!)."]
    ["-h" "--help"]])
@@ -80,6 +81,7 @@
                                                    (a/read-config config-file)
                                                    (a/read-config (io/resource "config.edn")))
                                                  :metadata-directory (:metadata-directory options)
+                                                 :program            (:program options)
                                                  :github-revision    (:github-revision    options)
                                                  :email-override     (boolean (:email-override options)))))
       (let [tools-to-run (map s/lower-case arguments)]
