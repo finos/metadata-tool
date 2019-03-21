@@ -146,4 +146,4 @@
                                                   :archived-activities-that-arent-github-archived   (seq (sort-by :activity-name (get archived-activities-that-arent-github-archived   (:program-id %))))
                                                   :activities-with-repos-without-issues-support     (seq (sort-by :activity-name (get activities-with-repos-without-issues-support     (:program-id %))))
                                                 } ))
-                          all-programs))))
+                all-programs))))
