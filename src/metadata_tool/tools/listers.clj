@@ -40,3 +40,4 @@
   []
   (doall (map #(pp/pprint (:full-name %)) (sort-by :full-name (md/people-with-clas)))))
 
+
