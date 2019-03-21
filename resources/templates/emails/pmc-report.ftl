@@ -104,6 +104,7 @@
   <hr/>
 [#if (unarchived_activities_without_leads?? && unarchived_activities_without_leads?size > 0) ||
      (inactive_activities?? && inactive_activities?size > 0) ||
+     (stale_activities?? && stale_activities?size > 0) ||
      (activities_with_unactioned_prs?? && activities_with_unactioned_prs?size > 0) ||
      (activities_with_unactioned_issues?? && activities_with_unactioned_issues?size > 0) ||
      (unarchived_activities_with_non_standard_licenses?? && unarchived_activities_with_non_standard_licenses?size > 0) ||
@@ -120,6 +121,12 @@
     [@render_table "Inactive Activities"
                    "Here are inactive Projects and Working Groups, defined as being those with no git, GitHub, Confluence, or mailing list activity in the last ${inactive_days} days, that are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
                    inactive_activities /]
+  [/#if]
+
+  [#if stale_activities?? && stale_activities?size > 0]
+    [@render_table "Stale Activities"
+                   "Here are stale Projects and Working Groups, defined as being those in INCUBATING state that have been contributed more than 6 months ago, that are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
+                   stale_activities /]
   [/#if]
 
   [#if activities_with_unactioned_prs?? && activities_with_unactioned_prs?size > 0]
