@@ -29,7 +29,6 @@
     "check"                          tch/check
     "list-schemas"                   tls/list-schemas
     "list-people-with-clas"          tls/list-people-with-clas
-    "list-stale-projects"            tls/list-stale-projects
     "gen-meeting-roster-data"        tgn/gen-meeting-roster-data
     "gen-bitergia-affiliation-data"  tgn/gen-bitergia-affiliation-data
     "gen-bitergia-organization-data" tgn/gen-bitergia-organization-data
