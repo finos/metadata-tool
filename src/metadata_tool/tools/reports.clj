@@ -75,13 +75,31 @@
 
 (defn- send-email-to-pmc
   [program-id subject body]
-  (if-not (s/blank? program-id)
-    (send-email (:pmc-mailing-list-address (md/program-metadata program-id))
-                subject
-                body
-                :cc-addresses     program-liaison-email-address
-                :reply-to-address program-liaison-email-address)))
+  ; TODO - enable code below and comment out print commands!
+  (println "===========================")
+  (println subject)
+  (println "---------------------------")
+  (println body)
+  (println "==========================="))
+  ; (if-not (s/blank? program-id)
+    ; (send-email (:pmc-mailing-list-address (md/program-metadata program-id))
+    ;             subject
+    ;             body
+    ;             :cc-addresses     program-liaison-email-address
+    ;             :reply-to-address program-liaison-email-address)))
 
+(defn- assoc-org-name
+  [person]
+  (let [id (:id person)]
+    (assoc :org-name (or (str " (" (:organization-name (first (md/current-affiliations id) ")") person)) ""))))
+
+(defn- pmc-list
+  [program]
+  (let [pmc-list        (:pmc program)
+        people-enriched (map #(md/person-metadata %) pmc-list)
+        orgs-enriched   (map #(assoc-org-name %) people-enriched)]
+    (map #(str (:full-name %) (:org-name %)) orgs-enriched)))
+                
 (defn email-pmc-reports
   []
   (let [now-str                                          (tf/unparse (tf/formatter "yyyy-MM-dd h:mmaa ZZZ") (tm/now))
@@ -137,6 +155,7 @@
                                                   :old-pr-threshold-days                            old-pr-threshold-days
                                                   :old-issue-threshold-days                         old-issue-threshold-days
                                                   :program                                          %
+                                                  :pmc-list                                         (pmc-list %)
                                                   :unarchived-activities-without-leads              (seq (sort-by :activity-name (get unarchived-activities-without-leads              (:program-id %))))
                                                   :inactive-activities                              (seq (sort-by :activity-name (get inactive-unarchived-activities-metadata          (:program-id %))))
                                                   :stale-activities                                 (seq (sort-by :activity-name (get stale-incubating-activities-metadata             (:program-id %))))

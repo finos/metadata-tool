@@ -102,7 +102,16 @@
      <a href="https://metrics.finos.org/app/kibana?#/dashboard/C_ESCo_projects?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-2y,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))"/>${program.program_short_name} Program's metrics dashboard</a>
      also provides more insight into the activity of the Program's Projects and Working Groups.</p>
   <hr/>
-[#if (unarchived_activities_without_leads?? && unarchived_activities_without_leads?size > 0) ||
+  <h3>${program.program_short_name} PMC Composition</h3>
+  [#if pmc-list?? && pmc-list?size > 0]
+    <ul>
+      [#list pmc-list as pmc_person]
+        <li>${pmc_person}</li>
+      [/#list]
+    </ul>
+  [/#if]
+  <hr/>
+  [#if (unarchived_activities_without_leads?? && unarchived_activities_without_leads?size > 0) ||
      (inactive_activities?? && inactive_activities?size > 0) ||
      (stale_activities?? && stale_activities?size > 0) ||
      (activities_with_unactioned_prs?? && activities_with_unactioned_prs?size > 0) ||
@@ -125,7 +134,7 @@
 
   [#if stale_activities?? && stale_activities?size > 0]
     [@render_table "Stale Activities"
-                   "Here are stale Projects and Working Groups, defined as being those in INCUBATING state that have been contributed more than 6 months ago, that are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
+                   "Here are Projects and Working Groups that are in INCUBATING state, have been contributed more than 6 months ago and are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
                    stale_activities /]
   [/#if]
 
