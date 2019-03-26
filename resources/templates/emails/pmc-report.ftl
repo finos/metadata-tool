@@ -103,9 +103,9 @@
      also provides more insight into the activity of the Program's Projects and Working Groups.</p>
   <hr/>
   <h3>${program.program_short_name} PMC Composition</h3>
-  [#if pmc-list?? && pmc-list?size > 0]
+  [#if pmc_list?? && pmc_list?size > 0]
     <ul>
-      [#list pmc-list as pmc_person]
+      [#list pmc_list as pmc_person]
         <li>${pmc_person}</li>
       [/#list]
     </ul>

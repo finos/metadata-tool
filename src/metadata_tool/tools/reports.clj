@@ -90,8 +90,8 @@
 
 (defn- assoc-org-name
   [person]
-  (let [id (:id person)]
-    (assoc :org-name (or (str " (" (:organization-name (first (md/current-affiliations id) ")") person)) ""))))
+  (let [id (:person-id person)]
+    (assoc person :org-name (or (str " (" (:organization-name (first (md/current-affiliations id))) ")") ""))))
 
 (defn- pmc-list
   [program]
