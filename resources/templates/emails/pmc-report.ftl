@@ -129,14 +129,14 @@
                    unarchived_activities_without_leads /]
   [/#if]
 
-  [#if inactive_activities?? && inactive_activities?size > 0]
+  <#--  [#if inactive_activities?? && inactive_activities?size > 0]
     [@render_table "Inactive Activities"
                    "Here are inactive Projects and Working Groups, defined as being those with no git, GitHub, Confluence, or mailing list activity in the last ${inactive_days} days, that are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
                    inactive_activities /]
-  [/#if]
+  [/#if]  -->
 
   [#if stale_activities?? && stale_activities?size > 0]
-    [@render_table "Stale Activities"
+    [@render_table "Inactive Activities"
                    "Here are Projects and Working Groups that are in INCUBATING state, have been contributed more than 6 months ago and are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
                    stale_activities /]
   [/#if]
