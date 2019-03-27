@@ -147,9 +147,6 @@
   <h3>List of Active Participants (and Organizations)</h3>
   <p><a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-6m,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">${program.program_short_name} Program Health dashboard</a></p> 
 
-  <h2>Steering Data</h2>
-  <p>For more info on how to interpret this data, see <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/PMC+Monthly+Reports">PMC Monthly Reports page in the Community Handbook</a>.</p>
-
   <hr/>
   [#if (unarchived_activities_without_leads?? && unarchived_activities_without_leads?size > 0) ||
      (stale_activities?? && stale_activities?size > 0) ||
@@ -158,6 +155,9 @@
      (unarchived_activities_with_non_standard_licenses?? && unarchived_activities_with_non_standard_licenses?size > 0) ||
      (archived_activities_that_arent_github_archived?? && archived_activities_that_arent_github_archived?size > 0) ||
      (activities_with_repos_without_issues_support?? && activities_with_repos_without_issues_support?size > 0)]
+
+  <h2>Steering Data</h2>
+  <p>For more info on how to interpret this data, see <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/PMC+Monthly+Reports">PMC Monthly Reports page in the Community Handbook</a>.</p>
 
   [#if unarchived_activities_without_leads?? && unarchived_activities_without_leads?size > 0]
     [@render_table "Activities Without a Lead/Chair"
