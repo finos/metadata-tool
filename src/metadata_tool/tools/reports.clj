@@ -93,6 +93,27 @@
   (let [id (:person-id person)]
     (assoc person :org-name (or (str " (" (:organization-name (first (md/current-affiliations id))) ")") ""))))
 
+(defn- activities
+  [program type]
+  (let [program-id (:id program)]
+  (map #(:activity-name %)
+        (remove #(= "ARCHIVED" (:state %))
+          (filter #(= type (:type %))
+            (:activities program))))))
+
+(defn- orgs-in-pmc
+  [program]
+  (let [pmc-list (:pmc program)]
+    (distinct (map #(:organization-name (first (md/current-affiliations %))) pmc-list))))
+
+(defn- pmc-lead
+  [program]
+  (let [pmc-lead       (:pmc-lead program)
+        lead-enriched  (md/person-metadata pmc-lead)
+        full-name      (:full-name lead-enriched)
+        org-name       (:org-name (assoc-org-name lead-enriched))]
+    (str full-name org-name)))
+
 (defn- pmc-list
   [program]
   (let [pmc-list        (:pmc program)
@@ -155,6 +176,10 @@
                                                   :old-pr-threshold-days                            old-pr-threshold-days
                                                   :old-issue-threshold-days                         old-issue-threshold-days
                                                   :program                                          %
+                                                  :working-groups                                   (activities % "WORKING_GROUP")
+                                                  :projects                                         (activities % "PROJECT")
+                                                  :pmc-lead                                         (pmc-lead %)
+                                                  :orgs-in-pmc                                      (orgs-in-pmc %)
                                                   :pmc-list                                         (pmc-list %)
                                                   :unarchived-activities-without-leads              (seq (sort-by :activity-name (get unarchived-activities-without-leads              (:program-id %))))
                                                   :inactive-activities                              (seq (sort-by :activity-name (get inactive-unarchived-activities-metadata          (:program-id %))))

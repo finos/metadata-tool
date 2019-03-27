@@ -96,26 +96,61 @@
   </style>
 </head>
 <body>
-  <h3>${program.program_short_name} PMC (Program Management Committee) Report as at ${now}</h3>
-  <p>The latest <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-2y,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">${program.program_name}</a> Program's metrics dashboard is now available in <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-2y,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">metrics.finsos.org</a>.</p>
-  <p>Your program <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-2y,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">metrics dashboard</a> includes those measures and <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/93225748/Board+Reporting+and+Program+Health+Checks">metrics used to track FINOS program health</a> that currently can be generated and calculated by data available to FINOS. Please note that some metrics and measures required for quarterly board reports must be tracked and calculated by PMCs themselves - for more information see the “Where to look and How to Track Program Data” section of the Community Handbook.</p>
+  <h3>${program.program_short_name} PMC (Program Management Committee) Report as of ${now}</h3>
+  <p>The latest <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-6m,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">${program.program_name} Program's metrics dashboard</a> is now available in <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-6m,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">metrics.finsos.org</a>. Your program <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-6m,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">metrics dashboard</a> includes <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/93225748/Board+Reporting+and+Program+Health+Checks">measures used to track FINOS program health</a> that presently can be generated and calculated by data available to FINOS.</p>
 
-  <p>In addition to the data available in the <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-2y,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">metrics dashboard</a>, please also review the following data about he ${program.program_name} program.</p>
+  <p>Please note that some metrics required for quarterly board reports must be tracked and calculated by PMCs themselves. For more information see the “Where to Find Program Measures and Data“ section <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/93225748/Board+Reporting+and+Program+Health+Checks">in the Board Reporting and Program Health Check page in the FINOS Community Handbook</a>.</p>
 
-  <p>Please see <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/Automated+Reports">the wiki</a> for more information on this report, including recommended remedies.</p>
+  <p>In addition to the data available in the <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-6m,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">metrics dashboard</a>, please also review both the basic data and program steering warnings and measures below. For more information on how to interpret and follow-up on the steering data, see the <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/PMC+Monthly+Reports">PMC Monthly Reports page</a> of the FINOS Community Handbook, which includes recommended remedies and interventions.</p>
 
   <hr/>
-  <h3>${program.program_short_name} PMC Composition</h3>
+  <h3>PMC Lead</h3>
+  <ul><li>${pmc_lead}</li></ul>
+  
   [#if pmc_list?? && pmc_list?size > 0]
+    <h3>PMC Composition</h3>
     <ul>
       [#list pmc_list as pmc_person]
         <li>${pmc_person}</li>
       [/#list]
     </ul>
   [/#if]
+  
+  [#if orgs_in_pmc?? && orgs_in_pmc?size > 0]
+    <h3>Organisations in PMC</h3>
+    <ul>
+      [#list orgs_in_pmc as pmc_org]
+        <li>${pmc_org}</li>
+      [/#list]
+    </ul>
+  [/#if]
+
+  [#if working_groups?? && working_groups?size > 0]
+    <h3>List of Program Working Groups</h3>
+    <ul>
+      [#list working_groups as working_group]
+        <li>${working_group}</li>
+      [/#list]
+    </ul>
+  [/#if]
+
+  [#if projects?? && projects?size > 0]
+    <h3>List of Program Projects</h3>
+    <ul>
+      [#list projects as project]
+        <li>${project}</li>
+      [/#list]
+    </ul>
+  [/#if]
+
+  <h3>List of Active Participants (and Organizations)</h3>
+  <p>Link to <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-6m,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">${program.program_short_name} Program Health dashboard</a></p> 
+
+  <h3>Steering Data</h3>
+  <p>For more info on how to interpret this data, see <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/PMC+Monthly+Reports">PMC Monthly Reports page in the Community Handbook</a>.</p>
+
   <hr/>
   [#if (unarchived_activities_without_leads?? && unarchived_activities_without_leads?size > 0) ||
-     (inactive_activities?? && inactive_activities?size > 0) ||
      (stale_activities?? && stale_activities?size > 0) ||
      (activities_with_unactioned_prs?? && activities_with_unactioned_prs?size > 0) ||
      (activities_with_unactioned_issues?? && activities_with_unactioned_issues?size > 0) ||
