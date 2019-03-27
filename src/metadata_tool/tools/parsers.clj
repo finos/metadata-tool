@@ -195,7 +195,7 @@
 (defn roster-to-csv
     [roster-data]
     (with-open [writer (io/writer "finos-meetings.csv")]
-        (.write writer "email, name, org, github ID, program, activity, type, date\n")
+        (.write writer "email, name, org, github ID, cm_program, cm_title, cm_type, date\n")
         (doall 
         (map 
             #(.write writer (str (s/join ", " (vals %)) "\n")) 
