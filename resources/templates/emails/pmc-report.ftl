@@ -200,8 +200,6 @@
                    "Here are the Projects and Working Groups that have GitHub repositories without issue tracking enabled:"
                    activities_with_repos_without_issues_support /]
   [/#if]
-[#else]
-  <hr/>
 [/#if]
   <p class="footnote">Need help? Raise a <a href="https://finosfoundation.atlassian.net/secure/CreateIssue.jspa?pid=10000&issuetype=10001">HELP issue</a>
     or send an email to <a href="mailto:help@finos.org">help@finos.org</a>.<br/>
