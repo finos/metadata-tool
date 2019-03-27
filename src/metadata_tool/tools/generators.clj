@@ -113,6 +113,7 @@
       (psrs/meetings-rosters
         program-name
         activity-name
+        (:type activity-metadata)
         page-url))))
 
 (defn- gen-program-roster
@@ -123,6 +124,7 @@
       (psrs/meetings-rosters
         program-name
         (str program-name " PMC")
+        "PMC"
         pmc-confluence-page))
     (map #(gen-activity-roster program-name %) (:activities program-metadata))]))
 
