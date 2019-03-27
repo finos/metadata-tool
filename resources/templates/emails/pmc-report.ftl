@@ -201,7 +201,6 @@
                    activities_with_repos_without_issues_support /]
   [/#if]
 [#else]
-  <p>No action is required - none of the ${program.program_short_name} Program's Projects and/or Working Groups have any of the issues covered by this report (and described in more detail on <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/Automated+Reports">the wiki</a>).&nbsp;&nbsp;🎉</p>
   <hr/>
 [/#if]
   <p class="footnote">Need help? Raise a <a href="https://finosfoundation.atlassian.net/secure/CreateIssue.jspa?pid=10000&issuetype=10001">HELP issue</a>
