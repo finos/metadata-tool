@@ -123,7 +123,7 @@
                 
 (defn email-pmc-reports
   []
-  (let [now-str                                          (tf/unparse (tf/formatter "yyyy-MM-dd h:mmaa ZZZ") (tm/now))
+  (let [now-str                                          (tf/unparse (tf/formatter "yyyy") (tm/now))
         all-programs                                     (md/programs-metadata)
         six-months-ago                                   (tm/minus (tm/now) (tm/months 6))
         
@@ -169,7 +169,7 @@
                                                                            (md/activities-metadata)))
         ]
     (doall (map #(send-email-to-pmc (:program-id %)
-                                    (str (:program-short-name %) " PMC Report as at " now-str)
+                                    (str (:program-name %) " PMC Report for March " now-str)
                                     (tem/render "emails/pmc-report.ftl"
                                                 { :now                                              now-str
                                                   :inactive-days                                    inactive-project-threshold-days
