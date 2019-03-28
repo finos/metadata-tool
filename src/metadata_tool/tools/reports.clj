@@ -66,19 +66,67 @@
                             :body     [{ :type    "text/html; charset=\"UTF-8\""
                                          :content body }] } )))
 
+(defn- activity-stale?
+  [activity stale-date]
+  (let [program-id (:program cfg/config)
+        activity-date (tf/parse (tf/formatters :date) (:contribution-date activity))
+        compare-date (compare stale-date activity-date)]
+    (and (pos? compare-date) (= "INCUBATING" (:state activity)))))
+
 (defn- send-email-to-pmc
   [program-id subject body]
-  (if-not (s/blank? program-id)
-    (send-email (:pmc-mailing-list-address (md/program-metadata program-id))
-                subject
-                body
-                :cc-addresses     program-liaison-email-address
-                :reply-to-address program-liaison-email-address)))
+  ; TODO - enable code below and comment out print commands!
+  (println "===========================")
+  (println subject)
+  (println "---------------------------")
+  (println body)
+  (println "==========================="))
+  ; (if-not (s/blank? program-id)
+    ; (send-email (:pmc-mailing-list-address (md/program-metadata program-id))
+    ;             subject
+    ;             body
+    ;             :cc-addresses     program-liaison-email-address
+    ;             :reply-to-address program-liaison-email-address)))
 
+(defn- assoc-org-name
+  [person]
+  (let [id (:person-id person)]
+    (assoc person :org-name (or (str " (" (:organization-name (first (md/current-affiliations id))) ")") ""))))
+
+(defn- activities
+  [program type]
+  (let [program-id (:id program)]
+  (map #(:activity-name %)
+        (remove #(= "ARCHIVED" (:state %))
+          (filter #(= type (:type %))
+            (:activities program))))))
+
+(defn- orgs-in-pmc
+  [program]
+  (let [pmc-list (:pmc program)]
+    (distinct (map #(:organization-name (first (md/current-affiliations %))) pmc-list))))
+
+(defn- pmc-lead
+  [program]
+  (let [pmc-lead       (:pmc-lead program)
+        lead-enriched  (md/person-metadata pmc-lead)
+        full-name      (:full-name lead-enriched)
+        org-name       (:org-name (assoc-org-name lead-enriched))]
+    (str full-name org-name)))
+
+(defn- pmc-list
+  [program]
+  (let [pmc-list        (:pmc program)
+        people-enriched (map #(md/person-metadata %) pmc-list)
+        orgs-enriched   (map #(assoc-org-name %) people-enriched)]
+    (map #(str (:full-name %) (:org-name %)) orgs-enriched)))
+                
 (defn email-pmc-reports
   []
   (let [now-str                                          (tf/unparse (tf/formatter "yyyy-MM-dd h:mmaa ZZZ") (tm/now))
         all-programs                                     (md/programs-metadata)
+        six-months-ago                                   (tm/minus (tm/now) (tm/months 6))
+        
         unarchived-activities-without-leads              (group-by :program-id
                                                                    (remove #(= "ARCHIVED" (:state %))
                                                                      (filter #(s/blank? (:lead-or-chair-person-id %))
@@ -88,6 +136,9 @@
                                                                            (remove nil?
                                                                                    (map md/activity-metadata-by-name
                                                                                         (bi/inactive-projects inactive-project-threshold-days)))))
+        stale-incubating-activities-metadata             (group-by :program-id
+                                                                    (filter #(activity-stale? % six-months-ago)
+                                                                            (md/activities-metadata)))
         unarchived-activities-with-unactioned-prs        (group-by :program-id
                                                                    (remove #(= "ARCHIVED" (:state %))
                                                                            (remove nil?
@@ -125,8 +176,14 @@
                                                   :old-pr-threshold-days                            old-pr-threshold-days
                                                   :old-issue-threshold-days                         old-issue-threshold-days
                                                   :program                                          %
+                                                  :working-groups                                   (activities % "WORKING_GROUP")
+                                                  :projects                                         (activities % "PROJECT")
+                                                  :pmc-lead                                         (pmc-lead %)
+                                                  :orgs-in-pmc                                      (orgs-in-pmc %)
+                                                  :pmc-list                                         (pmc-list %)
                                                   :unarchived-activities-without-leads              (seq (sort-by :activity-name (get unarchived-activities-without-leads              (:program-id %))))
                                                   :inactive-activities                              (seq (sort-by :activity-name (get inactive-unarchived-activities-metadata          (:program-id %))))
+                                                  :stale-activities                                 (seq (sort-by :activity-name (get stale-incubating-activities-metadata             (:program-id %))))
                                                   :activities-with-unactioned-prs                   (seq (sort-by :activity-name (get unarchived-activities-with-unactioned-prs        (:program-id %))))
                                                   :activities-with-unactioned-issues                (seq (sort-by :activity-name (get unarchived-activities-with-unactioned-issues     (:program-id %))))
                                                   :unarchived-activities-with-non-standard-licenses (seq (sort-by :activity-name (get unarchived-activities-with-non-standard-licenses (:program-id %))))

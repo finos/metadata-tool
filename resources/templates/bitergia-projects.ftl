@@ -17,13 +17,31 @@
   "${program.program_short_name} PMC" : {
     "meta"       : { "title"   : "${program.program_short_name} PMC",
     "type"       : "PMC",
-                     "program" : "${program.program_short_name}" }[#if program.confluence_space_key??],
+    "program" : "${program.program_short_name}" },
     [#if program.pmc_confluence_page??]
-    "confluence" : [ "https://finosfoundation.atlassian.net/wiki/ --filter-raw=data.ancestors._links.webui:${program.pmc_confluence_page}"],
+      "confluence" : [ "https://finosfoundation.atlassian.net/wiki/ --filter-raw=data.ancestors._links.webui:${program.pmc_confluence_page}"],
     [/#if]
     "mbox"       : [ [#if program.program_mailing_list_address??][@bitergia_address mailing_list_address=program.program_mailing_list_address /][/#if][#if program.program_mailing_list_address?? && program.pmc_mailing_list_address??],
-                     [@bitergia_address mailing_list_address=program.pmc_mailing_list_address /][/#if] ][/#if]
-  }[#if program.program_id != programs?last.program_id],[/#if][/#list][/#if][#if activities?? && activities?size > 0],[#list activities as activity]
+                     [@bitergia_address mailing_list_address=program.pmc_mailing_list_address /][/#if] ]
+    [#if program.pmc_repos?? && program.pmc_repos?size > 0]
+      ,"git"        : [
+        [#list program.pmc_repos as repo]
+          "https://github.com/${program.github_org}/${repo}.git"[#if repo != program.pmc_repos?last],[/#if]
+        [/#list]
+      ],
+      "github"     : [
+        [#list program.pmc_repos as repo]
+          "https://github.com/${program.github_org}/${repo}.git"[#if repo != program.pmc_repos?last],[/#if]
+        [/#list]
+      ],
+      "github:prs"     : [
+        [#list program.pmc_repos as repo]
+          "https://github.com/${program.github_org}/${repo}.git"[#if repo != program.pmc_repos?last],[/#if]
+        [/#list]
+      ]
+    [/#if]
+  }[#if program.program_id != programs?last.program_id],[/#if][/#list][/#if]
+  [#if activities?? && activities?size > 0],[#list activities as activity]
   "${activity.activity_name}" : {
     "meta"       : { "title"   : "${activity.activity_name}",
                      "program" : "${activity.program_short_name}",

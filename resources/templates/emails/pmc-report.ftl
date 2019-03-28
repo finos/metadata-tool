@@ -96,19 +96,68 @@
   </style>
 </head>
 <body>
-  <h3>${program.program_short_name} PMC Report as at ${now}</h3>
-  <p>Please see <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/Automated+Reports">the wiki</a>
-     for more information on this report, including recommended remedies.  The
-     <a href="https://metrics.finos.org/app/kibana?#/dashboard/C_ESCo_projects?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-2y,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))"/>${program.program_short_name} Program's metrics dashboard</a>
-     also provides more insight into the activity of the Program's Projects and Working Groups.</p>
+  <h3>${program.program_short_name} PMC (Program Management Committee) Report as of ${now}</h3>
+  <p>The latest <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-6m,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">${program.program_name} Program's metrics dashboard</a> is now available in <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-6m,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">metrics.finos.org</a>. Your program <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-6m,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">metrics dashboard</a> includes <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/93225748/Board+Reporting+and+Program+Health+Checks">measures used to track FINOS program health</a> that presently can be generated and calculated by data available to FINOS.</p>
+
+  <p>Please note that some metrics required for quarterly board reports must be tracked and calculated by PMCs themselves. For more information see the “Where to Find Program Measures and Data“ section <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/93225748/Board+Reporting+and+Program+Health+Checks">in the Board Reporting and Program Health Check page in the FINOS Community Handbook</a>.</p>
+
+  <p>In addition to the data available in the <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-6m,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">metrics dashboard</a>, please also review both the basic data and program steering warnings and measures below. For more information on how to interpret and follow-up on the steering data, see the <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/PMC+Monthly+Reports">PMC Monthly Reports page</a> of the FINOS Community Handbook, which includes recommended remedies and interventions.</p>
+
   <hr/>
-[#if (unarchived_activities_without_leads?? && unarchived_activities_without_leads?size > 0) ||
-     (inactive_activities?? && inactive_activities?size > 0) ||
+  <h2>${program.program_name} Program Master Data</h2>
+  <h3>PMC Lead</h3>
+  <ul><li>${pmc_lead}</li></ul>
+  
+  [#if pmc_list?? && pmc_list?size > 0]
+    <h3>PMC Composition</h3>
+    <ul>
+      [#list pmc_list as pmc_person]
+        <li>${pmc_person}</li>
+      [/#list]
+    </ul>
+  [/#if]
+  
+  [#if orgs_in_pmc?? && orgs_in_pmc?size > 0]
+    <h3>Organisations in PMC</h3>
+    <ul>
+      [#list orgs_in_pmc as pmc_org]
+        <li>${pmc_org}</li>
+      [/#list]
+    </ul>
+  [/#if]
+
+  [#if working_groups?? && working_groups?size > 0]
+    <h3>List of Program Working Groups</h3>
+    <ul>
+      [#list working_groups as working_group]
+        <li>${working_group}</li>
+      [/#list]
+    </ul>
+  [/#if]
+
+  [#if projects?? && projects?size > 0]
+    <h3>List of Program Projects</h3>
+    <ul>
+      [#list projects as project]
+        <li>${project}</li>
+      [/#list]
+    </ul>
+  [/#if]
+
+  <h3>List of Active Participants (and Organizations)</h3>
+  <p><a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-6m,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">${program.program_short_name} Program Health dashboard</a></p> 
+
+  <hr/>
+  [#if (unarchived_activities_without_leads?? && unarchived_activities_without_leads?size > 0) ||
+     (stale_activities?? && stale_activities?size > 0) ||
      (activities_with_unactioned_prs?? && activities_with_unactioned_prs?size > 0) ||
      (activities_with_unactioned_issues?? && activities_with_unactioned_issues?size > 0) ||
      (unarchived_activities_with_non_standard_licenses?? && unarchived_activities_with_non_standard_licenses?size > 0) ||
      (archived_activities_that_arent_github_archived?? && archived_activities_that_arent_github_archived?size > 0) ||
      (activities_with_repos_without_issues_support?? && activities_with_repos_without_issues_support?size > 0)]
+
+  <h2>Steering Data</h2>
+  <p>For more info on how to interpret this data, see <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/PMC+Monthly+Reports">PMC Monthly Reports page in the Community Handbook</a>.</p>
 
   [#if unarchived_activities_without_leads?? && unarchived_activities_without_leads?size > 0]
     [@render_table "Activities Without a Lead/Chair"
@@ -116,10 +165,10 @@
                    unarchived_activities_without_leads /]
   [/#if]
 
-  [#if inactive_activities?? && inactive_activities?size > 0]
+  [#if stale_activities?? && stale_activities?size > 0]
     [@render_table "Inactive Activities"
-                   "Here are inactive Projects and Working Groups, defined as being those with no git, GitHub, Confluence, or mailing list activity in the last ${inactive_days} days, that are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
-                   inactive_activities /]
+                   "Here are Projects and Working Groups that are in INCUBATING state, have been contributed more than 6 months ago and are not in <a href='https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/75530367/Archived'>Archived state</a>:"
+                   stale_activities /]
   [/#if]
 
   [#if activities_with_unactioned_prs?? && activities_with_unactioned_prs?size > 0]
@@ -151,9 +200,6 @@
                    "Here are the Projects and Working Groups that have GitHub repositories without issue tracking enabled:"
                    activities_with_repos_without_issues_support /]
   [/#if]
-[#else]
-  <p>No action is required - none of the ${program.program_short_name} Program's Projects and/or Working Groups have any of the issues covered by this report (and described in more detail on <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/Automated+Reports">the wiki</a>).&nbsp;&nbsp;🎉</p>
-  <hr/>
 [/#if]
   <p class="footnote">Need help? Raise a <a href="https://finosfoundation.atlassian.net/secure/CreateIssue.jspa?pid=10000&issuetype=10001">HELP issue</a>
     or send an email to <a href="mailto:help@finos.org">help@finos.org</a>.<br/>
