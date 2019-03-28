@@ -107,7 +107,7 @@
                 nil))))
 
 (defn row-to-user
-    [row program activity meeting-date]
+    [row program activity type meeting-date]
     (let [items      (sel/select (sel/child (sel/tag :tr) (sel/tag :td)) row)
           id         (resolve-user (first items))
           email      (first id)
@@ -146,21 +146,22 @@
                     ; ghid)
                 :program program
                 :activity activity
+                :type type
                 :meeting-date meeting-date}
             nil)))
 
 (defn meeting-roster
-    [table-html page-title program activity]
+    [table-html page-title program activity type]
     (let [meeting-date (parse-date page-title)
           selector    (sel/tag :tr)]
         (let [table (html/as-hickory (html/parse table-html))
               rows  (sel/select selector table)]
             (map 
-                #(row-to-user % program activity meeting-date)
+                #(row-to-user % program activity type meeting-date)
                 rows))))
 
 (defn parse-page
-    [page-data program activity]
+    [page-data program activity type]
     (let [content (cfl/content (:id page-data))
           title (:title page-data)]
         (if-not (skip-page title)
@@ -170,7 +171,8 @@
                         table-html
                         title
                         program
-                        activity)))
+                        activity
+                        type)))
             [])))
 
 (defn ids-and-titles
@@ -182,18 +184,18 @@
                 (map #(ids-and-titles (:id %)) children)))))
 
 (defn meetings-rosters
-    [program activity url]
+    [program activity type url]
     (println (str "Generating meeting attendance for activity " activity))
     (let [page-id   (cfl/page-id url)
           sub-pages (ids-and-titles page-id)]
         (remove nil? (flatten (map 
-            #(parse-page % program activity)
+            #(parse-page % program activity type)
             sub-pages)))))
 
 (defn roster-to-csv
     [roster-data]
     (with-open [writer (io/writer "finos-meetings.csv")]
-        (.write writer "email, name, org, github ID, program, activity, date\n")
+        (.write writer "email, name, org, github ID, cm_program, cm_title, cm_type, date\n")
         (doall 
         (map 
             #(.write writer (str (s/join ", " (vals %)) "\n")) 
