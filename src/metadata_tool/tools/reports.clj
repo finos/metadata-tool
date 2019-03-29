@@ -17,6 +17,7 @@
 (ns metadata-tool.tools.reports
   (:require [clojure.string                 :as s]
             [clojure.tools.logging          :as log]
+            [clj-http.client                :as http]
             [clojure.set                    :as set]
             [mount.core                     :as mnt :refer [defstate]]
             [clj-time.core                  :as tm]
@@ -87,7 +88,23 @@
     ;             body
     ;             :cc-addresses     program-liaison-email-address
     ;             :reply-to-address program-liaison-email-address)))
-                
+
+(defn participation-img
+  [type program]
+  (let [program-id (:id program)
+        short-name (:program-short-name program)
+        img-url    (str 
+                      "https://raw.githubusercontent.com/finos/reports-job/master/active-participation-reports/"
+                      (s/lower-case short-name)
+                      "-"
+                      type
+                      ".png")]
+    (try
+      (http/get img-url)
+      img-url
+      (catch Exception e
+        (println (str "Warn - URL '" img-url "' returns 404"))))))
+
 (defn email-pmc-reports
   []
   (let [now-str                                          (tf/unparse (tf/formatter "yyyy-MM-dd h:mmaa ZZZ") (tm/now))
@@ -143,6 +160,8 @@
                                                   :old-pr-threshold-days                            old-pr-threshold-days
                                                   :old-issue-threshold-days                         old-issue-threshold-days
                                                   :program                                          %
+                                                  :wg-participation-img                             (participation-img "working_group" %)
+                                                  :project-participation-img                        (participation-img "project" %)
                                                   :working-groups                                   (md/activities % "WORKING_GROUP")
                                                   :projects                                         (md/activities % "PROJECT")
                                                   :pmc-lead                                         (md/pmc-lead %)

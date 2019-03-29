@@ -151,11 +151,24 @@
   [/#if]
 
   <h3>Active Participants and Organizations</h3>
-  <p>Certain privileges (such as voting rights) are reserved to "active participants" in a project or working group, as defined by the FINOS <a href="https://drive.google.com/a/finos.org/open?id=1E7U4nPwnzAo6CwFwCWbkItL6wzR68LbGgl5dIkiLBCM">Active Participation Policy.</a> A list of Active participants can be found below.</p>
+  <p>Certain privileges (such as voting rights) are reserved to "active participants" in a project or working group, as defined by the FINOS <a href="https://drive.google.com/a/finos.org/open?id=1E7U4nPwnzAo6CwFwCWbkItL6wzR68LbGgl5dIkiLBCM">Active Participation Policy.</a>   
+  [#if project_participation_img?? || wg_participation_img??]
+    A list of Active participants can be found below.
+  [#else]
+    No active participants were found for any of this program's activities.
+  [/#if]
+  </p>
   
-  <img src="https://raw.githubusercontent.com/finos/reports-job/master/active-participation-reports/${program.program_short_name?lower_case}-working_group.png" alt="Active participation in projects"/>
-  <br/>
-  <img src="https://raw.githubusercontent.com/finos/reports-job/master/active-participation-reports/${program.program_short_name?lower_case}-project.png" alt="Active participation in working groups"/>
+  [#if project_participation_img??]
+    <h4><b>Projects</b></h4>
+    <img src="${project_participation_img}" alt="Active participation in projects"/>
+    <br/>
+  [/#if]
+
+  [#if wg_participation_img??]
+    <h4><b>Working Groups</b></h4>
+    <img src="${wg_participation_img}" alt="Active participation in working groups"/>
+  [/#if]
 
   <h3>Program Health Issues</h3>
   <p>There are currently no program health issues that are tracked by our automated system.</p>

@@ -335,7 +335,7 @@
 (defn orgs-in-pmc
   [program]
   (let [pmc-list (:pmc program)]
-    (distinct (map #(:organization-name (first (current-affiliations %))) pmc-list))))
+    (distinct (remove #(= "Individual Contributor" %) (map #(:organization-name (first (current-affiliations %))) pmc-list)))))
 
 (defn activities
   [program type]
