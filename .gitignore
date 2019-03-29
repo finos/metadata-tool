@@ -19,3 +19,4 @@ lib/
 .settings
 .vscode
 finos-meetings.csv
+email-report.html
