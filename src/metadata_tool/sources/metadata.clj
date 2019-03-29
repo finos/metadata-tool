@@ -327,6 +327,39 @@
     (if-let [current-affiliations (seq (filter current? (:affiliations person-metadata)))]
       (map #(organization-metadata (:organization-id %)) current-affiliations))))
 
+(defn assoc-org-name
+  [person]
+  (let [id (:person-id person)]
+    (assoc person :org-name (or (str " (" (:organization-name (first (current-affiliations id))) ")") ""))))
+
+(defn orgs-in-pmc
+  [program]
+  (let [pmc-list (:pmc program)]
+    (distinct (map #(:organization-name (first (current-affiliations %))) pmc-list))))
+
+(defn activities
+  [program type]
+  (let [program-id (:id program)]
+  (map #(:activity-name %)
+        (remove #(= "ARCHIVED" (:state %))
+          (filter #(= type (:type %))
+            (:activities program))))))
+
+(defn pmc-lead
+  [program]
+  (let [pmc-lead       (:pmc-lead program)
+        lead-enriched  (person-metadata pmc-lead)
+        full-name      (:full-name lead-enriched)
+        org-name       (:org-name (assoc-org-name lead-enriched))]
+    (str full-name org-name)))
+
+(defn pmc-list
+  [program]
+  (let [pmc-list        (:pmc program)
+        people-enriched (map #(person-metadata %) pmc-list)
+        orgs-enriched   (map #(assoc-org-name %) people-enriched)]
+    (map #(str (:full-name %) (:org-name %)) orgs-enriched)))
+            
 (defn has-icla?
   [person-id]
   (boolean (:has-icla (person-metadata person-id))))
