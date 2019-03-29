@@ -208,10 +208,19 @@
   [program-id]
   (sort (map #(.getName ^java.io.File %) (list-subdirs (io/file (str program-metadata-directory "/" program-id))))))
 
+(defn- github-urls
+  [program repos]
+  (seq (map #(str "https://github.com/" (:github-org program) "/" %) repos)))
+
 (defn- program-activity-github-urls
   [program activity]
-  (seq (map #(str "https://github.com/" (:github-org program) "/" %) (:github-repos activity))))
+  (github-urls program (:github-repos activity)))
 
+(defn- pmc-github-urls
+  [program]
+  (github-urls program (:pmc-repos program)))
+  ; (github-urls program (map #(s/lower-case %) (:pmc-repos program))))
+  
 (defn- expand-mailing-list-address
   [mailing-list-address]
   (if-not (s/blank? mailing-list-address)
@@ -261,6 +270,7 @@
     (let [program (assoc program :program-id program-id)]   ; Note: this assoc has to happen first, since (program-activities-metadata) depends on it.
       (assoc program
              :github-url               (if (:github-org program) (str "https://github.com/" (:github-org program)))
+             :pmc-github-urls          (pmc-github-urls program)
              :activities               (program-activities-metadata program)
              :pmc-mailing-list         (expand-mailing-list-address (:pmc-mailing-list-address         program))
              :pmc-private-mailing-list (expand-mailing-list-address (:pmc-private-mailing-list-address program))

@@ -170,9 +170,6 @@
     <img src="${wg_participation_img}" alt="Active participation in working groups"/>
   [/#if]
 
-  <h3>Program Health Issues</h3>
-  <p>There are currently no program health issues that are tracked by our automated system.</p>
-
   <p>For more information about program health metrics, see <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/PMC+Monthly+Reports">PMC Monthly Reports</a> in the Community Handbook.</p>
 
   <hr/>

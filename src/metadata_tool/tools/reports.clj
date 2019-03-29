@@ -77,17 +77,17 @@
 (defn- send-email-to-pmc
   [program-id subject body]
   ; TODO - enable code below and comment out print commands!
-  (println "===========================")
-  (println subject)
-  (println "---------------------------")
-  (println body)
-  (println "==========================="))
-  ; (if-not (s/blank? program-id)
-    ; (send-email (:pmc-mailing-list-address (md/program-metadata program-id))
-    ;             subject
-    ;             body
-    ;             :cc-addresses     program-liaison-email-address
-    ;             :reply-to-address program-liaison-email-address)))
+  ; (println "===========================")
+  ; (println subject)
+  ; (println "---------------------------")
+  ; (println body)
+  ; (println "==========================="))
+  (if-not (s/blank? program-id)
+    (send-email (:pmc-mailing-list-address (md/program-metadata program-id))
+                subject
+                body
+                :cc-addresses     program-liaison-email-address
+                :reply-to-address program-liaison-email-address)))
 
 (defn participation-img
   [type program]

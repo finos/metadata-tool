@@ -235,8 +235,9 @@
   []
   (let [github-repo-urls       (set (map s/lower-case (remove s/blank? (mapcat #(gh/repos-urls (:github-url %)) (md/programs-metadata)))))
         metadata-repo-urls     (set (map s/lower-case (remove s/blank? (mapcat :github-urls (md/activities-metadata)))))
-        repos-without-metadata (sort (set/difference github-repo-urls metadata-repo-urls))
-        metadatas-without-repo (sort (set/difference metadata-repo-urls github-repo-urls))]
+        plus-pmc-repo-urls     (set (flatten (concat metadata-repo-urls (mapcat :pmc-github-urls (md/programs-metadata)))))
+        repos-without-metadata (sort (set/difference github-repo-urls plus-pmc-repo-urls))
+        metadatas-without-repo (sort (set/difference plus-pmc-repo-urls github-repo-urls))]
     (doall (map #(println "⚠️ GitHub repo" % "has no metadata.") repos-without-metadata))
     (doall (map #(println "⚠️ GitHub repo" % "has metadata, but does not exist in GitHub.") metadatas-without-repo))))
 
