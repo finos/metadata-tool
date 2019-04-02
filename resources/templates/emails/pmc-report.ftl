@@ -106,7 +106,7 @@
   <h3>PMC Lead</h3>
   <ul><li>${pmc_lead!"Position currently unfilled"}</li></ul>
   
-  <h3>PMC Members</h3>
+  <h3>Program Management Committee ("PMC")</h3>
   [#if pmc_list?? && pmc_list?size > 0]
     <ul>
       [#list pmc_list as pmc_person]
