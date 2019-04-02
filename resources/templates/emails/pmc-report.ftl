@@ -151,7 +151,7 @@
   [/#if]
 
   <h3>Active Participants and Organizations</h3>
-  <p>Certain privileges (such as voting rights) are reserved to "active participants" in a project or working group, as defined by the FINOS <a href="https://drive.google.com/a/finos.org/open?id=1E7U4nPwnzAo6CwFwCWbkItL6wzR68LbGgl5dIkiLBCM">Active Participation Policy.</a>   
+  <p>Certain privileges (such as voting rights) are reserved to "active participants" in a project or working group, as defined by the FINOS <a href="https://www.finos.org/hubfs/FINOS/governance/FINOS%20Active%20Participation%20Policy%202018-12-12.pdf?hsLang=en-us">Active Participation Policy.</a>   
   [#if project_participation_img?? || wg_participation_img??]
     A list of Active participants can be found below.
   [#else]
