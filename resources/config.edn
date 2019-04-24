@@ -24,6 +24,7 @@
     :remove-from-names ["(PMC Lead)" "(Observer)" "(Chair)" "(Call-in User)" "(Deactivated)"]
     :acronyms {
         "Anton" "Anton Nikolaev"
+        "Nicholas Kolba" "Nick Kolba"
         "Saori" "Saori Fotenos"
         "JT" "Jonathan Teper"
         "Rhyddian" "Rhyddian Olds"
