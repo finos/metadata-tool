@@ -100,7 +100,7 @@
   <p>This is an automated monthly report to enable the ${program.program_name} Program Management Committee (PMC) to gauge the status of the projects and working groups in your program and identify potential areas of concern. For more information on how to use this information (including when to intervene when issues arise) see <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/PMC+Monthly+Reports">PMC Monthly Reports</a> in the FINOS Community Handbook.</p>
 
   <h3>Program Metrics</h3>
-  <p>The ${program.program_short_name} <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-6M,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">metrics dashboard</a> shows information about program activity and the health of projects and working groups. It includes some of the <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/93225748/Board+Reporting+and+Program+Health+Checks">program health metrics</a> that PMCs are required to report quarterly to the board(Others must be tracked and calculated by PMCs themselves.)</p>
+  <p>The ${program.program_short_name} <a href="https://metrics.finos.org/app/kibana?#/dashboard/0e542930-4f2d-11e9-9e7c-eb1eab055f1f?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-6M,mode:quick,to:now))&_a=(filters:!(),query:(query_string:(analyze_wildcard:!t,query:'cm_program:%22${program.program_short_name}%22')))">metrics dashboard</a> shows information about program activity, active participants and the health of projects and working groups. It includes some of the <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/93225748/Board+Reporting+and+Program+Health+Checks">program health metrics</a> that PMCs are required to report quarterly to the board(Others must be tracked and calculated by PMCs themselves.)</p>
 
   <hr/>
   <h3>PMC Lead</h3>
@@ -149,28 +149,6 @@
   [#else]
     <p>This program currently has no projects.</p>
   [/#if]
-
-  <h3>Active Participants and Organizations</h3>
-  <p>Certain privileges (such as voting rights) are reserved to "active participants" in a project or working group, as defined by the FINOS <a href="https://www.finos.org/hubfs/FINOS/governance/FINOS%20Active%20Participation%20Policy%202018-12-12.pdf?hsLang=en-us">Active Participation Policy.</a>   
-  [#if project_participation_img?? || wg_participation_img??]
-    A list of Active participants can be found below.
-  [#else]
-    No active participants were found for any of this program's activities.
-  [/#if]
-  </p>
-  
-  [#if project_participation_img??]
-    <h4><b>Projects</b></h4>
-    <img src="${project_participation_img}" alt="Active participation in projects"/>
-    <br/>
-  [/#if]
-
-  [#if wg_participation_img??]
-    <h4><b>Working Groups</b></h4>
-    <img src="${wg_participation_img}" alt="Active participation in working groups"/>
-  [/#if]
-
-  <p>For more information about program health metrics, see <a href="https://finosfoundation.atlassian.net/wiki/spaces/FINOS/pages/118292491/PMC+Monthly+Reports">PMC Monthly Reports</a> in the Community Handbook.</p>
 
   <hr/>
   [#if (unarchived_activities_without_leads?? && unarchived_activities_without_leads?size > 0) ||
