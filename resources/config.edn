@@ -24,6 +24,7 @@
     :remove-from-names ["(PMC Lead)" "(Observer)" "(Chair)" "(Call-in User)" "(Deactivated)"]
     :acronyms {
         "Anton" "Anton Nikolaev"
+        "Nicholas Kolba" "Nick Kolba"
         "Saori" "Saori Fotenos"
         "JT" "Jonathan Teper"
         "Rhyddian" "Rhyddian Olds"
@@ -33,6 +34,10 @@
         "Gab Columbro" "Gabriele Columbro"
         "Nilesh Bhattad" "Nilesh R. Bhattad"
         "Peter Smulovic" "Peter Smulovics"
+        "Victor Rodriguez" "Victor Rodriguez Gil"
+        "Joey French" "Joseph French"
+        "Jon Meadows" "Jonathan Meadows"
+        "Bill Soler" "William Soler"
     }
   }
 
