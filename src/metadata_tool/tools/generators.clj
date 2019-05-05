@@ -1,41 +1,43 @@
-;
-; Copyright 2017 Fintech Open Source Foundation
-; SPDX-License-Identifier: Apache-2.0
-;
-; Licensed under the Apache License, Version 2.0 (the "License");
-; you may not use this file except in compliance with the License.
-; You may obtain a copy of the License at
-;
-;     http://www.apache.org/licenses/LICENSE-2.0
-;
-; Unless required by applicable law or agreed to in writing, software
-; distributed under the License is distributed on an "AS IS" BASIS,
-; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-; See the License for the specific language governing permissions and
-; limitations under the License.
-;
+;;
+;; Copyright 2017 Fintech Open Source Foundation
+;; SPDX-License-Identifier: Apache-2.0
+;;
+;; Licensed under the Apache License, Version 2.0 (the "License");;
+;; you may not use this file except in compliance with the License.
+;; You may obtain a copy of the License at
+;;
+;;     http://www.apache.org/licenses/LICENSE-2.0
+;;
+;; Unless required by applicable law or agreed to in writing, software
+;; distributed under the License is distributed on an "AS IS" BASIS,
+;; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+;; See the License for the specific language governing permissions and
+;; limitations under the License.
+;;
+
 (ns metadata-tool.tools.generators
-  (:require [clojure.string                   :as s]
-            [clojure.set                      :as set]
-            [clojure.pprint                   :as pp]
-            [clojure.tools.logging            :as log]
-            [clojure.java.io                  :as io]
-            [clojure.data.csv                 :as csv]
-            [mount.core                       :as mnt :refer [defstate]]
-            [cheshire.core                    :as ch]
-            [metadata-tool.tools.parsers      :as psrs]
-            [metadata-tool.config             :as cfg]
-            [metadata-tool.template           :as tem]
-            [metadata-tool.sources.confluence :as cfl]
-            [metadata-tool.sources.github     :as gh]
-            [metadata-tool.sources.bitergia   :as bi]
-            [metadata-tool.sources.schemas    :as sch]
-            [metadata-tool.sources.metadata   :as md]))
+  (:require
+    [clojure.string                   :as s]
+    [clojure.set                      :as set]
+    [clojure.pprint                   :as pp]
+    [clojure.tools.logging            :as log]
+    [clojure.java.io                  :as io]
+    [clojure.data.csv                 :as csv]
+    [mount.core                       :as mnt :refer [defstate]]
+    [cheshire.core                    :as ch]
+    [metadata-tool.tools.parsers      :as psrs]
+    [metadata-tool.config             :as cfg]
+    [metadata-tool.template           :as tem]
+    [metadata-tool.sources.confluence :as cfl]
+    [metadata-tool.sources.github     :as gh]
+    [metadata-tool.sources.bitergia   :as bi]
+    [metadata-tool.sources.schemas    :as sch]
+    [metadata-tool.sources.metadata   :as md]))
 
 (defn gen-clabot-whitelist
   []
   (println (tem/render "clabot-whitelist.ftl"
-                        { :github-ids (sort (mapcat :github-logins (md/people-with-clas))) })))
+             { :github-ids (sort (mapcat :github-logins (md/people-with-clas))) })))
 
 (defn gen-bitergia-affiliation-data
   []
@@ -57,39 +59,35 @@
 (defn- build-github-repo-data
   [repo-url]
   (if-let [repo (gh/repo repo-url)]
-    (let [collaborators (gh/collaborators repo-url)
-          languages     (gh/languages     repo-url)]
-      {
-        :name          (or (:name        repo) "")
+    (let [ collaborators (gh/collaborators repo-url)
+           languages     (gh/languages     repo-url)]
+      { :name          (or (:name        repo) "")
         :description   (or (:description repo) "")
         :url           repo-url
         :heat          (+ (* (count collaborators)           4)
-                          (* (or (:forks_count      repo) 0) 5)
-                          (* (or (:stargazers_count repo) 0) 1)
-                          (* (or (:watchers_count   repo) 0) 1))
+                         (* (or (:forks_count      repo) 0) 5)
+                         (* (or (:stargazers_count repo) 0) 1)
+                         (* (or (:watchers_count   repo) 0) 1))
         :watchers      (or (:watchers_count    repo) 0)
         :size          (or (:size              repo) 0)
         :collaborators (count collaborators)
         :stars         (or (:stargazers_count  repo) 0)
         :forks         (or (:forks_count       repo) 0)
         :open-issues   (or (:open_issues_count repo) 0)
-        :languages     languages
-      })
+        :languages     languages})
     (log/warn "Unable to retrieve GitHub repository metadata for" repo-url)))
 
 (defn- accumulate-github-stats
   [github-repos]
   (if-not (empty? github-repos)
-    {
-      :heat          (apply +                      (map :heat          github-repos))
-      :watchers      (apply +                      (map :watchers      github-repos))   ; ####TODO: Fix double counting
+    { :heat          (apply +                      (map :heat          github-repos))
+      :watchers      (apply +                      (map :watchers      github-repos)) ; ####TODO: Fix double counting
       :size          (apply +                      (map :size          github-repos))
-      :collaborators (apply +                      (map :collaborators github-repos))   ; ####TODO: Fix double counting
-      :stars         (apply +                      (map :stars         github-repos))   ; ####TODO: Fix double counting
+      :collaborators (apply +                      (map :collaborators github-repos)) ; ####TODO: Fix double counting
+      :stars         (apply +                      (map :stars         github-repos)) ; ####TODO: Fix double counting
       :forks         (apply +                      (map :forks         github-repos))
       :open-issues   (apply +                      (map :open-issues   github-repos))
-      :languages     (apply (partial merge-with +) (map :languages     github-repos))
-    }))
+      :languages     (apply (partial merge-with +) (map :languages     github-repos))}))
 
 (defn gen-catalogue-data
   []
@@ -131,9 +129,9 @@
 (defn gen-meeting-roster-data
   []
   (let [programs (md/programs-metadata)
-        roster-data
-          (remove nil? (flatten
-            (map 
-              #(gen-program-roster %)
-              programs)))]
-      (psrs/roster-to-csv roster-data)))
+         roster-data
+         (remove nil? (flatten
+                        (map
+                          #(gen-program-roster %)
+                          programs)))]
+    (psrs/roster-to-csv roster-data)))

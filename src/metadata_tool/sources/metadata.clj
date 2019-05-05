@@ -1,30 +1,32 @@
-;
-; Copyright 2017 Fintech Open Source Foundation
-; SPDX-License-Identifier: Apache-2.0
-;
-; Licensed under the Apache License, Version 2.0 (the "License");
-; you may not use this file except in compliance with the License.
-; You may obtain a copy of the License at
-;
-;     http://www.apache.org/licenses/LICENSE-2.0
-;
-; Unless required by applicable law or agreed to in writing, software
-; distributed under the License is distributed on an "AS IS" BASIS,
-; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-; See the License for the specific language governing permissions and
-; limitations under the License.
-;
+;;
+;; Copyright 2017 Fintech Open Source Foundation
+;; SPDX-License-Identifier: Apache-2.0
+;;
+;; Licensed under the Apache License, Version 2.0 (the "License");;
+;; you may not use this file except in compliance with the License.
+;; You may obtain a copy of the License at
+;;
+;;     http://www.apache.org/licenses/LICENSE-2.0
+;;
+;; Unless required by applicable law or agreed to in writing, software
+;; distributed under the License is distributed on an "AS IS" BASIS,
+;; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+;; See the License for the specific language governing permissions and
+;; limitations under the License.
+;;
+
 (ns metadata-tool.sources.metadata
-  (:require [clojure.string                :as s]
-            [clojure.tools.logging         :as log]
-            [clojure.java.io               :as io]
-            [mount.core                    :as mnt :refer [defstate]]
-            [cheshire.core                 :as ch]
-            [clj-time.core                 :as tm]
-            [clj-time.format               :as tf]
-            [metadata-tool.config          :as cfg]
-            [metadata-tool.sources.github  :as gh]
-            [metadata-tool.sources.schemas :as sch]))
+  (:require
+    [clojure.string                :as s]
+    [clojure.tools.logging         :as log]
+    [clojure.java.io               :as io]
+    [mount.core                    :as mnt :refer [defstate]]
+    [cheshire.core                 :as ch]
+    [clj-time.core                 :as tm]
+    [clj-time.format               :as tf]
+    [metadata-tool.config          :as cfg]
+    [metadata-tool.sources.github  :as gh]
+    [metadata-tool.sources.schemas :as sch]))
 
 (defstate ^:private organization-metadata-directory :start (str gh/metadata-directory "/organizations"))
 (defstate ^:private people-metadata-directory       :start (str gh/metadata-directory "/people"))
@@ -40,7 +42,7 @@
   [filename]
   (doall
     (sort-by #(.getCanonicalPath ^java.io.File %)
-             (filter #(= filename (.getName ^java.io.File %)) (file-seq (io/file gh/metadata-directory))))))
+      (filter #(= filename (.getName ^java.io.File %)) (file-seq (io/file gh/metadata-directory))))))
 
 (defstate ^:private organization-metadata-files :start (list-metadata-files organization-filename))
 (defstate ^:private person-metadata-files       :start (list-metadata-files person-filename))
@@ -59,10 +61,10 @@
   "Returns a sequence of the immediate subdirectories of dir, as java.io.File objects."
   [^java.io.File dir]
   (seq (.listFiles dir
-                   (reify
-                     java.io.FileFilter
-                     (accept [this f]
-                       (.isDirectory f))))))
+         (reify
+           java.io.FileFilter
+           (accept [this f]
+             (.isDirectory f))))))
 
 (defstate organizations :start (doall (sort (map #(.getName ^java.io.File %) (list-subdirs (io/file organization-metadata-directory))))))
 (defstate people        :start (doall (sort (map #(.getName ^java.io.File %) (list-subdirs (io/file people-metadata-directory))))))
@@ -74,8 +76,8 @@
   (keyword
     (s/replace
       (s/join "-"
-              (map s/lower-case
-                   (s/split k #"(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])")))
+        (map s/lower-case
+          (s/split k #"(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])")))
       "git-hub"
       "github")))
 
@@ -84,6 +86,7 @@
   (let [the-file (io/file metadata-file)]
     (when (.exists the-file)
       (ch/parse-string (slurp the-file) clojurise-json-key))))
+
 (def ^:private read-metadata-file (memoize read-metadata-file-fn))
 
 (defn- validate-metadata-file
@@ -91,10 +94,10 @@
   [schema-type ^java.io.File file]
   (log/debug "Validating" schema-type "metadata file" (.getCanonicalPath file))
   (try
-    (let [json-string      (slurp file)
-          json             (ch/parse-string json-string clojurise-json-key)
-          metadata-version (:metadata-version json)
-          schema-id        [schema-type metadata-version]]
+    (let [ json-string      (slurp file)
+           json             (ch/parse-string json-string clojurise-json-key)
+           metadata-version (:metadata-version json)
+           schema-id        [schema-type metadata-version]]
       (if metadata-version
         (sch/validate-json schema-id json-string)
         (throw (Exception. (str "No metadataVersion property.")))))
@@ -116,7 +119,7 @@
   (if organization-id
     (if-let [result (read-metadata-file (str organization-metadata-directory "/" organization-id "/" organization-filename))]
       (assoc result
-             :organization-id organization-id))))
+        :organization-id organization-id))))
 
 (defn organizations-metadata
   "A seq containing the metadata of all organizations, sorted by organization-name."
@@ -129,7 +132,7 @@
   (if person-id
     (if-let [person-metadata (read-metadata-file (str people-metadata-directory "/" person-id "/" person-filename))]
       (assoc person-metadata
-             :person-id person-id))))
+        :person-id person-id))))
 
 (defn person-metadata-with-organizations
   "Person metadata of the given person-id, with affiliations expanded to include full organization metadata."
@@ -137,7 +140,7 @@
   (if-let [person (person-metadata person-id)]
     (if-let [affiliations (:affiliations person)]
       (assoc person
-             :affiliations (seq (map #(assoc % :organization (organization-metadata (:organization-id %))) affiliations)))
+        :affiliations (seq (map #(assoc % :organization (organization-metadata (:organization-id %))) affiliations)))
       person)))
 
 (defn people-metadata
@@ -161,44 +164,47 @@
 (defn matches-person
   [person ghid name email]
   (or
-      (and
-        ; (try
-        (not (s/blank? ghid))
-          ; (catch Exception e (str ghid " " name " " email " - caught exception: " (.getMessage e))))
-        (some #{ghid} (:github-logins person)))
-      (and
-        (not (s/blank? name))
-        (= name (:full-name person)))
-      (and
-        (not (s/blank? email))
-        (some #{email} (:email-addresses person)))))
-  
+    (and
+      ;; (try
+      (not (s/blank? ghid))
+      ;; (catch Exception e (str ghid " " name " " email " - caught exception: " (.getMessage e))))
+      (some #{ghid} (:github-logins person)))
+    (and
+      (not (s/blank? name))
+      (= name (:full-name person)))
+    (and
+      (not (s/blank? email))
+      (some #{email} (:email-addresses person)))))
+
 (defn person-metadata-by-fn
   [ghid name email]
   (if (or ghid name email)
     (first (filter #(matches-person % ghid name email) (people-metadata)))))
+
 (def person-metadata-by
   "Person metadata of either a given GitHub login, name or email address; returns nil if there is none."
   (memoize person-metadata-by-fn))
-  
+
 (defn lower-emails
   [item]
   (map #(s/lower-case %) (:email-addresses item)))
 
 (defn person-metadata-by-email-address-fn
-    [email-address]
-    (if email-address
-      (first (filter #(some 
-                        #{(s/lower-case email-address)}
-                        (lower-emails %)) (people-metadata)))))
+  [email-address]
+  (if email-address
+    (first (filter #(some
+                      #{(s/lower-case email-address)}
+                      (lower-emails %)) (people-metadata)))))
+
 (def person-metadata-by-email-address
   "Person metadata of the given email address, or nil if there is none."
   (memoize person-metadata-by-email-address-fn))
-  
+
 (defn person-metadata-by-fullname-fn
   [full-name]
   (if full-name
     (first (filter #(= full-name (:full-name %)) (people-metadata)))))
+
 (def person-metadata-by-fullname
   "Person metadata of the given fullname, or nil if there is none."
   (memoize person-metadata-by-email-address-fn))
@@ -219,8 +225,8 @@
 (defn- pmc-github-urls
   [program]
   (github-urls program (:pmc-repos program)))
-  ; (github-urls program (map #(s/lower-case %) (:pmc-repos program))))
-  
+;; (github-urls program (map #(s/lower-case %) (:pmc-repos program))))
+
 (defn- expand-mailing-list-address
   [mailing-list-address]
   (if-not (s/blank? mailing-list-address)
@@ -228,19 +234,17 @@
       :email-address   mailing-list-address
       :web-archive-url (let [[list-name domain] (s/split mailing-list-address #"@")]
                          (if (and (not (s/blank? list-name))
-                                  (not (s/blank? domain))
-                                  (or (= domain "finos.org")
-                                      (= domain "symphony.foundation")))
+                               (not (s/blank? domain))
+                               (or (= domain "finos.org")
+                                 (= domain "symphony.foundation")))
                            (str "https://groups.google.com/a/" domain "/forum/#!forum/" list-name)))
-    }))
+      }))
 
 (defn- expand-confluence-space-key
   [confluence-space-key]
   (if-not (s/blank? confluence-space-key)
-    {
-      :key confluence-space-key
-      :url (str "https://finosfoundation.atlassian.net/wiki/spaces/" confluence-space-key "/overview")
-    }))
+    { :key confluence-space-key
+      :url (str "https://finosfoundation.atlassian.net/wiki/spaces/" confluence-space-key "/overview")}))
 
 (defn- program-activities-metadata
   "A seq containing the metadata of all activities in the given program."
@@ -250,18 +254,18 @@
       (remove nil?
         (map #(if-let [activity (read-metadata-file (str program-metadata-directory "/" program-id "/" % "/" activity-filename))]
                 (assoc activity
-                       :program-id              program-id
-                       :program-name            (:program-name program)
-                       :program-short-name      (:program-short-name program)
-                       :activity-id             %
-                       :tags                    (if-let [current-tags (:tags activity)]      ; Normalise tags to lower case, de-dupe and sort
-                                                  (seq (sort (distinct (map s/lower-case (remove s/blank? current-tags))))))
-                       :lead-or-chair-person-id (:lead-or-chair activity)
-                       :lead-or-chair           (person-metadata (:lead-or-chair activity))
-                       :github-urls             (program-activity-github-urls program activity)
-                       :mailing-lists           (map expand-mailing-list-address (:mailing-list-addresses activity))
-                       :confluence-spaces       (map expand-confluence-space-key (:confluence-space-keys activity))))
-             (program-activities program-id))))))
+                  :program-id              program-id
+                  :program-name            (:program-name program)
+                  :program-short-name      (:program-short-name program)
+                  :activity-id             %
+                  :tags                    (if-let [current-tags (:tags activity)]      ; Normalise tags to lower case, de-dupe and sort
+                                             (seq (sort (distinct (map s/lower-case (remove s/blank? current-tags))))))
+                  :lead-or-chair-person-id (:lead-or-chair activity)
+                  :lead-or-chair           (person-metadata (:lead-or-chair activity))
+                  :github-urls             (program-activity-github-urls program activity)
+                  :mailing-lists           (map expand-mailing-list-address (:mailing-list-addresses activity))
+                  :confluence-spaces       (map expand-confluence-space-key (:confluence-space-keys activity))))
+          (program-activities program-id))))))
 
 (defn- program-metadata-fn
   "Program metadata of the given program-id, or nil if there is none."
@@ -269,13 +273,13 @@
   (if-let [program (read-metadata-file (str program-metadata-directory "/" program-id "/" program-filename))]
     (let [program (assoc program :program-id program-id)]   ; Note: this assoc has to happen first, since (program-activities-metadata) depends on it.
       (assoc program
-             :github-url               (if (:github-org program) (str "https://github.com/" (:github-org program)))
-             :pmc-github-urls          (pmc-github-urls program)
-             :activities               (program-activities-metadata program)
-             :pmc-mailing-list         (expand-mailing-list-address (:pmc-mailing-list-address         program))
-             :pmc-private-mailing-list (expand-mailing-list-address (:pmc-private-mailing-list-address program))
-             :program-mailing-list     (expand-mailing-list-address (:program-mailing-list-address     program))
-             :confluence-space         (expand-confluence-space-key (:confluence-space-key             program))))))
+        :github-url               (if (:github-org program) (str "https://github.com/" (:github-org program)))
+        :pmc-github-urls          (pmc-github-urls program)
+        :activities               (program-activities-metadata program)
+        :pmc-mailing-list         (expand-mailing-list-address (:pmc-mailing-list-address         program))
+        :pmc-private-mailing-list (expand-mailing-list-address (:pmc-private-mailing-list-address program))
+        :program-mailing-list     (expand-mailing-list-address (:program-mailing-list-address     program))
+        :confluence-space         (expand-confluence-space-key (:confluence-space-key             program))))))
 (def program-metadata (memoize program-metadata-fn))
 
 (defn programs-metadata
@@ -299,6 +303,7 @@
     (if-let [result (first (filter #(= activity-name (:activity-name %)) (activities-metadata)))]
       result
       (log/warn "Could not find metadata for" activity-name))))
+
 (def activity-metadata-by-name
   "The metadata for a specific activity, identified by name."
   (memoize activity-metadata-by-name-fn))
@@ -317,11 +322,11 @@
   "True if the given 'date range' map (with a :start-date and/or :end-date key) is current i.e. spans today."
   [m]
   (if m
-    (let [today      (tf/unparse (tf/formatters :date) (tm/now))
-          start-date (:start-date m)
-          end-date   (:end-date   m)]
+    (let [today       (tf/unparse (tf/formatters :date) (tm/now))
+           start-date (:start-date m)
+           end-date   (:end-date   m)]
       (and (or (nil? start-date) (neg? (compare start-date today)))
-           (or (nil? end-date)   (neg? (compare today end-date)))))))
+        (or (nil? end-date)   (neg? (compare today end-date)))))))
 
 (defn current-approved-contributors
   "A seq of person metadata for the *currently* approved contributors for the given organization-id, or nil if there are none."
@@ -350,26 +355,26 @@
 (defn activities
   [program type]
   (let [program-id (:id program)]
-  (map #(:activity-name %)
-        (remove #(= "ARCHIVED" (:state %))
-          (filter #(= type (:type %))
-            (:activities program))))))
+    (map #(:activity-name %)
+      (remove #(= "ARCHIVED" (:state %))
+        (filter #(= type (:type %))
+          (:activities program))))))
 
 (defn pmc-lead
   [program]
   (let [pmc-lead       (:pmc-lead program)
-        lead-enriched  (person-metadata pmc-lead)
-        full-name      (:full-name lead-enriched)
-        org-name       (:org-name (assoc-org-name lead-enriched))]
+         lead-enriched (person-metadata pmc-lead)
+         full-name     (:full-name lead-enriched)
+         org-name      (:org-name (assoc-org-name lead-enriched))]
     (str full-name org-name)))
 
 (defn pmc-list
   [program]
-  (let [pmc-list        (:pmc program)
-        people-enriched (map #(person-metadata %) pmc-list)
-        orgs-enriched   (map #(assoc-org-name %) people-enriched)]
+  (let [pmc-list         (:pmc program)
+         people-enriched (map #(person-metadata %) pmc-list)
+         orgs-enriched   (map #(assoc-org-name %) people-enriched)]
     (map #(str (:full-name %) (:org-name %)) orgs-enriched)))
-            
+
 (defn has-icla?
   [person-id]
   (boolean (:has-icla (person-metadata person-id))))
@@ -378,16 +383,16 @@
   [person-id]
   (if-let [current-affiliations-with-cclas (seq (filter :has-ccla (current-affiliations person-id)))]
     (let [current-approved-contributors (map :person-id
-                                             (mapcat #(current-approved-contributors (:organization-id %))
-                                                     current-affiliations-with-cclas))]
+                                          (mapcat #(current-approved-contributors (:organization-id %))
+                                            current-affiliations-with-cclas))]
       (or (empty? current-approved-contributors)
-          (boolean (some #{person-id} current-approved-contributors))))
+        (boolean (some #{person-id} current-approved-contributors))))
     false))
 
 (defn has-cla?
   [person-id]
   (or (has-icla? person-id)
-      (has-ccla? person-id)))
+    (has-ccla? person-id)))
 
 (defn people-with-clas
   "A seq of person metadata for all people who currently have CLAs with the Foundation."

@@ -1,5 +1,10 @@
+;;; .dir-locals.el --- metadata-tool Emacs configuration  -*- lexical-binding: t; -*-
+
+;; Author: Carlo Sciolla <carlo@session.it>
+;; Keywords: convenience
+
 ;;
-;; Copyright 2018 Fintech Open Source Foundation
+;; Copyright 2017 Fintech Open Source Foundation
 ;; SPDX-License-Identifier: Apache-2.0
 ;;
 ;; Licensed under the Apache License, Version 2.0 (the "License");;
@@ -15,26 +20,14 @@
 ;; limitations under the License.
 ;;
 
-(ns metadata-tool.exit-code)
+;;; Commentary:
+;; Define common rules for Emacs users when editing code of metadata-tool
 
-(def ^:private exit-code (atom 0))
+;;; Code:
 
-(defn set-exit-code
-  "Sets the exit code to at least the given value."
-  [new-exit-code]
-  (swap! exit-code max new-exit-code))
+((nil . (
+            (clojure-align-forms-automatically . t) ; enable vertical align
+         )))
 
-(defn set-warning
-  "Set a warning exit code (1)."
-  []
-  (set-exit-code 1))
-
-(defn set-error
-  "Set an error exit code (2)."
-  []
-  (set-exit-code 2))
-
-(defn get-exit-code
-  "Retrieves the current value of the exit code."
-  []
-  @exit-code)
+(provide '.dir-locals)
+;;; .dir-locals.el ends here
