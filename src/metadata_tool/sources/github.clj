@@ -16,18 +16,17 @@
 ;;
 
 (ns metadata-tool.sources.github
-  (:require
-    [clojure.string        :as s]
-    [clojure.java.io       :as io]
-    [clojure.tools.logging :as log]
-    [mount.core            :as mnt :refer [defstate]]
-    [lambdaisland.uri      :as uri]
-    [clj-jgit.porcelain    :as git]
-    [tentacles.core        :as tc]
-    [tentacles.repos       :as tr]
-    [tentacles.orgs        :as to]
-    [tentacles.users       :as tu]
-    [metadata-tool.config  :as cfg]))
+  (:require [clojure.string        :as s]
+            [clojure.java.io       :as io]
+            [clojure.tools.logging :as log]
+            [mount.core            :as mnt :refer [defstate]]
+            [lambdaisland.uri      :as uri]
+            [clj-jgit.porcelain    :as git]
+            [tentacles.core        :as tc]
+            [tentacles.repos       :as tr]
+            [tentacles.orgs        :as to]
+            [tentacles.users       :as tu]
+            [metadata-tool.config  :as cfg]))
 
 (def ^:private metadata-org-name  "finos")
 (def ^:private metadata-repo-name "metadata")
@@ -65,10 +64,10 @@
              (log/info "Using local metadata directory at" (:metadata-directory cfg/config))
              (:metadata-directory cfg/config))
            (let [result (str cfg/temp-directory
-                          (if (not (s/ends-with? cfg/temp-directory "/")) "/")
-                          "finos-metadata-" (java.util.UUID/randomUUID))
-                  _     (log/info "Cloning metadata repository to" result)
-                  repo  (git/with-credentials ^String username
+                             (if (not (s/ends-with? cfg/temp-directory "/")) "/")
+                             "finos-metadata-" (java.util.UUID/randomUUID))
+                 _      (log/info "Cloning metadata repository to" result)
+                 repo   (git/with-credentials ^String username
                           ^String password
                           (git/git-clone (str "https://github.com/" metadata-org-name "/" metadata-repo-name) result))]
              (when-not (s/blank? github-revision)
@@ -166,8 +165,8 @@
   (if repo-url
     (let [[org repo] (parse-github-url-path repo-url)]
       (if (and
-            (not (s/blank? org))
-            (not (s/blank? repo)))
+           (not (s/blank? org))
+           (not (s/blank? repo)))
         (let [result (call-gh (tr/specific-repo org repo opts))]
           (if-not (:private result)
             result))))))
@@ -181,8 +180,8 @@
   (if repo-url
     (let [[org repo] (parse-github-url-path repo-url)]
       (if (and
-            (not (s/blank? org))
-            (not (s/blank? repo)))
+           (not (s/blank? org))
+           (not (s/blank? repo)))
         (call-gh (tr/languages org repo opts))))))
 
 (def languages (memoize languages-fn))

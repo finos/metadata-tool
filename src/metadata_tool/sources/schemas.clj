@@ -16,29 +16,28 @@
 ;;
 
 (ns metadata-tool.sources.schemas
-  (:require
-    [clojure.string               :as s]
-    [clojure.tools.logging        :as log]
-    [clojure.java.io              :as io]
-    [mount.core                   :as mnt :refer [defstate]]
-    [scjsv.core                   :as jsv]
-    [metadata-tool.config         :as cfg]
-    [metadata-tool.sources.github :as gh]))
+  (:require [clojure.string               :as s]
+            [clojure.tools.logging        :as log]
+            [clojure.java.io              :as io]
+            [mount.core                   :as mnt :refer [defstate]]
+            [scjsv.core                   :as jsv]
+            [metadata-tool.config         :as cfg]
+            [metadata-tool.sources.github :as gh]))
 
 (defstate schema-directories
   "The available types of schema, and the location of their version-specific schema definition files within the metadata repository."
-  :start { :organization (str gh/metadata-directory "/jsonschema/organization-metadata")
-           :person       (str gh/metadata-directory "/jsonschema/person-metadata")
-           :program      (str gh/metadata-directory "/jsonschema/program-metadata")
-           :activity     (str gh/metadata-directory "/jsonschema/activity-metadata")
-           :repository   (str gh/metadata-directory "/jsonschema/repository-metadata")})
+  :start {:organization (str gh/metadata-directory "/jsonschema/organization-metadata")
+          :person       (str gh/metadata-directory "/jsonschema/person-metadata")
+          :program      (str gh/metadata-directory "/jsonschema/program-metadata")
+          :activity     (str gh/metadata-directory "/jsonschema/activity-metadata")
+          :repository   (str gh/metadata-directory "/jsonschema/repository-metadata")})
 
 (defstate schema-ids
   "Set of all available schema types and versions."
   :start (let [schema-types (keys schema-directories)]
            (set (for [schema-type schema-types
-                       version    (map #(.getName ^java.io.File %)
-                                    (.listFiles (io/file (get schema-directories schema-type))))]
+                      version     (map #(.getName ^java.io.File %)
+                                       (.listFiles (io/file (get schema-directories schema-type))))]
                   [schema-type version]))))
 
 (defn- load-schema

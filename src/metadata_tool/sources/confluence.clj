@@ -16,37 +16,36 @@
 ;;
 
 (ns metadata-tool.sources.confluence
-  (:require
-    [clojure.string        :as s]
-    [clj-http.client       :as http]
-    [clj-http.conn-mgr     :as conn]
-    [metadata-tool.config  :as cfg]))
+  (:require [clojure.string        :as s]
+            [clj-http.client       :as http]
+            [clj-http.conn-mgr     :as conn]
+            [metadata-tool.config  :as cfg]))
 
 (def cm (conn/make-reusable-conn-manager {}))
 
 (defn client []
   (:http-client
-    (http/get (:host (:confluence cfg/config)) { :connection-manager cm
-                                                 :cache              true})))
+   (http/get (:host (:confluence cfg/config)) {:connection-manager cm
+                                               :cache              true})))
 
 (defn cget [& args]
   (http/get (str (:host (:confluence cfg/config)) "/wiki/rest/api/" (apply str args))
-    {:basic-auth          [ (:username (:confluence cfg/config))
-                            (:password (:confluence cfg/config))]
-      :connection-manager cm
-      :http-client        (client)
-      :cache              true
-      :as                 :json}))
+            {:basic-auth         [(:username (:confluence cfg/config))
+                                  (:password (:confluence cfg/config))]
+             :connection-manager cm
+             :http-client        (client)
+             :cache              true
+             :as                 :json}))
 
 (defn page-id
   [url]
   (nth
-    (s/split url #"/") 4))
+   (s/split url #"/") 4))
 
 (defn content
   [id]
   (:value (:storage (:body (:body
-                             (cget "content/" id "?expand=body.storage"))))))
+                            (cget "content/" id "?expand=body.storage"))))))
 
 (defn children
   [id]

@@ -16,20 +16,19 @@
 ;;
 
 (ns metadata-tool.template
-  (:require
-    [clojure.string        :as s]
-    [clojure.tools.logging :as log]
-    [mount.core            :as mnt :refer [defstate]]
-    [freemarker-clj.core   :as ftl]))
+  (:require [clojure.string        :as s]
+            [clojure.tools.logging :as log]
+            [mount.core            :as mnt :refer [defstate]]
+            [freemarker-clj.core   :as ftl]))
 
 (def ^:private template-path "/templates/")
 
 (defstate freemarker-config
-          :start (doto ^freemarker.template.Configuration (ftl/gen-config)
-                   (.setClassLoaderForTemplateLoading (.getContextClassLoader (Thread/currentThread))
-                                                      template-path)
-                   (.setDefaultEncoding "UTF-8")
-                   (.setLocale (java.util.Locale/US))))
+  :start (doto ^freemarker.template.Configuration (ftl/gen-config)
+           (.setClassLoaderForTemplateLoading (.getContextClassLoader (Thread/currentThread))
+                                              template-path)
+           (.setDefaultEncoding "UTF-8")
+           (.setLocale (java.util.Locale/US))))
 
 (defn render
   "Renders the data (as a map) using the named template file (which must exist in the templates folder), returning the rendered result as a String."

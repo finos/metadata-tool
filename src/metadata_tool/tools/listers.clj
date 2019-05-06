@@ -16,21 +16,20 @@
 ;;
 
 (ns metadata-tool.tools.listers
-  (:require
-    [clojure.string                 :as s]
-    [clojure.set                    :as set]
-    [clojure.pprint                 :as pp]
-    [clojure.tools.logging          :as log]
-    [clojure.java.io                :as io]
-    [mount.core                     :as mnt :refer [defstate]]
-    [cheshire.core                  :as ch]
-    [clj-time.core                  :as tm]
-    [clj-time.format                :as tf]
-    [metadata-tool.config           :as cfg]
-    [metadata-tool.sources.github   :as gh]
-    [metadata-tool.sources.bitergia :as bi]
-    [metadata-tool.sources.schemas  :as sch]
-    [metadata-tool.sources.metadata :as md]))
+  (:require [clojure.string                 :as s]
+            [clojure.set                    :as set]
+            [clojure.pprint                 :as pp]
+            [clojure.tools.logging          :as log]
+            [clojure.java.io                :as io]
+            [mount.core                     :as mnt :refer [defstate]]
+            [cheshire.core                  :as ch]
+            [clj-time.core                  :as tm]
+            [clj-time.format                :as tf]
+            [metadata-tool.config           :as cfg]
+            [metadata-tool.sources.github   :as gh]
+            [metadata-tool.sources.bitergia :as bi]
+            [metadata-tool.sources.schemas  :as sch]
+            [metadata-tool.sources.metadata :as md]))
 
 
 (defn list-schemas

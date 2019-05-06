@@ -16,23 +16,22 @@
 ;;
 
 (ns metadata-tool.config
-  (:require
-    [clojure.string  :as s]
-    [clojure.java.io :as io]
-    [mount.core      :as mnt :refer [defstate]]))
+  (:require [clojure.string  :as s]
+            [clojure.java.io :as io]
+            [mount.core      :as mnt :refer [defstate]]))
 
 ;; Because java.util.logging is a hot mess
 (org.slf4j.bridge.SLF4JBridgeHandler/removeHandlersForRootLogger)
 (org.slf4j.bridge.SLF4JBridgeHandler/install)
 
 (defstate config
-          :start (mnt/args))
+  :start (mnt/args))
 
 (defstate temp-directory
-  :start (let [result       (if (s/blank? (:temp-dir config))
-                              (System/getProperty "java.io.tmpdir")
-                              (:temp-dir config))
-                result-as-f (io/file result)]
+  :start (let [result      (if (s/blank? (:temp-dir config))
+                             (System/getProperty "java.io.tmpdir")
+                             (:temp-dir config))
+               result-as-f (io/file result)]
            (if (.exists result-as-f)
              (if (.isDirectory result-as-f)
                (if (.canWrite result-as-f)
