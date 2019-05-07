@@ -18,25 +18,32 @@
     (:require [clojure.string        :as s]
               [clj-http.client       :as http]
               [clj-http.conn-mgr     :as conn]
-              [metadata-tool.config  :as cfg]
-              ))
+              [metadata-tool.config  :as cfg]))
 
 (def cm (conn/make-reusable-conn-manager {}))
-(defn client []
-    (:http-client
-        (http/get (:host (:confluence cfg/config)) {
-            :connection-manager cm 
-            :cache true})))
 
-(defn cget [& args]
-    (http/get (str (:host (:confluence cfg/config)) "/wiki/rest/api/" (apply str args)) {
-        :basic-auth [
-            (:username (:confluence cfg/config))
-            (:password (:confluence cfg/config))]
-        :connection-manager cm 
-        :http-client (client)
-        :cache true
-        :as :json}))
+(defn client*
+  "Creates a new caching HTTP client"
+  []
+  (:http-client
+   (http/get (:host (:confluence cfg/config))
+             {:connection-manager cm
+              :cache true})))
+
+(def ^{:arglists '([])} client
+  "Creates (if needed) and returns a singleton instance of a caching HTTP client"
+  (memoize client*))
+
+(defn cget
+  "Invokes the Confluence GET REST API identified by the given URL substrings"
+  [& args]
+  (let [{:keys [host username password]} (:confluence cfg/config)
+        url    (str host "/wiki/rest/api/" (s/join args))]
+    (http/get url {:basic-auth         [username password]
+                   :connection-manager cm
+                   :http-client        (client)
+                   :cache              true
+                   :as                 :json})))
 
 (defn page-id
     [url]
