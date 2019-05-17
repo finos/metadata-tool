@@ -31,10 +31,10 @@
     [string]
     (if (s/blank? string)
         string
-        (s/replace
-            (s/trim string)
-            "\u00A0"
-            "")))
+        (let [no-spaces-str  (s/replace string "&nbsp;" " ")
+              no-unicode-str (s/replace no-spaces-str "\u00A0" " ")]
+            (println (str "parsing " string "; no spaces: " no-spaces-str "; no unicode: " no-unicode-str))
+            (s/trim no-unicode-str))))
 
 (defn parse-name
     [string to-remove]
