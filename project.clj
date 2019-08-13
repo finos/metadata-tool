@@ -29,14 +29,14 @@
                           [lein-licenses "0.2.2"]
                         ]
   :dependencies         [
-                          [org.clojure/clojure                   "1.10.0"]
+                          [org.clojure/clojure                   "1.10.1"]
                           [org.clojure/tools.cli                 "0.4.2"]
-                          [org.clojure/tools.logging             "0.4.1"]
+                          [org.clojure/tools.logging             "0.5.0"]
                           [ch.qos.logback/logback-classic        "1.2.3"]
-                          [org.slf4j/jcl-over-slf4j              "1.7.26"]
-                          [org.slf4j/log4j-over-slf4j            "1.7.26"]
-                          [org.slf4j/jul-to-slf4j                "1.7.26"]
-                          [cheshire                              "5.8.1"]
+                          [org.slf4j/jcl-over-slf4j              "1.7.28"]
+                          [org.slf4j/log4j-over-slf4j            "1.7.28"]
+                          [org.slf4j/jul-to-slf4j                "1.7.28"]
+                          [cheshire                              "5.9.0"]
                           [aero                                  "1.1.3"]
                           [org.clojure/data.csv                  "0.1.4"]
                           [mount                                 "0.1.16"]
@@ -46,17 +46,17 @@
                           [com.github.grinnbearit/freemarker-clj "-SNAPSHOT"]
                           [metosin/scjsv                         "0.5.0"]
                           [clj-jgit                              "0.8.10" :exclusions [org.apache.httpcomponents/httpclient]]
-                          [irresponsible/tentacles               "0.6.3"]
-                          [cc.qbits/spandex                      "0.6.4" :exclusions [commons-logging org.apache.httpcomponents/httpcore-nio]]
+                          [irresponsible/tentacles               "0.6.4"]
+                          [cc.qbits/spandex                      "0.7.1" :exclusions [commons-logging org.apache.httpcomponents/httpcore-nio]]
                           [com.draines/postal                    "2.0.3" :exclusions [commons-codec]]
                         ]
   :managed-dependencies [
                           ; The following dependencies are inherited but have conflicting or old versions, so we "pin" the versions here
-                          [joda-time/joda-time "2.10.1"]
+                          [joda-time/joda-time "2.10.3"]
                           [clj-http            "3.10.0"]
                         ]
   :profiles             {
-                          :dev     {:dependencies [[midje      "1.9.8"]]
+                          :dev     {:dependencies [[midje      "1.9.9"]]
                                     :plugins      [[lein-midje "3.2.1"]]}
                           :uberjar {:aot :all}
                         }
