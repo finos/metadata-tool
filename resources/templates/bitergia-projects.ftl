@@ -31,12 +31,12 @@
       ],
       "github"     : [
         [#list program.pmc_repos as repo]
-          "https://github.com/${program.github_org}/${repo}.git"[#if repo != program.pmc_repos?last],[/#if]
+          "https://github.com/${program.github_org}/${repo}"[#if repo != program.pmc_repos?last],[/#if]
         [/#list]
       ],
       "github:prs"     : [
         [#list program.pmc_repos as repo]
-          "https://github.com/${program.github_org}/${repo}.git"[#if repo != program.pmc_repos?last],[/#if]
+          "https://github.com/${program.github_org}/${repo}"[#if repo != program.pmc_repos?last],[/#if]
         [/#list]
       ]
     [/#if]
