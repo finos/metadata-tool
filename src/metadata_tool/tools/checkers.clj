@@ -117,13 +117,13 @@
 
 (defn- check-project-states
   []
-  (let [projects-with-invalid-states (remove #(boolean (some #{(:state %)} ["INCUBATING" "RELEASED" "ARCHIVED"])) (md/projects-metadata))]
+  (let [projects-with-invalid-states (remove #(boolean (some #{(:state %)} ["ACTIVE" "INCUBATING" "RELEASED" "ARCHIVED"])) (md/projects-metadata))]
     (if (> (count projects-with-invalid-states) 0) (ec/set-error))
     (doall (map #(println "❌ Project" (activity-to-string %) "has an invalid state:" (:state %)) projects-with-invalid-states))))
 
 (defn- check-working-group-states
   []
-  (let [working-groups-with-invalid-states (remove #(boolean (some #{(:state %)} ["OPERATING" "PAUSED" "ARCHIVED"])) (md/working-groups-metadata))]
+  (let [working-groups-with-invalid-states (remove #(boolean (some #{(:state %)} ["ACTIVE" "OPERATING" "PAUSED" "ARCHIVED"])) (md/working-groups-metadata))]
     (if (> (count working-groups-with-invalid-states) 0) (ec/set-error))
     (doall (map #(println "❌ Working Group" (activity-to-string %) "has an invalid state:" (:state %)) working-groups-with-invalid-states))))
 
