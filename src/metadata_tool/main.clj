@@ -43,15 +43,15 @@
 (defn- usage
   [options-summary]
   (s/join
-    \newline
-    ["Runs one or more metadata tools."
-     ""
-     "Usage: metadata-tool [options] tool [tool] ..."
-     ""
-     "Options:"
-     options-summary
-     ""
-     (str "Available tools:\n\t" (s/join "\n\t" c/tool-names))]))
+   \newline
+   ["Runs one or more metadata tools."
+    ""
+    "Usage: metadata-tool [options] tool [tool] ..."
+    ""
+    "Options:"
+    options-summary
+    ""
+    (str "Available tools:\n\t" (s/join "\n\t" c/tool-names))]))
 
 (defn- error-message
   [errors]
@@ -61,11 +61,11 @@
 (defn- exit
   ([exit-code] (exit exit-code nil))
   ([exit-code message]
-    (ec/set-exit-code exit-code)
-    (when-not (s/blank? message)
-      (println message))
-    (flush)
-    (System/exit (ec/get-exit-code))))
+   (ec/set-exit-code exit-code)
+   (when-not (s/blank? message)
+     (println message))
+   (flush)
+   (System/exit (ec/get-exit-code))))
 
 (defn -main
   [& args]

@@ -39,8 +39,8 @@
 (defn- list-metadata-files
   [filename]
   (doall
-    (sort-by #(.getCanonicalPath ^java.io.File %)
-             (filter #(= filename (.getName ^java.io.File %)) (file-seq (io/file gh/metadata-directory))))))
+   (sort-by #(.getCanonicalPath ^java.io.File %)
+            (filter #(= filename (.getName ^java.io.File %)) (file-seq (io/file gh/metadata-directory))))))
 
 (defstate ^:private organization-metadata-files :start (list-metadata-files organization-filename))
 (defstate ^:private person-metadata-files       :start (list-metadata-files person-filename))
@@ -49,11 +49,11 @@
 (defstate ^:private repository-metadata-files   :start (list-metadata-files repository-filename))
 
 (defstate ^:private metadata-files
-  :start { :organization organization-metadata-files
-           :person       person-metadata-files
-           :program      program-metadata-files
-           :activity     activity-metadata-files
-           :repository   repository-metadata-files })
+  :start {:organization organization-metadata-files
+          :person       person-metadata-files
+          :program      program-metadata-files
+          :activity     activity-metadata-files
+          :repository   repository-metadata-files})
 
 (defn- list-subdirs
   "Returns a sequence of the immediate subdirectories of dir, as java.io.File objects."
@@ -72,12 +72,12 @@
   "Converts nasty JSON String keys (e.g. \"fullName\") to nice Clojure keys (e.g. :full-name)."
   [k]
   (keyword
-    (s/replace
-      (s/join "-"
-              (map s/lower-case
-                   (s/split k #"(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])")))
-      "git-hub"
-      "github")))
+   (s/replace
+    (s/join "-"
+            (map s/lower-case
+                 (s/split k #"(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])")))
+    "git-hub"
+    "github")))
 
 (defn- read-metadata-file-fn
   [metadata-file]
@@ -161,18 +161,18 @@
 (defn matches-person
   [person ghid name email]
   (or
-      (and
+   (and
         ; (try
-        (not (s/blank? ghid))
+    (not (s/blank? ghid))
           ; (catch Exception e (str ghid " " name " " email " - caught exception: " (.getMessage e))))
-        (some #{ghid} (:github-logins person)))
-      (and
-        (not (s/blank? name))
-        (= name (:full-name person)))
-      (and
-        (not (s/blank? email))
-        (some #{email} (:email-addresses person)))))
-  
+    (some #{ghid} (:github-logins person)))
+   (and
+    (not (s/blank? name))
+    (= name (:full-name person)))
+   (and
+    (not (s/blank? email))
+    (some #{email} (:email-addresses person)))))
+
 (defn person-metadata-by-fn
   [ghid name email]
   (if (or ghid name email)
@@ -180,21 +180,21 @@
 (def person-metadata-by
   "Person metadata of either a given GitHub login, name or email address; returns nil if there is none."
   (memoize person-metadata-by-fn))
-  
+
 (defn lower-emails
   [item]
   (map #(s/lower-case %) (:email-addresses item)))
 
 (defn person-metadata-by-email-address-fn
-    [email-address]
-    (if email-address
-      (first (filter #(some 
-                        #{(s/lower-case email-address)}
-                        (lower-emails %)) (people-metadata)))))
+  [email-address]
+  (if email-address
+    (first (filter #(some
+                     #{(s/lower-case email-address)}
+                     (lower-emails %)) (people-metadata)))))
 (def person-metadata-by-email-address
   "Person metadata of the given email address, or nil if there is none."
   (memoize person-metadata-by-email-address-fn))
-  
+
 (defn person-metadata-by-fullname-fn
   [full-name]
   (if full-name
@@ -220,48 +220,44 @@
   [program]
   (github-urls program (:pmc-repos program)))
   ; (github-urls program (map #(s/lower-case %) (:pmc-repos program))))
-  
+
 (defn- expand-mailing-list-address
   [mailing-list-address]
   (if-not (s/blank? mailing-list-address)
-    {
-      :email-address   mailing-list-address
-      :web-archive-url (let [[list-name domain] (s/split mailing-list-address #"@")]
-                         (if (and (not (s/blank? list-name))
-                                  (not (s/blank? domain))
-                                  (or (= domain "finos.org")
-                                      (= domain "symphony.foundation")))
-                           (str "https://groups.google.com/a/" domain "/forum/#!forum/" list-name)))
-    }))
+    {:email-address   mailing-list-address
+     :web-archive-url (let [[list-name domain] (s/split mailing-list-address #"@")]
+                        (if (and (not (s/blank? list-name))
+                                 (not (s/blank? domain))
+                                 (or (= domain "finos.org")
+                                     (= domain "symphony.foundation")))
+                          (str "https://groups.google.com/a/" domain "/forum/#!forum/" list-name)))}))
 
 (defn- expand-confluence-space-key
   [confluence-space-key]
   (if-not (s/blank? confluence-space-key)
-    {
-      :key confluence-space-key
-      :url (str "https://finosfoundation.atlassian.net/wiki/spaces/" confluence-space-key "/overview")
-    }))
+    {:key confluence-space-key
+     :url (str "https://finosfoundation.atlassian.net/wiki/spaces/" confluence-space-key "/overview")}))
 
 (defn- program-activities-metadata
   "A seq containing the metadata of all activities in the given program."
   [program]
   (let [program-id (:program-id program)]
     (seq
-      (remove nil?
-        (map #(if-let [activity (read-metadata-file (str program-metadata-directory "/" program-id "/" % "/" activity-filename))]
-                (assoc activity
-                       :program-id              program-id
-                       :program-name            (:program-name program)
-                       :program-short-name      (:program-short-name program)
-                       :activity-id             %
-                       :tags                    (if-let [current-tags (:tags activity)]      ; Normalise tags to lower case, de-dupe and sort
-                                                  (seq (sort (distinct (map s/lower-case (remove s/blank? current-tags))))))
-                       :lead-or-chair-person-id (:lead-or-chair activity)
-                       :lead-or-chair           (person-metadata (:lead-or-chair activity))
-                       :github-urls             (program-activity-github-urls program activity)
-                       :mailing-lists           (map expand-mailing-list-address (:mailing-list-addresses activity))
-                       :confluence-spaces       (map expand-confluence-space-key (:confluence-space-keys activity))))
-             (program-activities program-id))))))
+     (remove nil?
+             (map #(if-let [activity (read-metadata-file (str program-metadata-directory "/" program-id "/" % "/" activity-filename))]
+                     (assoc activity
+                            :program-id              program-id
+                            :program-name            (:program-name program)
+                            :program-short-name      (:program-short-name program)
+                            :activity-id             %
+                            :tags                    (if-let [current-tags (:tags activity)]      ; Normalise tags to lower case, de-dupe and sort
+                                                       (seq (sort (distinct (map s/lower-case (remove s/blank? current-tags))))))
+                            :lead-or-chair-person-id (:lead-or-chair activity)
+                            :lead-or-chair           (person-metadata (:lead-or-chair activity))
+                            :github-urls             (program-activity-github-urls program activity)
+                            :mailing-lists           (map expand-mailing-list-address (:mailing-list-addresses activity))
+                            :confluence-spaces       (map expand-confluence-space-key (:confluence-space-keys activity))))
+                  (program-activities program-id))))))
 
 (defn- program-metadata-fn
   "Program metadata of the given program-id, or nil if there is none."
@@ -350,10 +346,10 @@
 (defn activities
   [program type]
   (let [program-id (:id program)]
-  (map #(:activity-name %)
-        (remove #(= "ARCHIVED" (:state %))
-          (filter #(= type (:type %))
-            (:activities program))))))
+    (map #(:activity-name %)
+         (remove #(= "ARCHIVED" (:state %))
+                 (filter #(= type (:type %))
+                         (:activities program))))))
 
 (defn pmc-lead
   [program]
@@ -369,7 +365,7 @@
         people-enriched (map #(person-metadata %) pmc-list)
         orgs-enriched   (map #(assoc-org-name %) people-enriched)]
     (map #(str (:full-name %) (:org-name %)) orgs-enriched)))
-            
+
 (defn has-icla?
   [person-id]
   (boolean (:has-icla (person-metadata person-id))))

@@ -15,10 +15,10 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.sources.confluence
-    (:require [clojure.string        :as s]
-              [clj-http.client       :as http]
-              [clj-http.conn-mgr     :as conn]
-              [metadata-tool.config  :as cfg]))
+  (:require [clojure.string        :as s]
+            [clj-http.client       :as http]
+            [clj-http.conn-mgr     :as conn]
+            [metadata-tool.config  :as cfg]))
 
 (def cm (conn/make-reusable-conn-manager {}))
 
@@ -46,19 +46,19 @@
                    :as                 :json})))
 
 (defn page-id
-    [url]
-    (nth 
-        (s/split url #"/") 4))
+  [url]
+  (nth
+   (s/split url #"/") 4))
 
 (defn content
-    [id]
-    (:value (:storage (:body (:body 
-        (cget "content/" id "?expand=body.storage"))))))
+  [id]
+  (:value (:storage (:body (:body
+                            (cget "content/" id "?expand=body.storage"))))))
 
 (defn children
-    [id]
-    (try
-        (:results (:body (cget "content/" id "/child/page")))
+  [id]
+  (try
+    (:results (:body (cget "content/" id "/child/page")))
         ; TODO - check Exception status code (clj-http)
         ; tried with (:status (:data e))
-        (catch Exception e [])))
+    (catch Exception e [])))

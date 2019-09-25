@@ -42,40 +42,41 @@
 
 ; ####TODO: ALLOW USE OF GITHUB TOKEN!!!
 
+
 (defstate username
-          :start (:username (:github cfg/config)))
+  :start (:username (:github cfg/config)))
 
 (defstate password
-          :start (:password (:github cfg/config)))
+  :start (:password (:github cfg/config)))
 
 (defstate auth
-          :start (str username ":" password))
+  :start (str username ":" password))
 
 (defstate opts
-          :start {:throw-exceptions true :all-pages true :per-page 100 :auth auth :user-agent (str metadata-org-name " metadata tool")})
+  :start {:throw-exceptions true :all-pages true :per-page 100 :auth auth :user-agent (str metadata-org-name " metadata tool")})
 
 (defstate github-revision
-          :start (:github-revision cfg/config))
+  :start (:github-revision cfg/config))
 
 (defstate metadata-directory
-          :start (if-not (s/blank? (:metadata-directory cfg/config))
-                   (do
-                     (log/info "Using local metadata directory at" (:metadata-directory cfg/config))
-                     (:metadata-directory cfg/config))
-                   (let [result (str cfg/temp-directory
-                                       (if (not (s/ends-with? cfg/temp-directory "/")) "/")
-                                       "finos-metadata-" (java.util.UUID/randomUUID))
-                         _      (log/info "Cloning metadata repository to" result)
-                         repo   (git/with-credentials ^String username
-                                                      ^String password
-                                                      (git/git-clone (str "https://github.com/" metadata-org-name "/" metadata-repo-name) result))]
-                     (when-not (s/blank? github-revision)
-                       (log/info "Checking out revision" github-revision)
-                       (git/git-checkout repo github-revision))
-                     (rm-rf (io/file (str result "/.git/")))    ; De-gitify the local clone so we can't accidentally mess with it
-                     result))
-          :stop  (if (not= metadata-directory (:metadata-directory cfg/config))
-                   (rm-rf (io/file metadata-directory))))
+  :start (if-not (s/blank? (:metadata-directory cfg/config))
+           (do
+             (log/info "Using local metadata directory at" (:metadata-directory cfg/config))
+             (:metadata-directory cfg/config))
+           (let [result (str cfg/temp-directory
+                             (if (not (s/ends-with? cfg/temp-directory "/")) "/")
+                             "finos-metadata-" (java.util.UUID/randomUUID))
+                 _      (log/info "Cloning metadata repository to" result)
+                 repo   (git/with-credentials ^String username
+                          ^String password
+                          (git/git-clone (str "https://github.com/" metadata-org-name "/" metadata-repo-name) result))]
+             (when-not (s/blank? github-revision)
+               (log/info "Checking out revision" github-revision)
+               (git/git-checkout repo github-revision))
+             (rm-rf (io/file (str result "/.git/")))    ; De-gitify the local clone so we can't accidentally mess with it
+             result))
+  :stop  (if (not= metadata-directory (:metadata-directory cfg/config))
+           (rm-rf (io/file metadata-directory))))
 
 ; Note: functions that call GitHub APIs are memoized, so that when tools are "stacked" they benefit from cached GitHub API calls
 

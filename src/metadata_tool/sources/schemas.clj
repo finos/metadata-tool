@@ -25,12 +25,11 @@
 
 (defstate schema-directories
   "The available types of schema, and the location of their version-specific schema definition files within the metadata repository."
-  :start { :organization (str gh/metadata-directory "/jsonschema/organization-metadata")
-           :person       (str gh/metadata-directory "/jsonschema/person-metadata")
-           :program      (str gh/metadata-directory "/jsonschema/program-metadata")
-           :activity     (str gh/metadata-directory "/jsonschema/activity-metadata")
-           :repository   (str gh/metadata-directory "/jsonschema/repository-metadata")
-         })
+  :start {:organization (str gh/metadata-directory "/jsonschema/organization-metadata")
+          :person       (str gh/metadata-directory "/jsonschema/person-metadata")
+          :program      (str gh/metadata-directory "/jsonschema/program-metadata")
+          :activity     (str gh/metadata-directory "/jsonschema/activity-metadata")
+          :repository   (str gh/metadata-directory "/jsonschema/repository-metadata")})
 
 (defstate schema-ids
   "Set of all available schema types and versions."

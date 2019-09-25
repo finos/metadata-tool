@@ -28,9 +28,7 @@
             [metadata-tool.sources.github   :as gh]
             [metadata-tool.sources.bitergia :as bi]
             [metadata-tool.sources.schemas  :as sch]
-            [metadata-tool.sources.metadata :as md]
-            ))
-
+            [metadata-tool.sources.metadata :as md]))
 
 (defn list-schemas
   []

@@ -30,6 +30,8 @@
 
 
 ; Utility fns
+
+
 (defn- type-to-string
   [type]
   (if-not (s/blank? type)
@@ -55,9 +57,9 @@
 (defn- check-current-affiliations
   []
   (doall
-    (map #(if (empty? (md/current-affiliations %))
-            (println "ℹ️ Person" % "has no current affiliations."))
-         md/people)))
+   (map #(if (empty? (md/current-affiliations %))
+           (println "ℹ️ Person" % "has no current affiliations."))
+        md/people)))
 
 (defn- check-duplicate-email-addresses
   []
@@ -106,7 +108,7 @@
     (doall (map #(if (= "ARCHIVED" (:state %))
                    (println "ℹ️ Archived activity" (activity-to-string %) "doesn't have a" (str (if (= "PROJECT" (:type %)) "lead" "chair") "."))
                    (println "⚠️" (state-to-string (:state %)) (type-to-string (:type %)) (activity-to-string %) "doesn't have a" (str (if (= "PROJECT" (:type %)) "lead" "chair") ".")))
-                 activities-with-missing-lead-or-chair))))
+                activities-with-missing-lead-or-chair))))
 
 (defn- check-lead-or-chair-references
   []
@@ -175,7 +177,6 @@
     (if (> (count unknown-activity-email-addresses) 0) (ec/set-error))
     (doall (map #(println "❌ Mailing list address" % "(an activity-level mailing list) does not appear to be Foundation-managed.") unknown-activity-email-addresses))))
 
-
 (defn check-local
   "Performs comprehensive checking of files locally on disk (no API calls out to GitHub, JIRA, etc.)."
   []
@@ -208,14 +209,14 @@
   []
   (let [activities-with-github-urls (sort-by activity-to-string (remove #(empty? (:github-urls %)) (md/activities-metadata)))]
     (doall
-      (map #(doall
-              (map (fn [github-url]
-                     (if (empty? (gh/admin-logins github-url))
-                       (if (= "ARCHIVED" (:state %))
-                         (println "ℹ️ GitHub Repository" github-url "in archived" (type-to-string (:type %)) (activity-to-string %) "has no admins, or they haven't accepted their invitations yet.")
-                         (println "⚠️ GitHub Repository" github-url "in" (type-to-string (:type %)) (activity-to-string %) "has no admins, or they haven't accepted their invitations yet."))))
-                   (:github-urls %)))
-           activities-with-github-urls))))
+     (map #(doall
+            (map (fn [github-url]
+                   (if (empty? (gh/admin-logins github-url))
+                     (if (= "ARCHIVED" (:state %))
+                       (println "ℹ️ GitHub Repository" github-url "in archived" (type-to-string (:type %)) (activity-to-string %) "has no admins, or they haven't accepted their invitations yet.")
+                       (println "⚠️ GitHub Repository" github-url "in" (type-to-string (:type %)) (activity-to-string %) "has no admins, or they haven't accepted their invitations yet."))))
+                 (:github-urls %)))
+          activities-with-github-urls))))
 
 (defn- check-metadata-for-collaborators
   []
@@ -272,6 +273,7 @@
 
 
 ; Convenience fn for performing all checks
+
 
 (defn check
   "Performs comprehensive checks, including API calls out to GitHub, JIRA, and Bitergia (which may be rate limited)."

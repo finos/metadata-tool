@@ -25,7 +25,6 @@
             [metadata-tool.sources.metadata :as md]
             [metadata-tool.sources.bitergia :as bt]))
 
-
 (defn activity-with-team
   "The given activity, augmented with the project team, as :project-leads and :committers."
   [activity]
@@ -33,14 +32,14 @@
            (seq (:github-urls activity)))
     (assoc activity
            :admins      (seq
-                          (sort-by :full-name
-                            (map md/person-metadata-by-github-login
-                                 (distinct
-                                   (remove nil?
-                                     (mapcat gh/admin-logins (:github-urls activity)))))))
-            :committers (seq
-                          (sort-by :full-name
-                            (map md/person-metadata-by-github-login
-                                 (distinct
-                                   (remove nil?
-                                     (mapcat gh/committer-logins (:github-urls activity))))))))))
+                         (sort-by :full-name
+                                  (map md/person-metadata-by-github-login
+                                       (distinct
+                                        (remove nil?
+                                                (mapcat gh/admin-logins (:github-urls activity)))))))
+           :committers (seq
+                        (sort-by :full-name
+                                 (map md/person-metadata-by-github-login
+                                      (distinct
+                                       (remove nil?
+                                               (mapcat gh/committer-logins (:github-urls activity))))))))))

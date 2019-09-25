@@ -25,18 +25,18 @@
 (org.slf4j.bridge.SLF4JBridgeHandler/install)
 
 (defstate config
-          :start (mnt/args))
+  :start (mnt/args))
 
 (defstate temp-directory
-          :start (let [result      (if (s/blank? (:temp-dir config))
-                                     (System/getProperty "java.io.tmpdir")
-                                     (:temp-dir config))
-                       result-as-f (io/file result)]
-                   (if (.exists result-as-f)
-                     (if (.isDirectory result-as-f)
-                       (if (.canWrite result-as-f)
-                         result
-                         (throw (Exception. (str "Temp directory " result " is not writable."))))
-                       (throw (Exception. (str "Temp directory " result " is not a directory."))))
-                     (throw (Exception. (str "Temp directory " result " does not exist."))))))
+  :start (let [result      (if (s/blank? (:temp-dir config))
+                             (System/getProperty "java.io.tmpdir")
+                             (:temp-dir config))
+               result-as-f (io/file result)]
+           (if (.exists result-as-f)
+             (if (.isDirectory result-as-f)
+               (if (.canWrite result-as-f)
+                 result
+                 (throw (Exception. (str "Temp directory " result " is not writable."))))
+               (throw (Exception. (str "Temp directory " result " is not a directory."))))
+             (throw (Exception. (str "Temp directory " result " does not exist."))))))
 
