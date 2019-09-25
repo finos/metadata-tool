@@ -121,8 +121,8 @@
   (map :login (admins repo-url)))
 
 (defn- committers
-  [repo-url]
   "List the committers (non-admin collaborators) of the given repository."
+  [repo-url]
   (remove #(:admin (:permissions %))) (collaborators repo-url))
 
 (defn committer-logins
