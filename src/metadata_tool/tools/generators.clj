@@ -128,6 +128,6 @@
         roster-data
         (remove nil? (flatten
                       (map
-                       #(gen-program-roster %)
+                       gen-program-roster
                        programs)))]
     (psrs/roster-to-csv roster-data)))

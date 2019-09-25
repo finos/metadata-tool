@@ -346,7 +346,7 @@
 (defn activities
   [program type]
   (let [program-id (:id program)]
-    (map #(:activity-name %)
+    (map :activity-name
          (remove #(= "ARCHIVED" (:state %))
                  (filter #(= type (:type %))
                          (:activities program))))))
@@ -362,8 +362,8 @@
 (defn pmc-list
   [program]
   (let [pmc-list        (:pmc program)
-        people-enriched (map #(person-metadata %) pmc-list)
-        orgs-enriched   (map #(assoc-org-name %) people-enriched)]
+        people-enriched (map person-metadata pmc-list)
+        orgs-enriched   (map assoc-org-name people-enriched)]
     (map #(str (:full-name %) (:org-name %)) orgs-enriched)))
 
 (defn has-icla?

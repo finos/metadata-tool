@@ -36,17 +36,13 @@
 
 (defn parse-name
   [string to-remove]
-  (if (s/blank? string)
-    nil
+  (when-not (s/blank? string)
     (if (empty? to-remove)
       string
       (if-let [acronym (get (:acronyms (:confluence cfg/config)) string)]
         acronym
         (parse-name
-         (s/replace
-          string
-          (first to-remove)
-          "")
+         (s/replace string (first to-remove) "")
          (rest to-remove))))))
 
 (defn parse-date
@@ -70,10 +66,11 @@
 
 (defn skip-page
   [page-title]
-  (> (count
-      (filter #(s/includes?
-                (s/upper-case page-title)
-                (s/upper-case %)) (:skip-pages (:confluence cfg/config)))) 0))
+  (pos?
+   (count
+    (filter #(s/includes?
+              (s/upper-case page-title)
+              (s/upper-case %)) (:skip-pages (:confluence cfg/config))))))
 
 (defn table-html
   [html]
@@ -100,9 +97,8 @@
       (let [user-key (get (:attrs (first user-element)) (keyword "ri:userkey"))
             body (:body (cfl/cget (str "user?expand=email&key=" user-key)))]
         [(:email body) (:displayName body)])
-      (if-let [name (:content (first (sel/select select-leaf element)))]
-        [nil (parse-string (apply str name))]
-        nil))))
+      (when-let [name (:content (first (sel/select select-leaf element)))]
+        [nil (parse-string (apply str name))]))))
 
 (defn row-to-user
   [row program activity type meeting-date]
@@ -115,7 +111,8 @@
         org        (or
                     (apply str (:content (first (sel/select sel/last-child orgItem))))
                     (apply str (:content (first (sel/select select-leaf orgItem)))))
-        ghid          (if (> (count items) 2) (:content (first (sel/select select-leaf (nth items 2)))) nil)
+        ghid          (when (> (count items) 2)
+                        (:content (first (sel/select select-leaf (nth items 2)))))
         user-by-md    (md/person-metadata-by-fn nil name email)]
         ; (if-not (s/blank? name)
         ;     (let []
@@ -174,7 +171,7 @@
 
 (defn ids-and-titles
   [id]
-  (let [children (map #(id-and-title %) (cfl/children id))]
+  (let [children (map id-and-title (cfl/children id))]
     (flatten
      (concat
       children
