@@ -6,6 +6,11 @@
 [#if organizations?? && organizations?size > 0]
   [#list organizations as organization]
 - organization: ${organization.organization_name}
+    [#if organization.is_finos_member??]
+  is_finos_member: ${organization.is_finos_member?c}
+    [#else]
+  is_finos_member: false
+    [/#if]
     [#if organization.domains?? && organization.domains?size > 0]
   domains:
       [#list organization.domains as domain]
