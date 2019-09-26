@@ -15,21 +15,10 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.tools.generators
-  (:require [clojure.string                   :as s]
-            [clojure.set                      :as set]
-            [clojure.pprint                   :as pp]
-            [clojure.tools.logging            :as log]
-            [clojure.java.io                  :as io]
-            [clojure.data.csv                 :as csv]
-            [mount.core                       :as mnt :refer [defstate]]
-            [cheshire.core                    :as ch]
+  (:require [clojure.tools.logging            :as log]
             [metadata-tool.tools.parsers      :as psrs]
-            [metadata-tool.config             :as cfg]
             [metadata-tool.template           :as tem]
-            [metadata-tool.sources.confluence :as cfl]
             [metadata-tool.sources.github     :as gh]
-            [metadata-tool.sources.bitergia   :as bi]
-            [metadata-tool.sources.schemas    :as sch]
             [metadata-tool.sources.metadata   :as md]))
 
 (defn gen-clabot-whitelist

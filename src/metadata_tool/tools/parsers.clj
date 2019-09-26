@@ -18,7 +18,6 @@
   (:require [clojure.string                       :as str]
             [hickory.core                         :as html]
             [clojure.java.io                      :as io]
-            [clojure.pprint                       :as pp]
             [hickory.select                       :as sel]
             [metadata-tool.sources.confluence     :as cfl]
             [metadata-tool.config                 :as cfg]

@@ -16,11 +16,9 @@
 ;
 (ns metadata-tool.sources.schemas
   (:require [clojure.string               :as str]
-            [clojure.tools.logging        :as log]
             [clojure.java.io              :as io]
             [mount.core                   :as mnt :refer [defstate]]
             [scjsv.core                   :as jsv]
-            [metadata-tool.config         :as cfg]
             [metadata-tool.sources.github :as gh]))
 
 (defstate schema-directories

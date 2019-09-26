@@ -21,7 +21,6 @@
             [mount.core            :as mnt :refer [defstate]]
             [lambdaisland.uri      :as uri]
             [clj-jgit.porcelain    :as git]
-            [tentacles.core        :as tc]
             [tentacles.repos       :as tr]
             [tentacles.orgs        :as to]
             [tentacles.users       :as tu]

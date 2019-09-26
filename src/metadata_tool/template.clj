@@ -16,9 +16,7 @@
 ;
 
 (ns metadata-tool.template
-  (:require [clojure.string        :as s]
-            [clojure.tools.logging :as log]
-            [mount.core            :as mnt :refer [defstate]]
+  (:require [mount.core            :as mnt :refer [defstate]]
             [freemarker-clj.core   :as ftl]))
 
 (def ^:private template-path "/templates/")

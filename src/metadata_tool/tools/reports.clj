@@ -18,7 +18,6 @@
   (:require [clojure.string                 :as str]
             [clojure.tools.logging          :as log]
             [clj-http.client                :as http]
-            [clojure.set                    :as set]
             [mount.core                     :as mnt :refer [defstate]]
             [clj-time.core                  :as tm]
             [clj-time.format                :as tf]
@@ -27,8 +26,7 @@
             [metadata-tool.template         :as tem]
             [metadata-tool.sources.github   :as gh]
             [metadata-tool.sources.metadata :as md]
-            [metadata-tool.sources.bitergia :as bi]
-            [metadata-tool.sources.joins    :as j]))
+            [metadata-tool.sources.bitergia :as bi]))
 
 (def ^:private inactive-project-threshold-days 180)   ; The threshold (days) at which a project is considered "inactive"
 (def ^:private old-pr-threshold-days           60)    ; The threshold (days) at which a PR is considered "old"

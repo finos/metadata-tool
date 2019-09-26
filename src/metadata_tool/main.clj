@@ -17,13 +17,11 @@
 (ns metadata-tool.main
   (:require [clojure.string          :as str]
             [clojure.java.io         :as io]
-            [clojure.stacktrace      :as st]
             [clojure.tools.cli       :as cli]
             [clojure.tools.logging   :as log]
             [aero.core               :as a]
             [mount.core              :as mnt :refer [defstate]]
             [metadata-tool.exit-code :as ec]
-            [metadata-tool.config    :as cfg]
             [metadata-tool.core      :as c])
   (:gen-class))
 

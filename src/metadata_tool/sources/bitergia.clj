@@ -16,7 +16,6 @@
 ;
 (ns metadata-tool.sources.bitergia
   (:require [clojure.string        :as str]
-            [clojure.tools.logging :as log]
             [clojure.set           :as set]
             [mount.core            :as mnt :refer [defstate]]
             [qbits.spandex         :as es]

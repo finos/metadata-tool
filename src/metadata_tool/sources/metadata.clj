@@ -22,7 +22,6 @@
             [cheshire.core                 :as ch]
             [clj-time.core                 :as tm]
             [clj-time.format               :as tf]
-            [metadata-tool.config          :as cfg]
             [metadata-tool.sources.github  :as gh]
             [metadata-tool.sources.schemas :as sch]))
 

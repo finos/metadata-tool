@@ -17,15 +17,9 @@
 (ns metadata-tool.tools.checkers
   (:require [clojure.string                 :as str]
             [clojure.set                    :as set]
-            [clojure.pprint                 :as pp]
-            [clojure.tools.logging          :as log]
-            [clojure.java.io                :as io]
-            [mount.core                     :as mnt :refer [defstate]]
             [metadata-tool.exit-code        :as ec]
-            [metadata-tool.config           :as cfg]
             [metadata-tool.sources.github   :as gh]
             [metadata-tool.sources.bitergia :as bi]
-            [metadata-tool.sources.schemas  :as sch]
             [metadata-tool.sources.metadata :as md]))
 
 
