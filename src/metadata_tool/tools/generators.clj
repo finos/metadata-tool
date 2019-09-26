@@ -113,10 +113,7 @@
 
 (defn gen-meeting-roster-data
   []
-  (let [programs (md/programs-metadata)
-        roster-data
-        (remove nil? (flatten
-                      (map
-                       gen-program-roster
-                       programs)))]
-    (psrs/roster-to-csv roster-data)))
+  (->> (md/programs-metadata)
+       (keep gen-program-roster)
+       flatten
+       psrs/roster-to-csv))

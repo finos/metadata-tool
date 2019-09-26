@@ -26,12 +26,11 @@
 (def not-nil? (complement nil?))
 
 (defn parse-string
-  [string]
-  (if (str/blank? string)
-    string
-    (let [no-spaces-str  (str/replace string "&nbsp;" " ")
-          no-unicode-str (str/replace no-spaces-str "\u00A0" " ")]
-      (str/trim no-unicode-str))))
+  [s]
+  (-> s
+      (str/replace "&nbsp;" " ")
+      (str/replace "\u00A0" " ")
+      str/trim))
 
 (defn parse-name
   [string to-remove]
