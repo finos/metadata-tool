@@ -21,11 +21,8 @@
             [metadata-tool.tools.generators :as tgn]
             [metadata-tool.tools.reports    :as trp]))
 
-
-; Map of (lowercase) tool names to tool fns
-
-
 (def ^:private tools
+  "Map of (lowercase) tool names to tool fns"
   {"check-local"                    tch/check-local
    "check"                          tch/check
    "list-schemas"                   tls/list-schemas

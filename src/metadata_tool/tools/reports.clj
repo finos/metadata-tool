@@ -28,9 +28,17 @@
             [metadata-tool.sources.metadata :as md]
             [metadata-tool.sources.bitergia :as bi]))
 
-(def ^:private inactive-project-threshold-days 180)   ; The threshold (days) at which a project is considered "inactive"
-(def ^:private old-pr-threshold-days           60)    ; The threshold (days) at which a PR is considered "old"
-(def ^:private old-issue-threshold-days        90)    ; The threshold (days) at which an issue is considered "old"
+(def ^:private inactive-project-threshold-days
+  "The threshold (days) at which a project is considered 'inactive'"
+  180)
+
+(def ^:private old-pr-threshold-days
+  "The threshold (days) at which a PR is considered 'old'"
+  60)
+
+(def ^:private old-issue-threshold-days
+  "The threshold (days) at which an issue is considered 'old'"
+  90)
 
 (defstate email-config
   :start (:email cfg/config))
