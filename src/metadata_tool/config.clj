@@ -16,7 +16,7 @@
 ;
 
 (ns metadata-tool.config
-  (:require [clojure.string  :as s]
+  (:require [clojure.string  :as str]
             [clojure.java.io :as io]
             [mount.core      :as mnt :refer [defstate]]))
 
@@ -28,7 +28,7 @@
   :start (mnt/args))
 
 (defstate temp-directory
-  :start (let [result      (if (s/blank? (:temp-dir config))
+  :start (let [result      (if (str/blank? (:temp-dir config))
                              (System/getProperty "java.io.tmpdir")
                              (:temp-dir config))
                result-as-f (io/file result)]

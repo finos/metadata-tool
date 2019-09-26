@@ -15,7 +15,7 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.sources.confluence
-  (:require [clojure.string        :as s]
+  (:require [clojure.string        :as str]
             [clj-http.client       :as http]
             [clj-http.conn-mgr     :as conn]
             [metadata-tool.config  :as cfg]))
@@ -38,7 +38,7 @@
   "Invokes the Confluence GET REST API identified by the given URL substrings"
   [& args]
   (let [{:keys [host username password]} (:confluence cfg/config)
-        url    (str host "/wiki/rest/api/" (s/join args))]
+        url    (str host "/wiki/rest/api/" (str/join args))]
     (http/get url {:basic-auth         [username password]
                    :connection-manager cm
                    :http-client        (client)
@@ -48,7 +48,7 @@
 (defn page-id
   [url]
   (nth
-   (s/split url #"/") 4))
+   (str/split url #"/") 4))
 
 (defn content
   [id]

@@ -15,7 +15,7 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.main
-  (:require [clojure.string          :as s]
+  (:require [clojure.string          :as str]
             [clojure.java.io         :as io]
             [clojure.stacktrace      :as st]
             [clojure.tools.cli       :as cli]
@@ -42,7 +42,7 @@
 
 (defn- usage
   [options-summary]
-  (s/join
+  (str/join
    \newline
    ["Runs one or more metadata tools."
     ""
@@ -51,18 +51,18 @@
     "Options:"
     options-summary
     ""
-    (str "Available tools:\n\t" (s/join "\n\t" c/tool-names))]))
+    (str "Available tools:\n\t" (str/join "\n\t" c/tool-names))]))
 
 (defn- error-message
   [errors]
   (str "The following errors occurred while parsing your command:\n\n"
-       (s/join \newline errors)))
+       (str/join \newline errors)))
 
 (defn- exit
   ([exit-code] (exit exit-code nil))
   ([exit-code message]
    (ec/set-exit-code exit-code)
-   (when-not (s/blank? message)
+   (when-not (str/blank? message)
      (println message))
    (flush)
    (System/exit (ec/get-exit-code))))
@@ -82,7 +82,7 @@
                                                  :metadata-directory (:metadata-directory options)
                                                  :github-revision    (:github-revision    options)
                                                  :email-override     (boolean (:email-override options)))))
-      (let [tools-to-run (map s/lower-case arguments)]
+      (let [tools-to-run (map str/lower-case arguments)]
         (if (every? (set c/tool-names) tools-to-run)
           (try
             (mnt/start)
@@ -92,7 +92,7 @@
                         arguments))
             (finally
               (mnt/stop)))
-          (exit 1 (str "Unknown tool - available tools are:\n\t" (s/join "\n\t" c/tool-names))))))
+          (exit 1 (str "Unknown tool - available tools are:\n\t" (str/join "\n\t" c/tool-names))))))
     (catch Exception e
       (log/error "metadata-tool finished unsuccessfully" e)
       (exit 2)))

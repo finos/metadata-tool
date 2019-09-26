@@ -15,7 +15,7 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.tools.reports
-  (:require [clojure.string                 :as s]
+  (:require [clojure.string                 :as str]
             [clojure.tools.logging          :as log]
             [clj-http.client                :as http]
             [clojure.set                    :as set]
@@ -82,7 +82,7 @@
   ; (println "---------------------------")
   ; (println body)
   ; (println "==========================="))
-  (if-not (s/blank? program-id)
+  (if-not (str/blank? program-id)
     (send-email (:pmc-mailing-list-address (md/program-metadata program-id))
                 subject
                 body
@@ -95,7 +95,7 @@
         short-name (:program-short-name program)
         img-url    (str
                     "https://raw.githubusercontent.com/finos/reports-job/master/active-participation-reports/"
-                    (s/lower-case short-name)
+                    (str/lower-case short-name)
                     "-"
                     type
                     ".png")]
@@ -113,7 +113,7 @@
 
         unarchived-activities-without-leads              (group-by :program-id
                                                                    (remove #(= "ARCHIVED" (:state %))
-                                                                           (filter #(s/blank? (:lead-or-chair-person-id %))
+                                                                           (filter #(str/blank? (:lead-or-chair-person-id %))
                                                                                    (md/activities-metadata))))
         inactive-unarchived-activities-metadata          (group-by :program-id
                                                                    (remove #(= "ARCHIVED" (:state %))
@@ -135,7 +135,7 @@
                                                                                         (bi/projects-with-old-issues old-issue-threshold-days)))))
         unarchived-activities-with-non-standard-licenses (group-by :program-id
                                                                    (filter #(some identity (map (fn [gh-url]
-                                                                                                  (let [gh-repo-license (s/lower-case (str (:spdx_id (:license (gh/repo gh-url)))))]  ; Note underscore in :spdx_id!
+                                                                                                  (let [gh-repo-license (str/lower-case (str (:spdx_id (:license (gh/repo gh-url)))))]  ; Note underscore in :spdx_id!
                                                                                                     (and (not= gh-repo-license "apache-2.0")
                                                                                                          (not= gh-repo-license "cc-by-4.0"))))
                                                                                                 (:github-urls %)))

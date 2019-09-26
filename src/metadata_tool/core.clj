@@ -15,7 +15,7 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.core
-  (:require [clojure.string                 :as s]
+  (:require [clojure.string                 :as str]
             [metadata-tool.tools.checkers   :as tch]
             [metadata-tool.tools.listers    :as tls]
             [metadata-tool.tools.generators :as tgn]
@@ -43,7 +43,7 @@
 (defn run-tool
   "Runs the given tool."
   [tool]
-  (if-let [tool-fn (get tools (s/lower-case tool))]
+  (if-let [tool-fn (get tools (str/lower-case tool))]
     (do
       (tool-fn)
       nil)))   ; Force nil return value

@@ -15,7 +15,7 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.tools.parsers
-  (:require [clojure.string                       :as s]
+  (:require [clojure.string                       :as str]
             [hickory.core                         :as html]
             [clojure.java.io                      :as io]
             [clojure.pprint                       :as pp]
@@ -28,32 +28,32 @@
 
 (defn parse-string
   [string]
-  (if (s/blank? string)
+  (if (str/blank? string)
     string
-    (let [no-spaces-str  (s/replace string "&nbsp;" " ")
-          no-unicode-str (s/replace no-spaces-str "\u00A0" " ")]
-      (s/trim no-unicode-str))))
+    (let [no-spaces-str  (str/replace string "&nbsp;" " ")
+          no-unicode-str (str/replace no-spaces-str "\u00A0" " ")]
+      (str/trim no-unicode-str))))
 
 (defn parse-name
   [string to-remove]
-  (when-not (s/blank? string)
+  (when-not (str/blank? string)
     (if (empty? to-remove)
       string
       (if-let [acronym (get (:acronyms (:confluence cfg/config)) string)]
         acronym
         (parse-name
-         (s/replace string (first to-remove) "")
+         (str/replace string (first to-remove) "")
          (rest to-remove))))))
 
 (defn parse-date
   [title]
-  (let [title-parsed (s/replace title "." "-")
+  (let [title-parsed (str/replace title "." "-")
         indexes
         (filter #(>= % 0)
-                (remove nil? (map #(s/index-of title-parsed %)
+                (remove nil? (map #(str/index-of title-parsed %)
                                   (:years (:confluence cfg/config)))))]
     (if (not-empty indexes)
-      (first (s/split
+      (first (str/split
               (subs
                title-parsed
                (first indexes))
@@ -68,15 +68,15 @@
   [page-title]
   (pos?
    (count
-    (filter #(s/includes?
-              (s/upper-case page-title)
-              (s/upper-case %)) (:skip-pages (:confluence cfg/config))))))
+    (filter #(str/includes?
+              (str/upper-case page-title)
+              (str/upper-case %)) (:skip-pages (:confluence cfg/config))))))
 
 (defn table-html
   [html]
-  (let [first-table (str (first (s/split html #"</table>")) "</table>")
-        after-h1-title (s/split first-table #"<h1>Attendees</h1>")
-        after-h2-title (s/split first-table #"<h2>Attendees</h2>")]
+  (let [first-table (str (first (str/split html #"</table>")) "</table>")
+        after-h1-title (str/split first-table #"<h1>Attendees</h1>")
+        after-h2-title (str/split first-table #"<h2>Attendees</h2>")]
     (let [payload
           (if
            (> (count after-h1-title) 1)
@@ -86,8 +86,8 @@
               (second after-h2-title)))]
       (if (and
            payload
-           (s/starts-with? (s/trim payload) "<table"))
-        (s/trim payload)))))
+           (str/starts-with? (str/trim payload) "<table"))
+        (str/trim payload)))))
 
 (defn resolve-user
   [element]
@@ -114,7 +114,7 @@
         ghid          (when (> (count items) 2)
                         (:content (first (sel/select select-leaf (nth items 2)))))
         user-by-md    (md/person-metadata-by-fn nil name email)]
-        ; (if-not (s/blank? name)
+        ; (if-not (str/blank? name)
         ;     (let []
         ;         (println (str 
         ;             "'" name "' '" org "' '" ghid 
@@ -122,9 +122,9 @@
     (if-not (or
              (some #(= name %) (:ignore-names (:confluence cfg/config)))
              (and
-              (s/blank? name)
-              (s/blank? org)
-              (s/blank? ghid))) {:email (or
+              (str/blank? name)
+              (str/blank? org)
+              (str/blank? ghid))) {:email (or
                                          (first (:email-addresses user-by-md))
                                          (first id))
                                  :name (or
@@ -192,6 +192,6 @@
     (.write writer "email, name, org, github ID, cm_program, cm_title, cm_type, date\n")
     (doall
      (map
-      #(.write writer (str (s/join ", " (vals %)) "\n"))
+      #(.write writer (str (str/join ", " (vals %)) "\n"))
       roster-data))
     (.flush writer)))

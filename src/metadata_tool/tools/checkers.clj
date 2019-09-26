@@ -15,7 +15,7 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.tools.checkers
-  (:require [clojure.string                 :as s]
+  (:require [clojure.string                 :as str]
             [clojure.set                    :as set]
             [clojure.pprint                 :as pp]
             [clojure.tools.logging          :as log]
@@ -34,14 +34,14 @@
 
 (defn- type-to-string
   [type]
-  (if-not (s/blank? type)
-    (s/lower-case (s/replace type "_" " "))))
+  (if-not (str/blank? type)
+    (str/lower-case (str/replace type "_" " "))))
 
 (defn- state-to-string
   [state]
-  (if-not (s/blank? state)
-    (str (s/upper-case (first state))
-         (s/join (rest (s/lower-case state))))))
+  (if-not (str/blank? state)
+    (str (str/upper-case (first state))
+         (str/join (rest (str/lower-case state))))))
 
 (defn- activity-to-string
   [activity]
@@ -104,7 +104,7 @@
 
 (defn- check-missing-lead-or-chair
   []
-  (let [activities-with-missing-lead-or-chair (sort-by activity-to-string (filter #(s/blank? (:lead-or-chair-person-id %)) (md/activities-metadata)))]
+  (let [activities-with-missing-lead-or-chair (sort-by activity-to-string (filter #(str/blank? (:lead-or-chair-person-id %)) (md/activities-metadata)))]
     (doall (map #(if (= "ARCHIVED" (:state %))
                    (println "ℹ️ Archived activity" (activity-to-string %) "doesn't have a" (str (if (= "PROJECT" (:type %)) "lead" "chair") "."))
                    (println "⚠️" (state-to-string (:state %)) (type-to-string (:type %)) (activity-to-string %) "doesn't have a" (str (if (= "PROJECT" (:type %)) "lead" "chair") ".")))
@@ -163,15 +163,15 @@
   []
   (let [programs-metadata                (md/programs-metadata)
         activities-metadata              (mapcat :activities programs-metadata)
-        unknown-program-email-addresses  (remove #(or (s/ends-with? % "@finos.org")
-                                                      (s/ends-with? % "@symphony.foundation"))
-                                                 (remove s/blank? (mapcat #(vec [(:pmc-mailing-list-address         %)
+        unknown-program-email-addresses  (remove #(or (str/ends-with? % "@finos.org")
+                                                      (str/ends-with? % "@symphony.foundation"))
+                                                 (remove str/blank? (mapcat #(vec [(:pmc-mailing-list-address         %)
                                                                                  (:pmc-private-mailing-list-address %)
                                                                                  (:program-mailing-list-address     %)])
                                                                           programs-metadata)))
-        unknown-activity-email-addresses (remove #(or (s/ends-with? % "@finos.org")
-                                                      (s/ends-with? % "@symphony.foundation"))
-                                                 (remove s/blank? (mapcat :mailing-list-addresses activities-metadata)))]
+        unknown-activity-email-addresses (remove #(or (str/ends-with? % "@finos.org")
+                                                      (str/ends-with? % "@symphony.foundation"))
+                                                 (remove str/blank? (mapcat :mailing-list-addresses activities-metadata)))]
     (if (pos? (count unknown-program-email-addresses)) (ec/set-error))
     (doall (map #(println "❌ Mailing list address" % "(a program-level mailing list) does not appear to be Foundation-managed.") unknown-program-email-addresses))
     (if (pos? (count unknown-activity-email-addresses)) (ec/set-error))
@@ -234,8 +234,8 @@
 
 (defn- check-github-repos
   []
-  (let [github-repo-urls       (set (map s/lower-case (remove s/blank? (mapcat #(gh/repos-urls (:github-url %)) (md/programs-metadata)))))
-        metadata-repo-urls     (set (map s/lower-case (remove s/blank? (mapcat :github-urls (md/activities-metadata)))))
+  (let [github-repo-urls       (set (map str/lower-case (remove str/blank? (mapcat #(gh/repos-urls (:github-url %)) (md/programs-metadata)))))
+        metadata-repo-urls     (set (map str/lower-case (remove str/blank? (mapcat :github-urls (md/activities-metadata)))))
         plus-pmc-repo-urls     (set (flatten (concat metadata-repo-urls (mapcat :pmc-github-urls (md/programs-metadata)))))
         repos-without-metadata (sort (set/difference github-repo-urls plus-pmc-repo-urls))
         metadatas-without-repo (sort (set/difference plus-pmc-repo-urls github-repo-urls))]
@@ -244,7 +244,7 @@
 
 (defn- check-github-logins
   []
-  (let [all-github-logins     (distinct (remove s/blank? (mapcat :github-logins (md/people-metadata))))
+  (let [all-github-logins     (distinct (remove str/blank? (mapcat :github-logins (md/people-metadata))))
         invalid-github-logins (sort (filter #(nil? (gh/user %)) all-github-logins))]
     (doall (map #(println "ℹ️ GitHub username" % "is invalid (note: may be preserved for historical purposes).") invalid-github-logins))))
 

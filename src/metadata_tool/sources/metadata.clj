@@ -15,7 +15,7 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.sources.metadata
-  (:require [clojure.string                :as s]
+  (:require [clojure.string                :as str]
             [clojure.tools.logging         :as log]
             [clojure.java.io               :as io]
             [mount.core                    :as mnt :refer [defstate]]
@@ -72,10 +72,10 @@
   "Converts nasty JSON String keys (e.g. \"fullName\") to nice Clojure keys (e.g. :full-name)."
   [k]
   (keyword
-   (s/replace
-    (s/join "-"
-            (map s/lower-case
-                 (s/split k #"(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])")))
+   (str/replace
+    (str/join "-"
+            (map str/lower-case
+                 (str/split k #"(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])")))
     "git-hub"
     "github")))
 
@@ -163,14 +163,14 @@
   (or
    (and
         ; (try
-    (not (s/blank? ghid))
+    (not (str/blank? ghid))
           ; (catch Exception e (str ghid " " name " " email " - caught exception: " (.getMessage e))))
     (some #{ghid} (:github-logins person)))
    (and
-    (not (s/blank? name))
+    (not (str/blank? name))
     (= name (:full-name person)))
    (and
-    (not (s/blank? email))
+    (not (str/blank? email))
     (some #{email} (:email-addresses person)))))
 
 (defn person-metadata-by-fn
@@ -183,13 +183,13 @@
 
 (defn lower-emails
   [item]
-  (map #(s/lower-case %) (:email-addresses item)))
+  (map #(str/lower-case %) (:email-addresses item)))
 
 (defn person-metadata-by-email-address-fn
   [email-address]
   (if email-address
     (first (filter #(some
-                     #{(s/lower-case email-address)}
+                     #{(str/lower-case email-address)}
                      (lower-emails %)) (people-metadata)))))
 (def person-metadata-by-email-address
   "Person metadata of the given email address, or nil if there is none."
@@ -219,22 +219,22 @@
 (defn- pmc-github-urls
   [program]
   (github-urls program (:pmc-repos program)))
-  ; (github-urls program (map #(s/lower-case %) (:pmc-repos program))))
+  ; (github-urls program (map #(str/lower-case %) (:pmc-repos program))))
 
 (defn- expand-mailing-list-address
   [mailing-list-address]
-  (if-not (s/blank? mailing-list-address)
+  (if-not (str/blank? mailing-list-address)
     {:email-address   mailing-list-address
-     :web-archive-url (let [[list-name domain] (s/split mailing-list-address #"@")]
-                        (if (and (not (s/blank? list-name))
-                                 (not (s/blank? domain))
+     :web-archive-url (let [[list-name domain] (str/split mailing-list-address #"@")]
+                        (if (and (not (str/blank? list-name))
+                                 (not (str/blank? domain))
                                  (or (= domain "finos.org")
                                      (= domain "symphony.foundation")))
                           (str "https://groups.google.com/a/" domain "/forum/#!forum/" list-name)))}))
 
 (defn- expand-confluence-space-key
   [confluence-space-key]
-  (if-not (s/blank? confluence-space-key)
+  (if-not (str/blank? confluence-space-key)
     {:key confluence-space-key
      :url (str "https://finosfoundation.atlassian.net/wiki/spaces/" confluence-space-key "/overview")}))
 
@@ -251,7 +251,7 @@
                             :program-short-name      (:program-short-name program)
                             :activity-id             %
                             :tags                    (if-let [current-tags (:tags activity)]      ; Normalise tags to lower case, de-dupe and sort
-                                                       (seq (sort (distinct (map s/lower-case (remove s/blank? current-tags))))))
+                                                       (seq (sort (distinct (map str/lower-case (remove str/blank? current-tags))))))
                             :lead-or-chair-person-id (:lead-or-chair activity)
                             :lead-or-chair           (person-metadata (:lead-or-chair activity))
                             :github-urls             (program-activity-github-urls program activity)
@@ -291,7 +291,7 @@
 
 (defn- activity-metadata-by-name-fn
   [activity-name]
-  (if-not (s/blank? activity-name)
+  (if-not (str/blank? activity-name)
     (if-let [result (first (filter #(= activity-name (:activity-name %)) (activities-metadata)))]
       result
       (log/warn "Could not find metadata for" activity-name))))
@@ -393,4 +393,4 @@
 (defn all-activity-tags
   "A seq of all of the tags in activities, normalised to lower-case."
   []
-  (seq (sort (distinct (map s/lower-case (remove s/blank? (mapcat :tags (activities-metadata))))))))
+  (seq (sort (distinct (map str/lower-case (remove str/blank? (mapcat :tags (activities-metadata))))))))

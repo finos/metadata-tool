@@ -15,7 +15,7 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.sources.schemas
-  (:require [clojure.string               :as s]
+  (:require [clojure.string               :as str]
             [clojure.tools.logging        :as log]
             [clojure.java.io              :as io]
             [mount.core                   :as mnt :refer [defstate]]
@@ -58,5 +58,5 @@
   [schema-id ^String json]
   (if-let [validator-fn (get schema-validators schema-id)]
     (if-let [validation-result (validator-fn json)]   ; scjsv uses nil to indicate failure - we convert that to an exception...
-      (throw (Exception. (s/join "\n" (map :message validation-result)))))
+      (throw (Exception. (str/join "\n" (map :message validation-result)))))
     (throw (Exception. (str schema-id " is an unknown schema id.")))))

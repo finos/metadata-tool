@@ -15,7 +15,7 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.sources.bitergia
-  (:require [clojure.string        :as s]
+  (:require [clojure.string        :as str]
             [clojure.tools.logging :as log]
             [clojure.set           :as set]
             [mount.core            :as mnt :refer [defstate]]
@@ -47,7 +47,7 @@
   "Returns the names of all known projects at the given endpoint."
   [endpoint]
   (if endpoint
-    (set (map #(s/trim (:key %))
+    (set (map #(str/trim (:key %))
               (:buckets (:projects (:aggregations (:body (es/request client {:url    endpoint
                                                                              :method :get
                                                                              :body   query-all-projects})))))))))
@@ -71,7 +71,7 @@
   [endpoint threshold-in-days]
   (if endpoint
     (set
-     (map #(s/trim (:key %))
+     (map #(str/trim (:key %))
           (:buckets
            (:projects
             (:aggregations
@@ -104,7 +104,7 @@
 (defn projects-with-old-prs
   "Returns the set of project names with PRs older than threshold-in-days."
   [threshold-in-days]
-  (set (map #(s/trim (:key %))
+  (set (map #(str/trim (:key %))
             (:buckets (:projects (:aggregations (:body (es/request client {:url    github-search-endpoint
                                                                            :method :get
                                                                            :body   (old-github-issues-query threshold-in-days true)}))))))))
@@ -112,7 +112,7 @@
 (defn projects-with-old-issues
   "Returns the set of project names with issues older than threshold-in-days."
   [threshold-in-days]
-  (set (map #(s/trim (:key %))
+  (set (map #(str/trim (:key %))
             (:buckets (:projects (:aggregations (:body (es/request client {:url    github-search-endpoint
                                                                            :method :get
                                                                            :body   (old-github-issues-query threshold-in-days false)}))))))))
