@@ -48,8 +48,8 @@
   (let [title-parsed (str/replace title "." "-")
         indexes
         (filter #(>= % 0)
-                (remove nil? (map #(str/index-of title-parsed %)
-                                  (:years (:confluence cfg/config)))))]
+                (keep #(str/index-of title-parsed %)
+                      (:years (:confluence cfg/config))))]
     (if (not-empty indexes)
       (first (str/split
               (subs
@@ -180,9 +180,9 @@
   (println (str "Generating meeting attendance for activity " activity))
   (let [page-id   (cfl/page-id url)
         sub-pages (ids-and-titles page-id)]
-    (remove nil? (flatten (map
-                           #(parse-page % program activity type)
-                           sub-pages)))))
+    (flatten (keep
+              #(parse-page % program activity type)
+              sub-pages))))
 
 (defn roster-to-csv
   [roster-data]

@@ -121,22 +121,19 @@
                                                                                    (md/activities-metadata))))
         inactive-unarchived-activities-metadata          (group-by :program-id
                                                                    (remove #(= "ARCHIVED" (:state %))
-                                                                           (remove nil?
-                                                                                   (map md/activity-metadata-by-name
-                                                                                        (bi/inactive-projects inactive-project-threshold-days)))))
+                                                                           (keep md/activity-metadata-by-name
+                                                                                 (bi/inactive-projects inactive-project-threshold-days))))
         stale-incubating-activities-metadata             (group-by :program-id
                                                                    (filter #(activity-stale? % six-months-ago)
                                                                            (md/activities-metadata)))
         unarchived-activities-with-unactioned-prs        (group-by :program-id
                                                                    (remove #(= "ARCHIVED" (:state %))
-                                                                           (remove nil?
-                                                                                   (map md/activity-metadata-by-name
-                                                                                        (bi/projects-with-old-prs old-pr-threshold-days)))))
+                                                                           (keep md/activity-metadata-by-name
+                                                                                 (bi/projects-with-old-prs old-pr-threshold-days))))
         unarchived-activities-with-unactioned-issues     (group-by :program-id
                                                                    (remove #(= "ARCHIVED" (:state %))
-                                                                           (remove nil?
-                                                                                   (map md/activity-metadata-by-name
-                                                                                        (bi/projects-with-old-issues old-issue-threshold-days)))))
+                                                                           (keep md/activity-metadata-by-name
+                                                                                 (bi/projects-with-old-issues old-issue-threshold-days))))
         unarchived-activities-with-non-standard-licenses (group-by :program-id
                                                                    (filter #(some identity (map (fn [gh-url]
                                                                                                   (let [gh-repo-license (str/lower-case (str (:spdx_id (:license (gh/repo gh-url)))))]  ; Note underscore in :spdx_id!

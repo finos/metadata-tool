@@ -26,6 +26,7 @@
 ; Utility fns
 
 
+
 (defn- type-to-string
   [type]
   (if-not (str/blank? type)
@@ -106,7 +107,7 @@
 
 (defn- check-lead-or-chair-references
   []
-  (let [lead-or-chair-person-ids                    (seq (distinct (remove nil? (map :lead-or-chair-person-id (md/activities-metadata)))))
+  (let [lead-or-chair-person-ids                    (seq (distinct (keep :lead-or-chair-person-id (md/activities-metadata))))
         invalid-lead-or-chair-person-ids-person-ids (filter #(nil? (md/person-metadata %)) lead-or-chair-person-ids)]
     (if (pos? (count invalid-lead-or-chair-person-ids-person-ids)) (ec/set-error))
     (doall (map #(println "❌ Person id" % "(a Project Lead or Working Group chair) doesn't have metadata.") invalid-lead-or-chair-person-ids-person-ids))))

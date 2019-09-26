@@ -79,7 +79,7 @@
   []
   (let [activities-data (for [program-metadata  (md/programs-metadata)
                               activity-metadata (:activities program-metadata)]
-                          (let [github-repos (remove nil? (map build-github-repo-data (:github-urls activity-metadata)))]
+                          (let [github-repos (keep build-github-repo-data (:github-urls activity-metadata))]
                             (assoc activity-metadata
                                    :program-name            (:program-name           program-metadata)
                                    :program-short-name      (:program-short-name     program-metadata)

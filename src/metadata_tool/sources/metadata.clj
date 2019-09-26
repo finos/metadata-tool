@@ -120,7 +120,7 @@
 (defn organizations-metadata
   "A seq containing the metadata of all organizations, sorted by organization-name."
   []
-  (sort-by :organization-name (remove nil? (map organization-metadata organizations))))
+  (sort-by :organization-name (keep organization-metadata organizations)))
 
 (defn person-metadata
   "Person metadata of the given person-id, or nil if there is none."
@@ -142,12 +142,12 @@
 (defn people-metadata
   "A seq containing the metadata of all people, sorted by full-name."
   []
-  (sort-by :full-name (remove nil? (map person-metadata people))))
+  (sort-by :full-name (keep person-metadata people)))
 
 (defn people-metadata-with-organizations
   "A seq containing the metadata of all people, sorted by full-name."
   []
-  (sort-by :full-name (remove nil? (map person-metadata-with-organizations people))))
+  (sort-by :full-name (keep person-metadata-with-organizations people)))
 
 (defn person-metadata-by-github-login-fn
   [github-login]
@@ -242,21 +242,20 @@
   [program]
   (let [program-id (:program-id program)]
     (seq
-     (remove nil?
-             (map #(if-let [activity (read-metadata-file (str program-metadata-directory "/" program-id "/" % "/" activity-filename))]
-                     (assoc activity
-                            :program-id              program-id
-                            :program-name            (:program-name program)
-                            :program-short-name      (:program-short-name program)
-                            :activity-id             %
-                            :tags                    (if-let [current-tags (:tags activity)]      ; Normalise tags to lower case, de-dupe and sort
-                                                       (seq (sort (distinct (map str/lower-case (remove str/blank? current-tags))))))
-                            :lead-or-chair-person-id (:lead-or-chair activity)
-                            :lead-or-chair           (person-metadata (:lead-or-chair activity))
-                            :github-urls             (program-activity-github-urls program activity)
-                            :mailing-lists           (map expand-mailing-list-address (:mailing-list-addresses activity))
-                            :confluence-spaces       (map expand-confluence-space-key (:confluence-space-keys activity))))
-                  (program-activities program-id))))))
+     (keep #(if-let [activity (read-metadata-file (str program-metadata-directory "/" program-id "/" % "/" activity-filename))]
+              (assoc activity
+                     :program-id              program-id
+                     :program-name            (:program-name program)
+                     :program-short-name      (:program-short-name program)
+                     :activity-id             %
+                     :tags                    (if-let [current-tags (:tags activity)]      ; Normalise tags to lower case, de-dupe and sort
+                                                (seq (sort (distinct (map str/lower-case (remove str/blank? current-tags))))))
+                     :lead-or-chair-person-id (:lead-or-chair activity)
+                     :lead-or-chair           (person-metadata (:lead-or-chair activity))
+                     :github-urls             (program-activity-github-urls program activity)
+                     :mailing-lists           (map expand-mailing-list-address (:mailing-list-addresses activity))
+                     :confluence-spaces       (map expand-confluence-space-key (:confluence-space-keys activity))))
+           (program-activities program-id)))))
 
 (defn- program-metadata-fn
   "Program metadata of the given program-id, or nil if there is none."
@@ -276,7 +275,7 @@
 (defn programs-metadata
   "A seq containing the metadata of all programs."
   []
-  (remove nil? (map program-metadata programs)))
+  (keep program-metadata programs))
 
 (defn activities-metadata
   "A seq containing the metadata of all activities, regardless of program."
