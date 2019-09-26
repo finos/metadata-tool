@@ -67,8 +67,7 @@
 
 (defn- activity-stale?
   [activity stale-date]
-  (let [program-id (:program cfg/config)
-        activity-date (tf/parse (tf/formatters :date) (:contribution-date activity))
+  (let [activity-date (tf/parse (tf/formatters :date) (:contribution-date activity))
         compare-date (compare stale-date activity-date)]
     (and (pos? compare-date) (= "INCUBATING" (:state activity)))))
 
@@ -89,8 +88,7 @@
 
 (defn participation-img
   [type program]
-  (let [program-id (:id program)
-        short-name (:program-short-name program)
+  (let [short-name (:program-short-name program)
         img-url    (str
                     "https://raw.githubusercontent.com/finos/reports-job/master/active-participation-reports/"
                     (str/lower-case short-name)

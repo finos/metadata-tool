@@ -158,7 +158,7 @@
   (let [content (cfl/content (:id page-data))
         title (:title page-data)]
     (if-not (skip-page title)
-      (let [table-html (table-html (cfl/content (:id page-data)))]
+      (let [table-html (table-html content)]
         (if-not (empty? table-html)
           (meeting-roster
            table-html

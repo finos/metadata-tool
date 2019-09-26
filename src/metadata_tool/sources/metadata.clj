@@ -344,11 +344,10 @@
 
 (defn activities
   [program type]
-  (let [program-id (:id program)]
-    (map :activity-name
-         (remove #(= "ARCHIVED" (:state %))
-                 (filter #(= type (:type %))
-                         (:activities program))))))
+  (map :activity-name
+       (remove #(= "ARCHIVED" (:state %))
+               (filter #(= type (:type %))
+                       (:activities program)))))
 
 (defn pmc-lead
   [program]
