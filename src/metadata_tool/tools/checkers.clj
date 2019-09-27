@@ -104,7 +104,7 @@
   []
   (let [activities-with-missing-lead-or-chair (sort-by activity-to-string (filter #(s/blank? (:lead-or-chair-person-id %)) (md/activities-metadata)))]
     (doall (map #(if (= "ARCHIVED" (:state %))
-                   (println "ℹ️ Archived" (type-to-string (:type %)) (activity-to-string %) "doesn't have a" (str (if (= "PROJECT" (:type %)) "lead" "chair") "."))
+                   (println "ℹ️ Archived activity" (activity-to-string %) "doesn't have a" (str (if (= "PROJECT" (:type %)) "lead" "chair") "."))
                    (println "⚠️" (state-to-string (:state %)) (type-to-string (:type %)) (activity-to-string %) "doesn't have a" (str (if (= "PROJECT" (:type %)) "lead" "chair") ".")))
                  activities-with-missing-lead-or-chair))))
 
@@ -117,13 +117,13 @@
 
 (defn- check-project-states
   []
-  (let [projects-with-invalid-states (remove #(boolean (some #{(:state %)} ["INCUBATING" "RELEASED" "ARCHIVED"])) (md/projects-metadata))]
+  (let [projects-with-invalid-states (remove #(boolean (some #{(:state %)} ["ACTIVE" "INCUBATING" "RELEASED" "ARCHIVED"])) (md/projects-metadata))]
     (if (> (count projects-with-invalid-states) 0) (ec/set-error))
     (doall (map #(println "❌ Project" (activity-to-string %) "has an invalid state:" (:state %)) projects-with-invalid-states))))
 
 (defn- check-working-group-states
   []
-  (let [working-groups-with-invalid-states (remove #(boolean (some #{(:state %)} ["OPERATING" "PAUSED" "ARCHIVED"])) (md/working-groups-metadata))]
+  (let [working-groups-with-invalid-states (remove #(boolean (some #{(:state %)} ["ACTIVE" "OPERATING" "PAUSED" "ARCHIVED"])) (md/working-groups-metadata))]
     (if (> (count working-groups-with-invalid-states) 0) (ec/set-error))
     (doall (map #(println "❌ Working Group" (activity-to-string %) "has an invalid state:" (:state %)) working-groups-with-invalid-states))))
 
