@@ -23,7 +23,8 @@
   :min-lein-version     "2.7.1"
   :repositories         [["sonatype-snapshots" {:url "https://oss.sonatype.org/content/groups/public" :snapshots true}]
                          ["jitpack"            {:url "https://jitpack.io"                             :snapshots true}]]
-  :plugins              [[lein-licenses "0.2.2"]]
+  :plugins              [[lein-licenses "0.2.2"]
+                         [lein-ancient "0.6.15"]]
   :dependencies         [[org.clojure/clojure                   "1.10.1"]
                          [org.clojure/tools.cli                 "0.4.2"]
                          [org.clojure/tools.logging             "0.5.0"]
@@ -45,7 +46,7 @@
                          [cc.qbits/spandex                      "0.7.1" :exclusions [commons-logging org.apache.httpcomponents/httpcore-nio]]
                          [com.draines/postal                    "2.0.3" :exclusions [commons-codec]]]
   :managed-dependencies [; The following dependencies are inherited but have conflicting or old versions, so we "pin" the versions here
-                         [joda-time/joda-time "2.10.3"]
+                         [joda-time/joda-time "2.10.4"]
                          [clj-http            "3.10.0"]]
   :profiles             {:dev     {:dependencies [[midje      "1.9.9"]]
                                    :plugins      [[lein-midje "3.2.1"]]}
