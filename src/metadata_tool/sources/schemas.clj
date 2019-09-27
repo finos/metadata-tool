@@ -15,22 +15,19 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.sources.schemas
-  (:require [clojure.string               :as s]
-            [clojure.tools.logging        :as log]
+  (:require [clojure.string               :as str]
             [clojure.java.io              :as io]
             [mount.core                   :as mnt :refer [defstate]]
             [scjsv.core                   :as jsv]
-            [metadata-tool.config         :as cfg]
             [metadata-tool.sources.github :as gh]))
 
 (defstate schema-directories
   "The available types of schema, and the location of their version-specific schema definition files within the metadata repository."
-  :start { :organization (str gh/metadata-directory "/jsonschema/organization-metadata")
-           :person       (str gh/metadata-directory "/jsonschema/person-metadata")
-           :program      (str gh/metadata-directory "/jsonschema/program-metadata")
-           :activity     (str gh/metadata-directory "/jsonschema/activity-metadata")
-           :repository   (str gh/metadata-directory "/jsonschema/repository-metadata")
-         })
+  :start {:organization (str gh/metadata-directory "/jsonschema/organization-metadata")
+          :person       (str gh/metadata-directory "/jsonschema/person-metadata")
+          :program      (str gh/metadata-directory "/jsonschema/program-metadata")
+          :activity     (str gh/metadata-directory "/jsonschema/activity-metadata")
+          :repository   (str gh/metadata-directory "/jsonschema/repository-metadata")})
 
 (defstate schema-ids
   "Set of all available schema types and versions."
@@ -59,5 +56,5 @@
   [schema-id ^String json]
   (if-let [validator-fn (get schema-validators schema-id)]
     (if-let [validation-result (validator-fn json)]   ; scjsv uses nil to indicate failure - we convert that to an exception...
-      (throw (Exception. (s/join "\n" (map :message validation-result)))))
+      (throw (Exception. (str/join "\n" (map :message validation-result)))))
     (throw (Exception. (str schema-id " is an unknown schema id.")))))

@@ -15,16 +15,8 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.sources.joins
-  (:require [clojure.string                 :as s]
-            [clojure.tools.logging          :as log]
-            [clojure.set                    :as set]
-            [mount.core                     :as mnt :refer [defstate]]
-            [postal.core                    :as email]
-            [metadata-tool.config           :as cfg]
-            [metadata-tool.sources.github   :as gh]
-            [metadata-tool.sources.metadata :as md]
-            [metadata-tool.sources.bitergia :as bt]))
-
+  (:require [metadata-tool.sources.github   :as gh]
+            [metadata-tool.sources.metadata :as md]))
 
 (defn activity-with-team
   "The given activity, augmented with the project team, as :project-leads and :committers."
@@ -33,14 +25,14 @@
            (seq (:github-urls activity)))
     (assoc activity
            :admins      (seq
-                          (sort-by :full-name
-                            (map md/person-metadata-by-github-login
-                                 (distinct
-                                   (remove nil?
-                                     (mapcat gh/admin-logins (:github-urls activity)))))))
-            :committers (seq
-                          (sort-by :full-name
-                            (map md/person-metadata-by-github-login
-                                 (distinct
-                                   (remove nil?
-                                     (mapcat gh/committer-logins (:github-urls activity))))))))))
+                         (sort-by :full-name
+                                  (map md/person-metadata-by-github-login
+                                       (distinct
+                                        (remove nil?
+                                                (mapcat gh/admin-logins (:github-urls activity)))))))
+           :committers (seq
+                        (sort-by :full-name
+                                 (map md/person-metadata-by-github-login
+                                      (distinct
+                                       (remove nil?
+                                               (mapcat gh/committer-logins (:github-urls activity))))))))))
