@@ -49,10 +49,15 @@
   (nth
    (str/split url #"/") 4))
 
+; WIP - this is where Selenium is supposed to be used to fetch the public URL and return the JS-enriched HTML
+; (defn content
+;   [id]
+;   (:value (:storage (:body (:body
+;                             (cget "content/" id "?expand=body.storage"))))))
 (defn content
-  [id]
-  (:value (:storage (:body (:body
-                            (cget "content/" id "?expand=body.storage"))))))
+  [url]
+  (println (str "Fetching URL - " url))
+  "")
 
 (defn children
   [id]

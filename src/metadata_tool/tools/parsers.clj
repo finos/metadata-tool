@@ -62,7 +62,7 @@
 
 (defn id-and-title
   [payload]
-  {:id (:id payload) :title (:title payload)})
+  {:id (:id payload) :title (:title payload) :url (:webui (:_links payload))})
 
 (defn skip-page
   [page-title]
@@ -91,14 +91,22 @@
 
 (defn resolve-user
   [element]
-  (let [user-element (sel/select (sel/descendant (sel/tag (keyword "ri:user"))) element)
-        select-leaf (sel/not (sel/has-child sel/any))]
-    (if (not-empty user-element)
-      (let [user-key (get (:attrs (first user-element)) (keyword "ri:userkey"))
-            body (:body (cfl/cget (str "user?expand=email&key=" user-key)))]
-        [(:email body) (:displayName body)])
-      (when-let [name (:content (first (sel/select select-leaf element)))]
-        [nil (parse-string (apply str name))]))))
+
+  ; WIP - this is the old implementation based on deprecated Atlassian API;
+  ; below is a temporary implementation that prints out the element and returns an empty string.
+  ; The final Selenium-based implementation should just render out the text of the HTML element
+  ;  being passed to the function
+  (println element)
+  "")
+
+  ; (let [user-element (sel/select (sel/descendant (sel/tag (keyword "ri:user"))) element)
+  ;       select-leaf (sel/not (sel/has-child sel/any))]
+  ;   (if (not-empty user-element)
+  ;     (let [user-key (get (:attrs (first user-element)) (keyword "ri:userkey"))
+  ;           body (:body (cfl/cget (str "user?expand=email&key=" user-key)))]
+  ;       [(:email body) (:displayName body)])
+  ;     (when-let [name (:content (first (sel/select select-leaf element)))]
+  ;       [nil (parse-string (apply str name))]))))
 
 (defn row-to-user
   [row program activity type meeting-date]
@@ -156,7 +164,8 @@
 
 (defn parse-page
   [page-data program activity type]
-  (let [content (cfl/content (:id page-data))
+  ; TODO - extract public URL from Confluence API call
+  (let [content (cfl/content (:url page-data))
         title (:title page-data)]
     (if-not (skip-page title)
       (let [table-html (table-html content)]
