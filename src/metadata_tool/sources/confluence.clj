@@ -39,8 +39,7 @@
   [& args]
   (let [{:keys [host username password]} (:confluence cfg/config)
         url    (str host "/wiki/rest/api/" (str/join args))]
-    (http/get url {:basic-auth         [username password]
-                   :connection-manager cm
+    (http/get url {:connection-manager cm
                    :http-client        (client)
                    :cache              true
                    :as                 :json})))

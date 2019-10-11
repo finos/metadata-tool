@@ -44,7 +44,10 @@
                          [clj-jgit                              "0.8.10" :exclusions [org.apache.httpcomponents/httpclient]]
                          [irresponsible/tentacles               "0.6.4"]
                          [cc.qbits/spandex                      "0.7.1" :exclusions [commons-logging org.apache.httpcomponents/httpcore-nio]]
-                         [com.draines/postal                    "2.0.3" :exclusions [commons-codec]]]
+                         [com.draines/postal                    "2.0.3" :exclusions [commons-codec]]
+                         [org.seleniumhq.selenium/selenium-server "3.141.59"]
+                         [org.seleniumhq.selenium/selenium-api "3.141.59"]
+                         [org.seleniumhq.selenium/htmlunit-driver "2.36.0"]]
   :managed-dependencies [; The following dependencies are inherited but have conflicting or old versions, so we "pin" the versions here
                          [joda-time/joda-time "2.10.4"]
                          [clj-http            "3.10.0"]]

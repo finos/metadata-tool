@@ -27,10 +27,12 @@
 
 (defn parse-string
   [s]
-  (-> s
-      (str/replace "&nbsp;" " ")
-      (str/replace "\u00A0" " ")
-      str/trim))
+  (if (empty? s)
+    ""
+    (-> s
+        (str/replace "&nbsp;" " ")
+        (str/replace "\u00A0" " ")
+        str/trim)))
 
 (defn parse-name
   [string to-remove]
