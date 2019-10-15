@@ -16,12 +16,10 @@
 ;
 (ns metadata-tool.tools.selenium
     "This namespace contains facilities to interact with web drivers.
-    The entry point is `init-driver-pool`"
+    The entry point is `init-driver`"
     (:import
      [org.openqa.selenium.chrome ChromeDriver ChromeOptions]
      [org.openqa.selenium Proxy]))
-
-(def driver-pool (atom []))
 
 (defn web-driver
   "Creates a web driver for Chrome using `options`.
@@ -29,32 +27,14 @@
   [options]
   (ChromeDriver. options))
 
-(defmethod ->driver-options [options]
-  (System/setProperty "webdriver.chrome.silentLogging" "true")
-  (System/setProperty "webdriver.chrome.silentOutput" "true")
-  (let [default-options (-> (ChromeOptions.)
-                            (.setHeadless true))]
-    (if-let [proxy (:proxy options)]
-      (->> (->proxy proxy proxy)
-            (.setProxy default-options))
-      default-options)))
+(defn driver-options []
+  (System/setProperty "webdriver.chrome.silentLogging" "false")
+  (System/setProperty "webdriver.chrome.silentOutput" "false")
+  (-> (ChromeOptions.) (.setHeadless true)))
 
 (defn init-driver
-  "Initialises a new web driver with `options` and stores it in the driver pool."
-  [options]
-  (let [opts (->driver-options options)
+  "Initialises a new web driver with `options`."
+  []
+  (let [opts (driver-options)
         driver (web-driver opts)]
-    (swap! driver-pool conj driver)
     driver))
-
-(defn init-driver-pool
-  "Initialises the driver pool of `pool-size` and using `driver-options`.
-  `pool-size` defaults to 5 is not present."
-  [{:keys [driver-options pool-size] :or {pool-size driver-pool-size}}]
-  (->> (repeatedly pool-size #(init-driver driver-options))
-        (reset! driver-pool)))
-
-(defn get-meeting-page
-  "Scrapes the public confluence page"
-)
-  

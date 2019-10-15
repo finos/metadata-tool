@@ -74,6 +74,7 @@
 
 (defn table-html
   [html]
+  (println html)
   (let [first-table (str (first (str/split html #"</table>")) "</table>")
         after-h1-title (str/split first-table #"<h1>Attendees</h1>")
         after-h2-title (str/split first-table #"<h2>Attendees</h2>")]
@@ -97,6 +98,7 @@
   ; The final Selenium-based implementation should just render out the text of the HTML element
   ;  being passed to the function
   (println element)
+  ; (sel/text element)
   "")
 
   ; (let [user-element (sel/select (sel/descendant (sel/tag (keyword "ri:user"))) element)

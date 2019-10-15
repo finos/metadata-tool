@@ -102,3 +102,5 @@ To see the dependencies and licenses in detail, run:
 ```shell
 $ lein licenses
 ```
+
+TODO - document chrome driver install - https://chromedriver.storage.googleapis.com/index.html?path=75.0.3770.140/

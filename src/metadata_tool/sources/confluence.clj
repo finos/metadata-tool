@@ -15,10 +15,14 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.sources.confluence
-  (:require [clojure.string        :as str]
-            [clj-http.client       :as http]
-            [clj-http.conn-mgr     :as conn]
-            [metadata-tool.config  :as cfg]))
+  (:require [clojure.string                :as str]
+            [clj-http.client               :as http]
+            [clj-http.conn-mgr             :as conn]
+            [metadata-tool.tools.selenium  :as selenium]
+            [metadata-tool.config          :as cfg])
+  (:import
+   (org.openqa.selenium By)
+   (org.openqa.selenium.support.ui WebDriverWait)))
 
 (def cm (conn/make-reusable-conn-manager {}))
 
@@ -55,9 +59,19 @@
 ;   (:value (:storage (:body (:body
 ;                             (cget "content/" id "?expand=body.storage"))))))
 (defn content
-  [url]
-  (println (str "Fetching URL - " url))
-  "")
+  [path]
+  (let [driver (selenium/init-driver)
+        wdw (WebDriverWait. driver 3)
+        ; condition (By.id "main-content" (.elementToBeClickable ExpectedConditions))
+        {:keys [host username password]} (:confluence cfg/config)
+        url (str host "/wiki" path)]
+    (println url)
+    (.get driver url)
+    ; (.until wdw condition)
+    (-> driver
+        ; (.findElement (By/id "main-content"))
+        (.findElement (By/xpath "//body"))
+        (.getAttribute "innerHTML"))))
 
 (defn children
   [id]
