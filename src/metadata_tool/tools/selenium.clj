@@ -28,13 +28,15 @@
   (ChromeDriver. options))
 
 (defn driver-options []
-  (System/setProperty "webdriver.chrome.silentLogging" "false")
-  (System/setProperty "webdriver.chrome.silentOutput" "false")
+  (System/setProperty "webdriver.chrome.silentLogging" "true")
+  (System/setProperty "webdriver.chrome.silentOutput" "true")
   (-> (ChromeOptions.) (.setHeadless true)))
+
+(def driver (atom nil))
 
 (defn init-driver
   "Initialises a new web driver with `options`."
   []
-  (let [opts (driver-options)
-        driver (web-driver opts)]
-    driver))
+  (if (some? @driver)
+    @driver
+    (reset! driver (web-driver (driver-options)))))
