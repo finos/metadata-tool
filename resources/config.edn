@@ -18,7 +18,7 @@
     :username #env CONFLUENCE_USER
     :password #env CONFLUENCE_PASSWORD
     :host "https://finosfoundation.atlassian.net"
-    :skip-pages ["template" "archive" "YYYY-MM-DD"]
+    :skip-pages ["template" "archive" "YYYY-MM-DD" "Roadmap"]
     :years ["2019" "2018" "2017" "2016"]
     :ignore-names ["Individual's name" "Other Attendees" "FINOS Foundation" "TBD"]
     :remove-from-names ["(PMC Lead)" "(Observer)" "(Chair)" "(Call-in User)" "(Deactivated)"]

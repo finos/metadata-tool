@@ -21,6 +21,7 @@
             [hickory.select                       :as sel]
             [metadata-tool.sources.confluence     :as cfl]
             [metadata-tool.config                 :as cfg]
+            [clojure.pprint                       :as pp]
             [metadata-tool.sources.metadata       :as md]))
 
 (def not-nil? (complement nil?))
@@ -34,14 +35,14 @@
         (str/replace "\u00A0" " ")
         str/trim)))
 
-(defn parse-name
+(defn remove-from-name
   [string to-remove]
   (when-not (str/blank? string)
     (if (empty? to-remove)
       string
       (if-let [acronym (get (:acronyms (:confluence cfg/config)) string)]
         acronym
-        (parse-name
+        (remove-from-name
          (str/replace string (first to-remove) "")
          (rest to-remove))))))
 
@@ -72,92 +73,26 @@
               (str/upper-case page-title)
               (str/upper-case %)) (:skip-pages (:confluence cfg/config))))))
 
-(defn table-html
-  [html]
-  (println html)
-  (let [first-table (str (first (str/split html #"</table>")) "</table>")
-        after-h1-title (str/split first-table #"<h1>Attendees</h1>")
-        after-h2-title (str/split first-table #"<h2>Attendees</h2>")]
-    (let [payload
-          (if
-           (> (count after-h1-title) 1)
-            (second after-h1-title)
-            (if
-             (> (count after-h2-title) 1)
-              (second after-h2-title)))]
-      (if (and
-           payload
-           (str/starts-with? (str/trim payload) "<table"))
-        (str/trim payload)))))
-
-(defn resolve-user
-  [element]
-
-  ; WIP - this is the old implementation based on deprecated Atlassian API;
-  ; below is a temporary implementation that prints out the element and returns an empty string.
-  ; The final Selenium-based implementation should just render out the text of the HTML element
-  ;  being passed to the function
-  (println element)
-  ; (sel/text element)
-  "")
-
-  ; (let [user-element (sel/select (sel/descendant (sel/tag (keyword "ri:user"))) element)
-  ;       select-leaf (sel/not (sel/has-child sel/any))]
-  ;   (if (not-empty user-element)
-  ;     (let [user-key (get (:attrs (first user-element)) (keyword "ri:userkey"))
-  ;           body (:body (cfl/cget (str "user?expand=email&key=" user-key)))]
-  ;       [(:email body) (:displayName body)])
-  ;     (when-let [name (:content (first (sel/select select-leaf element)))]
-  ;       [nil (parse-string (apply str name))]))))
-
 (defn row-to-user
   [row program activity type meeting-date]
-  (let [items      (sel/select (sel/child (sel/tag :tr) (sel/tag :td)) row)
-        id         (resolve-user (first items))
-        email      (first id)
-        name       (parse-string (parse-name (second id) (:remove-from-names (:confluence cfg/config))))
-        orgItem    (second items)
-        select-leaf   (sel/not (sel/has-child sel/any))
-        org        (or
-                    (apply str (:content (first (sel/select sel/last-child orgItem))))
-                    (apply str (:content (first (sel/select select-leaf orgItem)))))
-        ghid          (when (> (count items) 2)
-                        (:content (first (sel/select select-leaf (nth items 2)))))
-        user-by-md    (md/person-metadata-by-fn nil name email)]
-        ; (if-not (str/blank? name)
-        ;     (let []
-        ;         (println (str 
-        ;             "'" name "' '" org "' '" ghid 
-        ;             "(" (Character/codePointAt name (dec (count name))) ")"))))
-    (if-not (or
-             (some #(= name %) (:ignore-names (:confluence cfg/config)))
-             (and
-              (str/blank? name)
-              (str/blank? org)
-              (str/blank? ghid))) {:email (or
-                                         (first (:email-addresses user-by-md))
-                                         (first id))
-                                 :name (or
-                                        (:full-name user-by-md)
-                                        name)
-                                 :org (or
-                                       (:organization-name (first (md/current-affiliations (:person-id user-by-md))))
-                                       org)
-                                 :ghid (or
-                                        (first (:github-logins user-by-md)))
-                    ; TODO - cannot rely on GitHub data as third column;
-                    ; right now it contains all sorts of data
-                    ; ghid)
-                                 :program program
-                                 :activity activity
-                                 :type type
-                                 :meeting-date meeting-date}
-            nil)))
+  (let [[raw-name] (:content row)
+        name (remove-from-name raw-name (:remove-from-names (:confluence cfg/config)))
+        ignored-names (:ignore-names (:confluence cfg/config))
+        user-by-md (md/person-metadata-by-fn nil name nil)]
+    (if-not (contains? (:ignore-names (:confluence cfg/config)) name) {
+      :email (first (:email-addresses user-by-md))
+      :name (:full-name user-by-md)
+      :org (or (:organization-name (first (md/current-affiliations (:person-id user-by-md)))))
+      :ghid (or (first (:github-logins user-by-md)))
+      :program program
+      :activity activity
+      :type type
+      :meeting-date meeting-date })))
 
 (defn meeting-roster
   [table-html page-title program activity type]
   (let [meeting-date (parse-date page-title)
-        selector    (sel/tag :tr)]
+        selector    (sel/tag :a)]
     (let [table (html/as-hickory (html/parse table-html))
           rows  (sel/select selector table)]
       (map
@@ -166,19 +101,18 @@
 
 (defn parse-page
   [page-data program activity type]
-  ; TODO - extract public URL from Confluence API call
-  (let [content (cfl/content (:url page-data))
-        title (:title page-data)]
-    (if-not (skip-page title)
-      (let [table-html (table-html content)]
-        (if-not (empty? table-html)
-          (meeting-roster
-           table-html
-           title
-           program
-           activity
-           type)))
-      [])))
+  (let [title (:title page-data)
+        meeting-date (parse-date title)]
+    (if (not (= meeting-date title))
+      (let [content (cfl/content (:url page-data))]
+        (if-not (skip-page title)
+          (if-not (empty? content)
+            (meeting-roster
+              content
+              title
+              program
+              activity
+              type)))))))
 
 (defn ids-and-titles
   [id]
@@ -204,5 +138,5 @@
     (doall
      (map
       #(.write writer (str (str/join ", " (vals %)) "\n"))
-      roster-data))
+      (remove #(or (nil? %) (nil? (:email %))) roster-data)))
     (.flush writer)))

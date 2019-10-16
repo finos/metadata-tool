@@ -21,8 +21,11 @@
             [metadata-tool.tools.selenium  :as selenium]
             [metadata-tool.config          :as cfg])
   (:import
+   (java.time LocalTime)
    (org.openqa.selenium By)
-   (org.openqa.selenium.support.ui WebDriverWait)))
+   (org.openqa.selenium.support.ui ExpectedConditions WebDriverWait)))
+
+(def selenium-timeout 5)
 
 (def cm (conn/make-reusable-conn-manager {}))
 
@@ -53,30 +56,23 @@
   (nth
    (str/split url #"/") 4))
 
-; WIP - this is where Selenium is supposed to be used to fetch the public URL and return the JS-enriched HTML
-; (defn content
-;   [id]
-;   (:value (:storage (:body (:body
-;                             (cget "content/" id "?expand=body.storage"))))))
 (defn content
   [path]
-  (let [driver (selenium/init-driver)
-        wdw (WebDriverWait. driver 3)
-        ; condition (By.id "main-content" (.elementToBeClickable ExpectedConditions))
-        {:keys [host username password]} (:confluence cfg/config)
-        url (str host "/wiki" path)]
-    (println url)
-    (.get driver url)
-    ; (.until wdw condition)
-    (-> driver
-        ; (.findElement (By/id "main-content"))
-        (.findElement (By/xpath "//body"))
-        (.getAttribute "innerHTML"))))
+  (try
+    (let [driver (selenium/init-driver)
+          wdw (WebDriverWait. driver selenium-timeout)
+          condition (ExpectedConditions/elementToBeClickable (By/id "main-content"))
+          host (:host (:confluence cfg/config))
+          url (str host "/wiki" path)]
+      (.get driver url)
+      (.until wdw condition)
+      (-> driver
+        (.findElement (By/xpath "//*[self::h1 or self::h2 and text()='Attendees']/following::table"))
+        (.getAttribute "innerHTML")))
+  (catch Exception e (println "Error parsing -" (str (:host (:confluence cfg/config)) "/wiki" path)))))
 
 (defn children
   [id]
   (try
     (:results (:body (cget "content/" id "/child/page")))
-        ; TODO - check Exception status code (clj-http)
-        ; tried with (:status (:data e))
     (catch Exception e [])))
