@@ -15,8 +15,6 @@
 
   :confluence
   {
-    :username #env CONFLUENCE_USER
-    :password #env CONFLUENCE_PASSWORD
     :host "https://finosfoundation.atlassian.net"
   }
 

@@ -20,6 +20,12 @@ metadata tool is configured via a single [EDN](https://github.com/edn-format/edn
 line.  This configuration file contains credentials for GitHub, Bitergia, and the tool's email account (used for sending
 email reports).
 
+The following environment variables must be set, before invoking a metadata-tool command:
+- `GITHUB_USER` - Your GitHub username
+- `GITHUB_PASSWORD` - A GitHub personal access token; you can create it on https://github.com/settings/tokens
+- `BITERGIA_USER` - Username for metrics.finos.org ; can be set to `''` for all commands except `check` and `check-remote`
+- `BITERGIA_PASSWORD` - Passwotd for metrics.finos.org ; can be set to `''` for all commands except `check` and `check-remote`
+
 See [the default `config.edn` file](https://github.com/finos/metadata-tool/blob/master/resources/config.edn) for details.
 
 This file is loaded using the [aero](https://github.com/juxt/aero) library, which offers quite a bit

@@ -83,10 +83,13 @@
     (if (empty? ancor)
       (let [span (sel/select (sel/descendant (sel/tag :span)) element)]
         (if (empty? span)
-          (let [any (sel/select (sel/descendant sel/any sel/any) element)]
-            (if (empty? any)
-              (first (:content element))
-              (first (:content any))))
+          (let [p (sel/select (sel/descendant (sel/tag :p)) element)]
+            (if (empty? p)
+              (let [any (sel/select (sel/descendant sel/any sel/any) element)]
+                (if (empty? any)
+                  (first (:content element))
+                  (first (:content any))))
+              (first (:content (first p)))))
         (first (:content (first span)))))
       (first (:content (first ancor))))))
 
@@ -102,7 +105,7 @@
   (let [raw-name (extract-full-name row)
         ignored-names (:ignore-names (:meetings cfg/config))]
     (if-let [name (resolve-acronym (parse-name (parse-string raw-name) (:remove-from-names (:meetings cfg/config))))]
-      (if-not (contains? ignored-names name)
+      (if-not (contains? ignored-names (str/trim name))
         (if-let [user-by-md (md/person-metadata-by-fn nil (str/trim name) nil)] {
           :email (first (:email-addresses user-by-md))
           :name (:full-name user-by-md)
