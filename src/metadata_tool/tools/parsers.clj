@@ -35,16 +35,20 @@
         (str/replace "\u00A0" " ")
         str/trim)))
 
-(defn remove-from-name
+(defn resolve-acronym
+  [string]
+  (if-let [acronym (get (:acronyms (:meetings cfg/config)) string)]
+    acronym
+    string))
+
+(defn parse-name
   [string to-remove]
   (when-not (str/blank? string)
     (if (empty? to-remove)
       string
-      (if-let [acronym (get (:acronyms (:confluence cfg/config)) string)]
-        acronym
-        (remove-from-name
-         (str/replace string (first to-remove) "")
-         (rest to-remove))))))
+      (parse-name
+      (str/replace string (first to-remove) "")
+      (rest to-remove)))))
 
 (defn parse-date
   [title]
@@ -52,7 +56,7 @@
         indexes
         (filter #(>= % 0)
                 (keep #(str/index-of title-parsed %)
-                      (:years (:confluence cfg/config))))]
+                      (:years (:meetings cfg/config))))]
     (if (not-empty indexes)
       (first (str/split
               (subs
@@ -71,28 +75,50 @@
    (count
     (filter #(str/includes?
               (str/upper-case page-title)
-              (str/upper-case %)) (:skip-pages (:confluence cfg/config))))))
+              (str/upper-case %)) (:skip-pages (:meetings cfg/config))))))
+
+(defn extract-full-name
+  [element]
+  (let [ancor (sel/select (sel/tag :a) element)]
+    (if (empty? ancor)
+      (let [span (sel/select (sel/descendant (sel/tag :span)) element)]
+        (if (empty? span)
+          (let [any (sel/select (sel/descendant sel/any sel/any) element)]
+            (if (empty? any)
+              (first (:content element))
+              (first (:content any))))
+        (first (:content (first span)))))
+      (first (:content (first ancor))))))
+
+(defn debug
+  [x]
+  (println "--- START DEBUG ---")
+  (pp/pprint x)
+  (println "--- END DEBUG ---")
+  x)
 
 (defn row-to-user
   [row program activity type meeting-date]
-  (let [[raw-name] (:content row)
-        name (remove-from-name raw-name (:remove-from-names (:confluence cfg/config)))
-        ignored-names (:ignore-names (:confluence cfg/config))
-        user-by-md (md/person-metadata-by-fn nil name nil)]
-    (if-not (contains? (:ignore-names (:confluence cfg/config)) name) {
-      :email (first (:email-addresses user-by-md))
-      :name (:full-name user-by-md)
-      :org (or (:organization-name (first (md/current-affiliations (:person-id user-by-md)))))
-      :ghid (or (first (:github-logins user-by-md)))
-      :program program
-      :activity activity
-      :type type
-      :meeting-date meeting-date })))
+  (let [raw-name (extract-full-name row)
+        ignored-names (:ignore-names (:meetings cfg/config))]
+    (if-let [name (resolve-acronym (parse-name (parse-string raw-name) (:remove-from-names (:meetings cfg/config))))]
+      (if-not (contains? ignored-names name)
+        (if-let [user-by-md (md/person-metadata-by-fn nil (str/trim name) nil)] {
+          :email (first (:email-addresses user-by-md))
+          :name (:full-name user-by-md)
+          :org (or (:organization-name (first (md/current-affiliations (:person-id user-by-md)))))
+          :ghid (or (first (:github-logins user-by-md)))
+          :program program
+          :activity activity
+          :type type
+          :meeting-date meeting-date }
+          (println "[USER NOT FOUND] " (str "'" (str/trim name) "'") "on activity" activity "date" meeting-date))))))
 
 (defn meeting-roster
-  [table-html page-title program activity type]
+  [raw-table-html page-title program activity type]
   (let [meeting-date (parse-date page-title)
-        selector    (sel/tag :a)]
+        table-html   (str "<table>" raw-table-html "</table>")
+        selector     (sel/and (sel/class :confluenceTd) sel/first-child)]
     (let [table (html/as-hickory (html/parse table-html))
           rows  (sel/select selector table)]
       (map
@@ -105,14 +131,15 @@
         meeting-date (parse-date title)]
     (if (not (= meeting-date title))
       (let [content (cfl/content (:url page-data))]
-        (if-not (skip-page title)
+        (if-not (skip-page title) (do
+          (println (str "Scanning for meeting attendance on page " (:title page-data)))
           (if-not (empty? content)
             (meeting-roster
               content
               title
               program
               activity
-              type)))))))
+              type))))))))
 
 (defn ids-and-titles
   [id]
@@ -138,5 +165,6 @@
     (doall
      (map
       #(.write writer (str (str/join ", " (vals %)) "\n"))
+      ; DEBUG - Check on :name instead of :email if you want to debug output
       (remove #(or (nil? %) (nil? (:email %))) roster-data)))
     (.flush writer)))

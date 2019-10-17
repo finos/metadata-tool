@@ -44,7 +44,7 @@
 (defn cget
   "Invokes the Confluence GET REST API identified by the given URL substrings"
   [& args]
-  (let [{:keys [host username password]} (:confluence cfg/config)
+  (let [host (:host (:confluence cfg/config))
         url    (str host "/wiki/rest/api/" (str/join args))]
     (http/get url {:connection-manager cm
                    :http-client        (client)
@@ -69,7 +69,9 @@
       (-> driver
         (.findElement (By/xpath "//*[self::h1 or self::h2 and text()='Attendees']/following::table"))
         (.getAttribute "innerHTML")))
-  (catch Exception e (println "Error parsing -" (str (:host (:confluence cfg/config)) "/wiki" path)))))
+  ; TODO - return nil AND print out error message in console
+  (catch Exception e nil)))
+  ; (catch Exception e (println "Error parsing -" (str (:host (:confluence cfg/config)) "/wiki" path)))))
 
 (defn children
   [id]
