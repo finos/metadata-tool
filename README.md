@@ -14,6 +14,14 @@ A command line tool for performing various tasks with [Fintech Open Source Found
 
 For now the metadata tool is available in source form only, so fire up your favourite git client and get cloning!
 
+There is one command, the `gen-meeting-roster-data` which uses Chrome headless driver and therefore requires the same version of [Chrome](https://www.google.com/chrome/) and [Chrome driver](https://chromedriver.storage.googleapis.com/index.html) to be installed and available in your `$PATH`.
+
+To validate `chromedriver` installation, run:
+```
+which chromedriver
+chromedriver --version
+```
+
 ## Configuration
 
 metadata tool is configured via a single [EDN](https://github.com/edn-format/edn) file that's specified on the command
@@ -108,5 +116,3 @@ To see the dependencies and licenses in detail, run:
 ```shell
 $ lein licenses
 ```
-
-TODO - document chrome driver install - https://chromedriver.storage.googleapis.com/index.html?path=75.0.3770.140/
