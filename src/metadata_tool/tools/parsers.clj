@@ -35,11 +35,7 @@
         (str/replace "\u00A0" " ")
         str/trim)))
 
-(defn resolve-acronym
-  [s]
-  (if-let [acronym (get (:acronyms (:meetings cfg/config)) s)]
-    acronym
-    s))
+(defn resolve-acronym [s] (get (:acronyms (:meetings cfg/config)) s s))
 
 (defn parse-name
   [s to-remove]
