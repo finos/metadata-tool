@@ -28,7 +28,7 @@
                         :email-domains 
                           (sort (flatten 
                             (mapcat :domains 
-                              (filter #(:cla-email-whitelist %) 
+                              (filter :cla-email-whitelist
                                       (md/organizations-metadata)))))})))
 
 (defn gen-bitergia-affiliation-data
