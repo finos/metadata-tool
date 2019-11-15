@@ -24,7 +24,12 @@
 (defn gen-clabot-whitelist
   []
   (println (tem/render "clabot-whitelist.ftl"
-                       {:github-ids (sort (mapcat :github-logins (md/people-with-clas)))})))
+                       {:github-ids (sort (mapcat :github-logins (md/people-with-clas)))
+                        :email-domains 
+                          (sort
+                            (mapcat :domains 
+                              (filter :cla-email-whitelist
+                                      (md/organizations-metadata))))})))
 
 (defn gen-bitergia-affiliation-data
   []
