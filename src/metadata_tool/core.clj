@@ -15,35 +15,32 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.core
-  (:require [clojure.string                 :as s]
+  (:require [clojure.string                 :as str]
             [metadata-tool.tools.checkers   :as tch]
             [metadata-tool.tools.listers    :as tls]
             [metadata-tool.tools.generators :as tgn]
             [metadata-tool.tools.reports    :as trp]))
 
-
-; Map of (lowercase) tool names to tool fns
 (def ^:private tools
-  {
-    "check-local"                    tch/check-local
-    "check"                          tch/check
-    "list-schemas"                   tls/list-schemas
-    "list-people-with-clas"          tls/list-people-with-clas
-    "gen-meeting-roster-data"        tgn/gen-meeting-roster-data
-    "gen-bitergia-affiliation-data"  tgn/gen-bitergia-affiliation-data
-    "gen-bitergia-organization-data" tgn/gen-bitergia-organization-data
-    "gen-bitergia-project-data"      tgn/gen-bitergia-project-data
-    "gen-clabot-whitelist"           tgn/gen-clabot-whitelist
-    "gen-catalogue-data"             tgn/gen-catalogue-data
-    "email-pmc-reports"              trp/email-pmc-reports
-  })
+  "Map of (lowercase) tool names to tool fns"
+  {"check-local"                    tch/check-local
+   "check"                          tch/check
+   "list-schemas"                   tls/list-schemas
+   "list-people-with-clas"          tls/list-people-with-clas
+   "gen-meeting-roster-data"        tgn/gen-meeting-roster-data
+   "gen-bitergia-affiliation-data"  tgn/gen-bitergia-affiliation-data
+   "gen-bitergia-organization-data" tgn/gen-bitergia-organization-data
+   "gen-bitergia-project-data"      tgn/gen-bitergia-project-data
+   "gen-clabot-whitelist"           tgn/gen-clabot-whitelist
+   "gen-catalogue-data"             tgn/gen-catalogue-data
+   "email-pmc-reports"              trp/email-pmc-reports})
 
 (def tool-names (sort (keys tools)))
 
 (defn run-tool
   "Runs the given tool."
   [tool]
-  (if-let [tool-fn (get tools (s/lower-case tool))]
+  (if-let [tool-fn (get tools (str/lower-case tool))]
     (do
       (tool-fn)
       nil)))   ; Force nil return value
