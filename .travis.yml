@@ -4,4 +4,4 @@ lein: 2.8.1
 jdk:
   - oraclejdk11
 
-script: lein check ; lein ancient
+script: lein check ; lein ancient &

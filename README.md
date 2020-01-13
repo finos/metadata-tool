@@ -14,13 +14,42 @@ A command line tool for performing various tasks with [Fintech Open Source Found
 
 For now the metadata tool is available in source form only, so fire up your favourite git client and get cloning!
 
+The `gen-meeting-roster-data` command uses Chrome headless driver and therefore requires the same version of [Chrome](https://www.google.com/chrome/) and [Chrome driver](https://chromedriver.storage.googleapis.com/index.html) to be installed and available in your `$PATH`.
+
+To validate `chromedriver` installation, run:
+```
+which chromedriver
+chromedriver --version
+```
+
 ## Configuration
 
 metadata tool is configured via a single [EDN](https://github.com/edn-format/edn) file that's specified on the command
 line.  This configuration file contains credentials for GitHub, Bitergia, and the tool's email account (used for sending
 email reports).
 
+The following environment variables must be set, before invoking a metadata-tool command:
+- `GITHUB_USER` - Your GitHub username
+- `GITHUB_PASSWORD` - A GitHub personal access token; you can create it on https://github.com/settings/tokens
+- `BITERGIA_USER` - Username for metrics.finos.org ; can be set to `''` for all commands except `check` and `check-remote`
+- `BITERGIA_PASSWORD` - Passwotd for metrics.finos.org ; can be set to `''` for all commands except `check` and `check-remote`
+
 See [the default `config.edn` file](https://github.com/finos/metadata-tool/blob/master/resources/config.edn) for details.
+
+The `gen-meeting-roster-data` command relies on one additional configuration file, `meeting-crawler.edn`, which is expected to reside in the root folder of the `metadata` project; below is a confiuration example.
+
+```
+{
+    :skip-pages ["template" "archive" "YYYY-MM-DD" "DRAFT" "(cancelled)" "Copy of" "IGNORE"]
+    :years ["2019" "2018" "2017" "2016"]
+    :ignore-names ["Individual's name" "Other Attendees" "FINOS Foundation" "TBD"]
+    :remove-from-names ["(PMC Lead)" "(Observer)" "(Chair)" "(Call-in User)" "(Deactivated)"]
+    :acronyms {
+        "Mao Pillitu" "Maurizio Pillitu"
+        "Gab Columbro" "Gabriele Columbro"
+    }
+}
+```
 
 This file is loaded using the [aero](https://github.com/juxt/aero) library, which offers quite a bit
 of flexibility around how values are specified in the file (they can be read from environment variables,

@@ -114,7 +114,9 @@
   (let [now-str                                          (tf/unparse (tf/formatter "yyyy-MM-dd h:mmaa ZZZ") (tm/now))
         all-programs                                     (md/programs-metadata)
         six-months-ago                                   (tm/minus (tm/now) (tm/months 6))
-
+        ; to build local report based on last 12 months of activity
+        ; six-months-ago                                   (tm/minus (tm/now) (tm/months 12))
+        
         unarchived-activities-without-leads              (group-by :program-id
                                                                    (remove #(= "ARCHIVED" (:state %))
                                                                            (filter #(str/blank? (:lead-or-chair-person-id %))
