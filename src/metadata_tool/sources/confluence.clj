@@ -15,10 +15,16 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.sources.confluence
-  (:require [clojure.string        :as str]
-            [clj-http.client       :as http]
-            [clj-http.conn-mgr     :as conn]
-            [metadata-tool.config  :as cfg]))
+  (:require [clojure.string                :as str]
+            [clj-http.client               :as http]
+            [clj-http.conn-mgr             :as conn]
+            [metadata-tool.tools.selenium  :as selenium]
+            [metadata-tool.config          :as cfg])
+  (:import
+   (org.openqa.selenium By)
+   (org.openqa.selenium.support.ui ExpectedConditions WebDriverWait)))
+
+(def selenium-timeout 5)
 
 (def cm (conn/make-reusable-conn-manager {}))
 
@@ -37,10 +43,9 @@
 (defn cget
   "Invokes the Confluence GET REST API identified by the given URL substrings"
   [& args]
-  (let [{:keys [host username password]} (:confluence cfg/config)
+  (let [host (:host (:confluence cfg/config))
         url    (str host "/wiki/rest/api/" (str/join args))]
-    (http/get url {:basic-auth         [username password]
-                   :connection-manager cm
+    (http/get url {:connection-manager cm
                    :http-client        (client)
                    :cache              true
                    :as                 :json})))
@@ -51,14 +56,24 @@
    (str/split url #"/") 4))
 
 (defn content
-  [id]
-  (:value (:storage (:body (:body
-                            (cget "content/" id "?expand=body.storage"))))))
+  [path]
+  (try
+    (let [driver (selenium/init-driver)
+          wdw (WebDriverWait. driver selenium-timeout)
+          condition (ExpectedConditions/elementToBeClickable (By/id "main-content"))
+          host (:host (:confluence cfg/config))
+          url (str host "/wiki" path)]
+      (.get driver url)
+      (.until wdw condition)
+      (-> driver
+        (.findElement (By/xpath "//*[self::h1 or self::h2 and text()='Attendees']/following::table"))
+        (.getAttribute "innerHTML")))
+  (catch Exception e 
+    (println "Error parsing -" (str (:host (:confluence cfg/config)) "/wiki" path))
+    (println (.getMessage e)))))
 
 (defn children
   [id]
   (try
     (:results (:body (cget "content/" id "/child/page")))
-        ; TODO - check Exception status code (clj-http)
-        ; tried with (:status (:data e))
     (catch Exception e [])))

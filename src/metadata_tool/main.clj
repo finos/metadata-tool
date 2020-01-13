@@ -78,6 +78,8 @@
                                                    (a/read-config config-file)
                                                    (a/read-config (io/resource "config.edn")))
                                                  :metadata-directory (:metadata-directory options)
+                                                 :meetings
+                                                  (a/read-config (str (:metadata-directory options) "/meeting-crawler.edn"))
                                                  :github-revision    (:github-revision    options)
                                                  :email-override     (boolean (:email-override options)))))
       (let [tools-to-run (map str/lower-case arguments)]
