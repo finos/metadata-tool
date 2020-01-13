@@ -68,9 +68,9 @@
       (-> driver
         (.findElement (By/xpath "//*[self::h1 or self::h2 and text()='Attendees']/following::table"))
         (.getAttribute "innerHTML")))
-  ; TODO - return nil AND print out error message in console
-  (catch Exception e nil)))
-  ; (catch Exception e (println "Error parsing -" (str (:host (:confluence cfg/config)) "/wiki" path)))))
+  (catch Exception e 
+    (println "Error parsing -" (str (:host (:confluence cfg/config)) "/wiki" path))
+    (println (.getMessage e)))))
 
 (defn children
   [id]
