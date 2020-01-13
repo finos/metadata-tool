@@ -40,7 +40,7 @@
                          [hickory                               "0.7.1"]
                          [lambdaisland/uri                      "1.1.0"]
                          [com.github.grinnbearit/freemarker-clj "-SNAPSHOT"]
-                         [metosin/scjsv                         "0.6.0"]
+                         [metosin/scjsv                         "0.5.0"]
                          [clj-jgit                              "0.8.10" :exclusions [org.apache.httpcomponents/httpclient]]
                          [irresponsible/tentacles               "0.6.6"]
                          [cc.qbits/spandex                      "0.7.4" :exclusions [commons-logging org.apache.httpcomponents/httpcore-nio]]
