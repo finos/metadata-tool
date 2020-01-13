@@ -29,9 +29,9 @@
                          [org.clojure/tools.cli                 "0.4.2"]
                          [org.clojure/tools.logging             "0.5.0"]
                          [ch.qos.logback/logback-classic        "1.2.3"]
-                         [org.slf4j/jcl-over-slf4j              "1.7.28"]
-                         [org.slf4j/log4j-over-slf4j            "1.7.28"]
-                         [org.slf4j/jul-to-slf4j                "1.7.28"]
+                         [org.slf4j/jcl-over-slf4j              "1.7.29"]
+                         [org.slf4j/log4j-over-slf4j            "1.7.29"]
+                         [org.slf4j/jul-to-slf4j                "1.7.29"]
                          [cheshire                              "5.9.0"]
                          [aero                                  "1.1.3"]
                          [org.clojure/data.csv                  "0.1.4"]
@@ -49,7 +49,7 @@
                          [org.seleniumhq.selenium/selenium-api "3.141.59"]
                          [org.seleniumhq.selenium/htmlunit-driver "2.36.0"]]
   :managed-dependencies [; The following dependencies are inherited but have conflicting or old versions, so we "pin" the versions here
-                         [joda-time/joda-time "2.10.4"]
+                         [joda-time/joda-time "2.10.5"]
                          [clj-http            "3.10.0"]]
   :profiles             {:dev     {:dependencies [[midje      "1.9.9"]]
                                    :plugins      [[lein-midje "3.2.1"]]}
