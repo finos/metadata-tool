@@ -81,18 +81,18 @@
 
 (defn- send-email-to-pmc
   [program-id subject body]
-  ; TODO - enable code below and comment out print commands!
-  ; (println "===========================")
-  ; (println subject)
-  ; (println "---------------------------")
-  ; (println body)
-  ; (println "==========================="))
-  (if-not (str/blank? program-id)
-    (send-email (:pmc-mailing-list-address (md/program-metadata program-id))
-                subject
-                body
-                :cc-addresses     program-liaison-email-address
-                :reply-to-address program-liaison-email-address)))
+  ; To build local reporting instead of sending out emails to PMC lists
+  (println "===========================")
+  (println subject)
+  (println "---------------------------")
+  (println body)
+  (println "==========================="))
+  ; (if-not (str/blank? program-id)
+  ;   (send-email (:pmc-mailing-list-address (md/program-metadata program-id))
+  ;               subject
+  ;               body
+  ;               :cc-addresses     program-liaison-email-address
+  ;               :reply-to-address program-liaison-email-address)))
 
 (defn participation-img
   [type program]
@@ -113,9 +113,9 @@
   []
   (let [now-str                                          (tf/unparse (tf/formatter "yyyy-MM-dd h:mmaa ZZZ") (tm/now))
         all-programs                                     (md/programs-metadata)
-        six-months-ago                                   (tm/minus (tm/now) (tm/months 6))
+        ; six-months-ago                                   (tm/minus (tm/now) (tm/months 6))
         ; to build local report based on last 12 months of activity
-        ; six-months-ago                                   (tm/minus (tm/now) (tm/months 12))
+        six-months-ago                                   (tm/minus (tm/now) (tm/months 12))
         
         unarchived-activities-without-leads              (group-by :program-id
                                                                    (remove #(= "ARCHIVED" (:state %))
