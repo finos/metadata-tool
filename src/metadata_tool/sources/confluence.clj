@@ -21,7 +21,6 @@
             [metadata-tool.tools.selenium  :as selenium]
             [metadata-tool.config          :as cfg])
   (:import
-   (java.time LocalTime)
    (org.openqa.selenium By)
    (org.openqa.selenium.support.ui ExpectedConditions WebDriverWait)))
 

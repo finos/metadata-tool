@@ -35,19 +35,15 @@
         (str/replace "\u00A0" " ")
         str/trim)))
 
-(defn resolve-acronym
-  [string]
-  (if-let [acronym (get (:acronyms (:meetings cfg/config)) string)]
-    acronym
-    string))
+(defn resolve-acronym [s] (get (:acronyms (:meetings cfg/config)) s s))
 
 (defn parse-name
-  [string to-remove]
-  (when-not (str/blank? string)
+  [s to-remove]
+  (when-not (str/blank? s)
     (if (empty? to-remove)
-      string
+      s
       (parse-name
-      (str/replace string (first to-remove) "")
+      (str/replace s (first to-remove) "")
       (rest to-remove)))))
 
 (defn parse-date
@@ -67,7 +63,9 @@
 
 (defn id-and-title
   [payload]
-  {:id (:id payload) :title (:title payload) :url (:webui (:_links payload))})
+  {:id (:id payload)
+   :title (:title payload)
+   :url (:webui (:_links payload))})
 
 (defn skip-page
   [page-title]
