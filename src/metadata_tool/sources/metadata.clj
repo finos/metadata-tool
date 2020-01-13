@@ -207,13 +207,19 @@
   [program-id]
   (sort (map #(.getName ^java.io.File %) (list-subdirs (io/file (str program-metadata-directory "/" program-id))))))
 
+(defn- get-gh-org
+  [activity-gh-org program]
+  (if activity-gh-org
+    activity-gh-org
+    (:github-org program)))
+
 (defn- github-urls
-  [program repos]
-  (seq (map #(str "https://github.com/" (:github-org program) "/" %) repos)))
+  [program repos & [activity-gh-org]]
+  (seq (map #(str "https://github.com/" (get-gh-org activity-gh-org program) "/" %) repos)))
 
 (defn- program-activity-github-urls
   [program activity]
-  (github-urls program (:github-repos activity)))
+  (github-urls program (:github-repos activity) (:github-org activity)))
 
 (defn- pmc-github-urls
   [program]
