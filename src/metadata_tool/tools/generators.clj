@@ -16,6 +16,7 @@
 ;
 (ns metadata-tool.tools.generators
   (:require [clojure.tools.logging            :as log]
+            [clojure.string                   :as s]
             [metadata-tool.tools.parsers      :as psrs]
             [metadata-tool.template           :as tem]
             [metadata-tool.sources.github     :as gh]
@@ -30,6 +31,14 @@
                             (mapcat :domains 
                               (filter :cla-email-whitelist
                                       (md/organizations-metadata))))})))
+
+(defn gen-clabot-ids-whitelist
+  []
+  (let [names (sort (mapcat :github-logins (md/people-with-clas)))
+        ids (distinct (remove nil? (map #(:id (gh/user %)) names)))
+        as-strings (map #(str "\"" % "\"") ids)
+        as-string (str "[" (s/join "," as-strings) "]")]
+    (println as-string)))
 
 (defn gen-bitergia-affiliation-data
   []

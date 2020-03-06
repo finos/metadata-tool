@@ -32,6 +32,7 @@
    "gen-bitergia-organization-data" tgn/gen-bitergia-organization-data
    "gen-bitergia-project-data"      tgn/gen-bitergia-project-data
    "gen-clabot-whitelist"           tgn/gen-clabot-whitelist
+   "gen-clabot-ids-whitelist"       tgn/gen-clabot-ids-whitelist
    "gen-catalogue-data"             tgn/gen-catalogue-data
    "email-pmc-reports"              trp/email-pmc-reports})
 
