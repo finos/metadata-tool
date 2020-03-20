@@ -28,6 +28,7 @@
    "list-schemas"                   tls/list-schemas
    "list-people-with-clas"          tls/list-people-with-clas
    "gen-meeting-roster-data"        tgn/gen-meeting-roster-data
+   "gen-meeting-github-roster-data"        tgn/gen-meeting-github-roster-data
    "gen-bitergia-affiliation-data"  tgn/gen-bitergia-affiliation-data
    "gen-bitergia-organization-data" tgn/gen-bitergia-organization-data
    "gen-bitergia-project-data"      tgn/gen-bitergia-project-data
