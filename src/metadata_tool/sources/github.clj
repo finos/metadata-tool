@@ -163,7 +163,7 @@
   (log/debug "Requesting org members for" org-url)
   (if-not (str/blank? org-url)
     (let [[org-name] (parse-github-url-path org-url)]
-          (call-gh (tr/members org-name opts)))))
+          (call-gh (to/members org-name opts)))))
 (def org-members (memoize org-members-fn))
 
 (defn collaborator-logins
