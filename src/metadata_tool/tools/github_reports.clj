@@ -38,10 +38,10 @@
    :no-issue-templates "This GitHub repository does not use issue templates; please check the [issue template blueprints](https://github.com/finos/project-blueprint/tree/master/.github/ISSUE_TEMPLATE)."
    :no-contributing "CONTRIBUTING.md file is missing; check the [CONTRIBUTING.md template](https://github.com/finos/project-blueprint/blob/master/.github/CONTRIBUTING.md)."
    :no-code-conduct "CODE_OF_CONDUCT.md file is missing; check the [CODE_OF_CONDUCT.md template](https://github.com/finos/project-blueprint/blob/master/.github/CODE_OF_CONDUCT.md)."
-   :notice-nok "NOTICE file is incomplete; check the [NOTICE template](https://github.com/finos/project-blueprint/blob/master/NOTICE) and make sure that `## Contributing` and `## License` sections exist."
+   :notice-nok "NOTICE file is incomplete; check the [NOTICE template](https://github.com/finos/project-blueprint/blob/master/NOTICE)."
    :no-notice "NOTICE file is missing; check the [NOTICE template](https://github.com/finos/project-blueprint/blob/master/NOTICE)."
    :no-readme "README file is missing; check the [README.md template](https://github.com/finos/project-blueprint/blob/master/README.template.md)."
-   :readme-nok "README.md file is incomplete; check the [README.md template](https://github.com/finos/project-blueprint/blob/master/README.template.md)."
+   :readme-nok "README.md file is incomplete; check the [README.md template](https://github.com/finos/project-blueprint/blob/master/README.template.md) and make sure that `## Contributing` and `## License` sections exist."
    :no-whitesource "WhiteSource configuration was not found; make sure that dependencies are scanned against security vulnerabilities. Read more on [the WhiteSource Wiki page](https://finosfoundation.atlassian.net/wiki/spaces/FDX/pages/75530440/WhiteSource)."})
 
 (defn- get-config
