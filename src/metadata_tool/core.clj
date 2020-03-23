@@ -26,6 +26,8 @@
   "Map of (lowercase) tool names to tool fns"
   {"check-local"                    tch/check-local
    "check"                          tch/check
+   "check-project-repos"            gr/check-repos
+   "invite-clas-to-finos-org"       tgn/invite-clas-to-finos-org
    "list-schemas"                   tls/list-schemas
    "list-people-with-clas"          tls/list-people-with-clas
    "gen-meeting-roster-data"        tgn/gen-meeting-roster-data
@@ -34,7 +36,6 @@
    "gen-bitergia-project-data"      tgn/gen-bitergia-project-data
    "gen-clabot-whitelist"           tgn/gen-clabot-whitelist
    "gen-clabot-ids-whitelist"       tgn/gen-clabot-ids-whitelist
-   "check-project-repos"            gr/check-repos
    "gen-catalogue-data"             tgn/gen-catalogue-data
    "email-pmc-reports"              trp/email-pmc-reports})
 
