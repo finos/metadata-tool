@@ -50,11 +50,10 @@
     nil
     (json/read-str config)))
 
-(defn- check-repo
+(defn- check-non-archived-repo
   "Returns validation for a given repo-name"
-  [org repo-url]
+  [org repo-url repo]
   (let [repo-name       (last (str/split repo-url #"/"))
-        repo            (gh/repo repo-url)
         collaborators   (gh/collaborators repo-url "direct")
         has-admin       (not (empty? 
                               (filter #(:admin (:permissions %)) 
@@ -101,6 +100,14 @@
      :repo-name repo-name
      :ignore (get config "ignore")
      :validations validations}))
+
+(defn- check-repo
+  "Returns validation for a given repo-name"
+  [org repo-url]
+(let [repo (gh/repo repo-url)
+      archived (:archived repo)]
+  (if (not archived)
+    (check-non-archived-repo org repo-url repo))))
 
 (defn- generate-msg
   "Returns the final message for a given repo"
