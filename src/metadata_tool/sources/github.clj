@@ -21,6 +21,7 @@
             [mount.core            :as mnt :refer [defstate]]
             [lambdaisland.uri      :as uri]
             [clj-jgit.porcelain    :as git]
+            [clj-http.client       :as http]
             [tentacles.repos       :as tr]
             [tentacles.orgs        :as to]
             [tentacles.users       :as tu]
@@ -93,15 +94,36 @@
        (if-not (= 404 (:status (ex-data ei#)))
          (throw ei#)))))
 
+(defn content-fn
+  "Returns the contents of file"
+  [org repo path]
+  (try 
+    (http/get
+     (str "https://raw.githubusercontent.com/" org "/" repo "/master/" path))
+    (catch Exception _ "")))
+
+(def content (memoize content-fn))
+
+(defn folder-fn
+  "Returns the metadata of a folder in GitHub"
+  [org repo path]
+  (try
+    (http/get
+     (str "https://api.github.com/repos/" org "/" repo "/contents/" path))
+    (catch Exception _ "")))
+
+(def folder (memoize folder-fn))
+
 (defn- collaborators-fn
   "Returns the collaborators for the given repo, or nil if the URL is invalid."
-  [repo-url]
+  [repo-url & [affiliation]]
   (log/debug "Requesting repository collaborators for" repo-url)
   (if-not (str/blank? repo-url)
-    (let [[org repo] (parse-github-url-path repo-url)]
+    (let [[org repo] (parse-github-url-path repo-url)
+          collab-opts (assoc opts :affiliation affiliation)]
       (if (and (not (str/blank? org))
                (not (str/blank? repo)))
-        (remove #(some #{(:login %)} org-admins) (call-gh (tr/collaborators org repo opts)))))))
+        (remove #(some #{(:login %)} org-admins) (call-gh (tr/collaborators org repo collab-opts)))))))
 (def collaborators (memoize collaborators-fn))
 
 (defn collaborator-logins
