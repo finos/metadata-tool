@@ -131,3 +131,29 @@
        (keep gen-program-roster)
        flatten
        psrs/roster-to-csv))
+
+(defn gen-meeting-github-roster-data
+  []
+  (if (psrs/has-meeting-config)
+    (let [json    (psrs/get-json "./meeting-attendance.json")
+          data    (psrs/string-keys-to-symbols json)
+          date    (first (s/split (:date data) #"T"))
+          people  (map #(md/person-metadata-by-github-login %)
+                        (s/split (:attendants data) #","))
+          project (first
+                    (filter #(psrs/match-project % data)
+                            (md/projects-metadata)))
+          roster  (map #(psrs/single-attendance % project date) people)
+          delta   (psrs/get-csv-delta roster)
+          exist   (first delta)
+          new     (second delta)
+          action  (:action data)]
+      (if (= action "add")
+        (with-open [writer (psrs/get-writer "./github-finos-meetings-add.csv")]
+          (psrs/write-csv writer new))
+        (with-open [reader (psrs/get-reader "./github-finos-meetings.csv")
+                    writer (psrs/get-writer "./github-finos-meetings-remove.csv")]
+          (->> (psrs/read-csv reader)
+                (psrs/remove-existing-entries exist)
+                (psrs/write-csv writer)))))
+    (println "ERROR - Cannot find meeting-attendance.json or github-finos-meetings.csv files")))
