@@ -98,8 +98,8 @@
   "Returns the contents of file"
   [org repo path]
   (try 
-    (http/get
-     (str "https://raw.githubusercontent.com/" org "/" repo "/master/" path))
+    (:body (http/get
+     (str "https://raw.githubusercontent.com/" org "/" repo "/master/" path)))
     ; TODO - better exception management here! Only catch 404, throw the others
     (catch Exception _ "")))
 (def content (memoize content-fn))
