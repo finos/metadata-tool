@@ -20,3 +20,4 @@ lib/
 .vscode
 finos-meetings.csv
 email-report.html
+finos-repo-validation.json
