@@ -43,7 +43,7 @@
    :no-issue-templates "This GitHub repository does not use issue templates; please check the [issue template blueprints](https://github.com/finos/project-blueprint/tree/master/.github/ISSUE_TEMPLATE)."
    :no-contributing "`CONTRIBUTING.md` file is missing; check the [CONTRIBUTING.md template](https://github.com/finos/project-blueprint/blob/master/.github/CONTRIBUTING.md)."
    :no-code-conduct "`CODE_OF_CONDUCT.md` file is missing; check the [CODE_OF_CONDUCT.md template](https://github.com/finos/project-blueprint/blob/master/.github/CODE_OF_CONDUCT.md)."
-   :notice-nok "`NOTICE` file is incomplete; check the [NOTICE template](https://github.com/finos/project-blueprint/blob/master/NOTICE)."
+   :notice-nok "`NOTICE` file is incomplete; check line 4 of the [NOTICE template](https://github.com/finos/project-blueprint/blob/master/NOTICE)."
    :no-notice "`NOTICE` file is missing; check the [NOTICE template](https://github.com/finos/project-blueprint/blob/master/NOTICE)."
    :no-readme "`README.md` file is missing; check the [README.md template](https://github.com/finos/project-blueprint/blob/master/README.template.md)."
    :no-description "This GitHub repository does not have a general description defined; the `Edit` button is seen when on the repositories main page, which is the `Code` tab."
