@@ -8,7 +8,8 @@
   "unknown" : {
     "confluence"    : [ "https://finosfoundation.atlassian.net/wiki/" ],
     "jira"          : [ "http://finosfoundation.atlassian.net"],
-    "finosmeetings" : [ "file:///home/bitergia/conf/finos-meetings.csv" ]
+    "finosmeetings" : [ "file:///home/bitergia/conf/finos-meetings.csv",
+                        "file:///home/bitergia/conf/github-finos-meetings.csv" ]
   },
   "Foundation" : {
     "meta"       : { "title" : "Foundation" },
