@@ -202,6 +202,7 @@
 ; Local and remote (filesystem and/or API call) checks
 
 
+; DEPRECATED
 (defn- check-repo-admins
   []
   (let [activities-with-github-urls (sort-by activity-to-string (remove #(empty? (:github-urls %)) (md/activities-metadata)))]
@@ -259,7 +260,8 @@
 (defn check-remote
   "Performs checks that require API calls out to GitHub, JIRA, Bitergia, etc. (which may be rate limited)."
   []
-  (check-repo-admins)
+  ; DEPRECATED - FINOS doesn't use repo admins anymore
+  ; (check-repo-admins)
   (check-metadata-for-collaborators)
   (check-github-orgs)
   (check-github-repos)
