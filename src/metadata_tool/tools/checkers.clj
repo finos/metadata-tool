@@ -118,11 +118,12 @@
     (if (pos? (count projects-with-invalid-states)) (ec/set-error))
     (doall (map #(println "❌ Project" (activity-to-string %) "has an invalid state:" (:state %)) projects-with-invalid-states))))
 
-(defn- check-working-group-states
-  []
-  (let [working-groups-with-invalid-states (remove #(boolean (some #{(:state %)} ["ACTIVE" "OPERATING" "PAUSED" "ARCHIVED"])) (md/working-groups-metadata))]
-    (if (pos? (count working-groups-with-invalid-states)) (ec/set-error))
-    (doall (map #(println "❌ Working Group" (activity-to-string %) "has an invalid state:" (:state %)) working-groups-with-invalid-states))))
+;; Deprecated
+;; (defn- check-working-group-states
+;;   []
+;;   (let [working-groups-with-invalid-states (remove #(boolean (some #{(:state %)} ["ACTIVE" "OPERATING" "PAUSED" "ARCHIVED"])) (md/working-groups-metadata))]
+;;     (if (pos? (count working-groups-with-invalid-states)) (ec/set-error))
+;;     (doall (map #(println "❌ Working Group" (activity-to-string %) "has an invalid state:" (:state %)) working-groups-with-invalid-states))))
 
 (defn- check-duplicate-github-urls
   []
@@ -186,7 +187,8 @@
   (check-missing-lead-or-chair)
   (check-lead-or-chair-references)
   (check-project-states)
-  (check-working-group-states)
+  ;; Deprecated
+  ;; (check-working-group-states)
   (check-duplicate-github-urls)
   (check-duplicate-activity-names)
   (check-states-and-dates)

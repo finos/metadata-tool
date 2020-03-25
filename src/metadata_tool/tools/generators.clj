@@ -16,6 +16,7 @@
 ;
 (ns metadata-tool.tools.generators
   (:require [clojure.tools.logging            :as log]
+            [clojure.string                   :as s]
             [metadata-tool.tools.parsers      :as psrs]
             [metadata-tool.template           :as tem]
             [metadata-tool.sources.github     :as gh]
@@ -30,6 +31,14 @@
                             (mapcat :domains 
                               (filter :cla-email-whitelist
                                       (md/organizations-metadata))))})))
+
+(defn gen-clabot-ids-whitelist
+  []
+  (let [names (sort (mapcat :github-logins (md/people-with-clas)))
+        ids (distinct (remove nil? (map #(:id (gh/user %)) names)))
+        as-strings (map #(str "\"" % "\"") ids)
+        as-string (str "[" (s/join "," as-strings) "]")]
+    (println as-string)))
 
 (defn gen-bitergia-affiliation-data
   []
@@ -122,3 +131,29 @@
        (keep gen-program-roster)
        flatten
        psrs/roster-to-csv))
+
+(defn gen-meeting-github-roster-data
+  []
+  (if (psrs/has-meeting-config)
+    (let [json    (psrs/get-json "./meeting-attendance.json")
+          data    (psrs/string-keys-to-symbols json)
+          date    (first (s/split (:date data) #"T"))
+          people  (map #(md/person-metadata-by-github-login %)
+                        (s/split (:attendants data) #","))
+          project (first
+                    (filter #(psrs/match-project % data)
+                            (md/projects-metadata)))
+          roster  (map #(psrs/single-attendance % project date) people)
+          delta   (psrs/get-csv-delta roster)
+          exist   (first delta)
+          new     (second delta)
+          action  (:action data)]
+      (if (= action "add")
+        (with-open [writer (psrs/get-writer "./github-finos-meetings-add.csv")]
+          (psrs/write-csv writer new))
+        (with-open [reader (psrs/get-reader "./github-finos-meetings.csv")
+                    writer (psrs/get-writer "./github-finos-meetings-remove.csv")]
+          (->> (psrs/read-csv reader)
+                (psrs/remove-existing-entries exist)
+                (psrs/write-csv writer)))))
+    (println "ERROR - Cannot find meeting-attendance.json or github-finos-meetings.csv files")))
