@@ -138,7 +138,7 @@
     (let [json    (psrs/get-json "./meeting-attendance.json")
           data    (psrs/string-keys-to-symbols json)
           date    (first (s/split (:date data) #"T"))
-          people  (map #(md/person-metadata-by-github-login %)
+          people  (map #(md/person-metadata-by-github-login (s/trim %))
                         (s/split (:attendants data) #","))
           project (first
                     (filter #(psrs/match-project % data)
