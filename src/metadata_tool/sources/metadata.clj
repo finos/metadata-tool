@@ -224,7 +224,6 @@
 (defn- pmc-github-urls
   [program]
   (github-urls program (:pmc-repos program)))
-  ; (github-urls program (map #(str/lower-case %) (:pmc-repos program))))
 
 (defn- expand-mailing-list-address
   [mailing-list-address]
