@@ -28,13 +28,14 @@
    "list-schemas"                   tls/list-schemas
    "list-people-with-clas"          tls/list-people-with-clas
    "gen-meeting-roster-data"        tgn/gen-meeting-roster-data
-   "gen-meeting-github-roster-data"        tgn/gen-meeting-github-roster-data
+   "gen-meeting-github-roster-data" tgn/gen-meeting-github-roster-data
    "gen-bitergia-affiliation-data"  tgn/gen-bitergia-affiliation-data
    "gen-bitergia-organization-data" tgn/gen-bitergia-organization-data
    "gen-bitergia-project-data"      tgn/gen-bitergia-project-data
    "gen-clabot-whitelist"           tgn/gen-clabot-whitelist
    "gen-clabot-ids-whitelist"       tgn/gen-clabot-ids-whitelist
    "gen-catalogue-data"             tgn/gen-catalogue-data
+   "gen-project-landscape"          tgn/gen-project-landscape
    "email-pmc-reports"              trp/email-pmc-reports})
 
 (def tool-names (sort (keys tools)))

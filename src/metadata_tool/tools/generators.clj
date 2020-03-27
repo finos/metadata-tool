@@ -17,6 +17,8 @@
 (ns metadata-tool.tools.generators
   (:require [clojure.tools.logging            :as log]
             [clojure.string                   :as s]
+            [clojure.java.io                  :as io]
+            [yaml.core :as yaml]
             [metadata-tool.tools.parsers      :as psrs]
             [metadata-tool.template           :as tem]
             [metadata-tool.sources.github     :as gh]
@@ -157,3 +159,40 @@
                 (psrs/remove-existing-entries exist)
                 (psrs/write-csv writer)))))
     (println "ERROR - Cannot find meeting-attendance.json or github-finos-meetings.csv files")))
+
+(defn- landscape-format
+  "Returns project metadata in landscape format"
+  [project]
+  {:name (:activity-name project)
+   :homepage_url (first (:github-urls project))
+   :repo_url (first (:github-urls project))
+   :logo "project-placeholder.svg"
+   :twitter "finosfoundation"
+   :crunchbase nil
+   :category (:program-name project)
+   :subcategory (first (:tags project))})
+
+(defn- group-by-sub
+  ""
+  [categories]
+  (map #(assoc {} :category
+               {:name (first %)
+               :subcategories (group-by :subcategory (second %))})
+       (seq categories)))
+
+(defn- get-projects
+  "Returns projects"
+  []
+  (let [raw (md/activities-metadata)
+        new-fields         (map #(landscape-format %) raw)
+        by-category        (group-by :category new-fields)
+        by-sub-categories  (group-by-sub by-category)]
+    (println (yaml/generate-string new-fields))
+    {:landscape by-sub-categories}))
+
+(defn gen-project-landscape
+  "Generates a landscape.yml, using Programs as categories and tags as subcategories"
+  []
+  (with-open [w (io/writer "landscape.yml" :append true)]
+    (.write w (yaml/generate-string (get-projects)))))
+
