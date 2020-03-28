@@ -17,8 +17,9 @@
 (ns metadata-tool.tools.generators
   (:require [clojure.tools.logging            :as log]
             [clojure.string                   :as s]
+            [clojure.pprint                   :as pp]
             [clojure.java.io                  :as io]
-            [yaml.core :as yaml]
+            [clj-yaml.core                    :as yaml]
             [metadata-tool.tools.parsers      :as psrs]
             [metadata-tool.template           :as tem]
             [metadata-tool.sources.github     :as gh]
@@ -163,36 +164,63 @@
 (defn- landscape-format
   "Returns project metadata in landscape format"
   [project]
-  {:name (:activity-name project)
-   :homepage_url (first (:github-urls project))
-   :repo_url (first (:github-urls project))
-   :logo "project-placeholder.svg"
-   :twitter "finosfoundation"
-   :crunchbase nil
-   :category (:program-name project)
-   :subcategory (first (:tags project))})
+  (apply array-map 
+         (concat [:item nil] 
+                 (flatten 
+                  (seq {:name (:activity-name project)
+                        :homepage_url (first (:github-urls project))
+                        :repo_url (first (:github-urls project))
+                        :logo "project-placeholder.svg"
+                        ; :twitter "https://twitter.com/finosfoundation"
+                        ; :crunchbase nil
+                        :category (:program-name project)
+                        :subcategory (first (:tags project))})))))
+
+(defn- clean-item
+  ""
+  [item]
+  (dissoc (dissoc item :subcategory) :category))
+
+(defn- clean-items
+  ""
+  [items]
+  (map #(clean-item %) items))
+
+(defn- get-name
+""
+[name]
+(if (nil? name) "undefined" name))
+
+(defn- get-subcategories
+  ""
+  [category]
+  (let [sub-cats (group-by :subcategory category)]
+    (map #(assoc {} 
+                 :subcategory nil
+                 :name (get-name (first %))
+                 :items (clean-items (second %))) sub-cats)))
 
 (defn- group-by-sub
   ""
   [categories]
-  (map #(assoc {} :category
-               {:name (first %)
-               :subcategories (group-by :subcategory (second %))})
+  (map #(assoc {} 
+               :category nil
+               :name (first %)
+               :subcategories (get-subcategories (second %)))
        (seq categories)))
 
 (defn- get-projects
   "Returns projects"
   []
   (let [raw (md/activities-metadata)
-        new-fields         (map #(landscape-format %) raw)
+        new-fields         (map #(assoc (landscape-format %) :item nil) raw)
         by-category        (group-by :category new-fields)
         by-sub-categories  (group-by-sub by-category)]
-    (println (yaml/generate-string new-fields))
     {:landscape by-sub-categories}))
 
 (defn gen-project-landscape
   "Generates a landscape.yml, using Programs as categories and tags as subcategories"
   []
+  ; (pp/pprint (get-projects)))
   (with-open [w (io/writer "landscape.yml" :append true)]
     (.write w (yaml/generate-string (get-projects)))))
-
