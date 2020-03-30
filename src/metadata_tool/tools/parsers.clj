@@ -16,12 +16,15 @@
 ;
 (ns metadata-tool.tools.parsers
   (:require [clojure.string                       :as str]
-            [hickory.core                         :as html]
+            [clojure.pprint                       :as pp]
             [clojure.java.io                      :as io]
+            [clojure.set                          :as set]
+            [clojure.data.json                    :as json]
+            [clojure.data.csv                     :as csv]
+            [hickory.core                         :as html]
             [hickory.select                       :as sel]
             [metadata-tool.sources.confluence     :as cfl]
             [metadata-tool.config                 :as cfg]
-            [clojure.pprint                       :as pp]
             [metadata-tool.sources.metadata       :as md]))
 
 (def not-nil? (complement nil?))
@@ -169,3 +172,84 @@
       ; DEBUG - Check on :name instead of :email if you want to debug output
       (remove #(or (nil? %) (nil? (:email %))) roster-data)))
     (.flush writer)))
+
+;; Utility functions for gen-meeting-github-roster-data
+;; 
+(defn string-keys-to-symbols [map]
+  (reduce #(assoc %1 (-> (key %2) keyword) (val %2)) {} map))
+
+(defn csv-item-to-str
+  [item]
+  (if-not (empty? item)
+    (str (str/join ", " (map #(str/trim %) item)))))
+
+(defn str-to-csv-item
+  [s]
+  (map #(str/trim %) (str/split s #",")))
+
+(defn contains-not
+  [list item]
+  (not (some #(= item %) list)))
+
+(defn get-json
+  [path]
+  (json/read-str (slurp path)))
+
+(defn get-reader
+  [path]
+  (io/reader path))
+
+(defn get-writer
+  [path]
+  (io/writer path))
+
+(defn read-csv
+  [reader]
+  (csv/read-csv reader))
+
+(defn write-csv
+  [writer items]
+  (csv/write-csv writer items))
+
+(defn has-meeting-config
+  []
+  (and
+   (.exists (io/as-file "./meeting-attendance.json"))
+   (.exists (io/as-file "./github-finos-meetings.csv"))))
+
+(defn match-project
+  [project data]
+  (and
+   (some #(= (:repo data) %)
+         (:github-repos project))
+   (some #(str/includes? % (str "/" (:org data) "/"))
+         (:github-urls project))))
+
+(defn get-csv-delta
+  [new-csv]
+  (with-open
+   [reader (io/reader "./github-finos-meetings.csv")]
+    (let [items     (set (map #(csv-item-to-str %) (csv/read-csv reader)))
+          new-items (set (map #(csv-item-to-str (vals %)) new-csv))
+          exist-str (set/intersection items new-items)
+          existing  (map #(str-to-csv-item %) exist-str)
+          missing   (map #(str-to-csv-item %) (set/difference new-items exist-str))]
+      [existing missing])))
+
+(defn single-attendance
+  [person project meeting-date]
+  {:email (first (:email-addresses person))
+   :name (:full-name person)
+   :org (or (:organization-name (first (md/current-affiliations (:person-id person)))))
+   :ghid (or (first (:github-logins person)))
+   :program (:program-short-name project)
+   :activity (:activity-name project)
+   :type (:type project)
+   :meeting-date meeting-date})
+
+(defn remove-existing-entries
+  [to-remove current]
+  (let [remove-str (set (map #(csv-item-to-str %) to-remove))
+        curr-str   (map #(csv-item-to-str %) current)
+        diff-str   (filter #(contains-not remove-str %) curr-str)]
+    (map #(str-to-csv-item %) diff-str)))

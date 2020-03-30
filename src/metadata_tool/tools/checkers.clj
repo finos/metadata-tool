@@ -49,12 +49,13 @@
   []
   (md/validate-metadata))
 
-(defn- check-current-affiliations
-  []
-  (doall
-   (map #(if (empty? (md/current-affiliations %))
-           (println "ℹ️ Person" % "has no current affiliations."))
-        md/people)))
+; Not used; it's ok if some user doesn't have affiliation
+; (defn- check-current-affiliations
+;   []
+;   (doall
+;    (map #(if (empty? (md/current-affiliations %))
+;            (println "ℹ️ Person" % "has no current affiliations."))
+;         md/people)))
 
 (defn- check-duplicate-email-addresses
   []
@@ -100,8 +101,7 @@
 (defn- check-missing-lead-or-chair
   []
   (let [activities-with-missing-lead-or-chair (sort-by activity-to-string (filter #(str/blank? (:lead-or-chair-person-id %)) (md/activities-metadata)))]
-    (doall (map #(if (= "ARCHIVED" (:state %))
-                   (println "ℹ️ Archived activity" (activity-to-string %) "doesn't have a" (str (if (= "PROJECT" (:type %)) "lead" "chair") "."))
+    (doall (map #(if (not (= "ARCHIVED" (:state %)))
                    (println "⚠️" (state-to-string (:state %)) (type-to-string (:type %)) (activity-to-string %) "doesn't have a" (str (if (= "PROJECT" (:type %)) "lead" "chair") ".")))
                 activities-with-missing-lead-or-chair))))
 
@@ -177,7 +177,8 @@
   "Performs comprehensive checking of files locally on disk (no API calls out to GitHub, JIRA, etc.)."
   []
   (check-syntax)
-  (check-current-affiliations)
+  ; DEPRECATED - Unknown affiliations are spotted on Bitergia
+  ; (check-current-affiliations)
   (check-duplicate-email-addresses)
   (check-duplicate-github-logins)
   (check-affiliation-references)
@@ -187,7 +188,7 @@
   (check-missing-lead-or-chair)
   (check-lead-or-chair-references)
   (check-project-states)
-  ;; Deprecated
+  ;; Deprecated - Working groups are not projects
   ;; (check-working-group-states)
   (check-duplicate-github-urls)
   (check-duplicate-activity-names)
@@ -202,26 +203,54 @@
 ; Local and remote (filesystem and/or API call) checks
 
 
-(defn- check-repo-admins
-  []
-  (let [activities-with-github-urls (sort-by activity-to-string (remove #(empty? (:github-urls %)) (md/activities-metadata)))]
-    (doall
-     (map #(doall
-            (map (fn [github-url]
-                   (if (empty? (gh/admin-logins github-url))
-                     (if (= "ARCHIVED" (:state %))
-                       (println "ℹ️ GitHub Repository" github-url "in archived" (type-to-string (:type %)) (activity-to-string %) "has no admins, or they haven't accepted their invitations yet.")
-                       (println "⚠️ GitHub Repository" github-url "in" (type-to-string (:type %)) (activity-to-string %) "has no admins, or they haven't accepted their invitations yet."))))
-                 (:github-urls %)))
-          activities-with-github-urls))))
+; DEPRECATED
+; (defn- check-repo-admins
+;   []
+;   (let [activities-with-github-urls (sort-by activity-to-string (remove #(empty? (:github-urls %)) (md/activities-metadata)))]
+;     (doall
+;      (map #(doall
+;             (map (fn [github-url]
+;                    (if (empty? (gh/admin-logins github-url))
+;                      (if (= "ARCHIVED" (:state %))
+;                        (println "ℹ️ GitHub Repository" github-url "in archived" (type-to-string (:type %)) (activity-to-string %) "has no admins, or they haven't accepted their invitations yet.")
+;                        (println "⚠️ GitHub Repository" github-url "in" (type-to-string (:type %)) (activity-to-string %) "has no admins, or they haven't accepted their invitations yet."))))
+;                  (:github-urls %)))
+;           activities-with-github-urls))))
+
+(defn- get-repo-login
+  [login repo-url]
+  {:login login
+    :repo repo-url})
+
+(defn- get-repo-logins
+  [repo-url]
+  (let [logins (gh/collaborator-logins repo-url)]
+      (map #(get-repo-login % repo-url) logins)))
+
+(defn- gen-error-string
+  [repos]
+  (str/join ", "
+            (distinct (map
+                       #(str/replace (:repo %) "https://github.com/" "")
+                       repos))))
+
+(defn- print-missing-metadata
+  [repo-login]
+  (println (format "❌ GitHub login %s doesn't have any metadata, but is contributor of %s"
+                   (first repo-login)
+                   (gen-error-string (second repo-login)))))
 
 (defn- check-metadata-for-collaborators
   []
-  (let [github-urls   (mapcat :github-urls (md/activities-metadata))
-        github-logins (sort (distinct (mapcat gh/collaborator-logins github-urls)))]
-    (doall (map #(if-not (md/person-metadata-by-github-login %)
-                   (println "⚠️ GitHub login" % "doesn't have any metadata."))
-                github-logins))))
+  (let [not-archived    (remove #(= "ARCHIVED" (:state %)) (md/activities-metadata))
+        github-urls     (mapcat :github-urls not-archived)
+        repo-logins     (group-by :login (apply concat (map #(get-repo-logins %) github-urls)))        
+        not-in-metadata (filter #(nil? (md/person-metadata-by-github-login (first %))) repo-logins)
+        in-metadata     (set/difference (set repo-logins) (set not-in-metadata))
+        no-cla          (remove #(md/has-cla? (:person-id (md/person-metadata-by-github-login (first %)))) in-metadata)]
+    (if (pos? (count not-in-metadata)) (ec/set-error))
+    (doall (map #(print-missing-metadata %) not-in-metadata))
+    (doall (map #(println (format "⚠️ GitHub login %s is not covered by CLA, but is contributor of %s" (first %) (gen-error-string (second %)))) no-cla))))
 
 (defn- check-github-orgs
   []
@@ -233,25 +262,38 @@
   []
   (let [github-repo-urls       (set (map str/lower-case (remove str/blank? (mapcat #(gh/repos-urls (:github-url %)) (md/programs-metadata)))))
         metadata-repo-urls     (set (map str/lower-case (remove str/blank? (mapcat :github-urls (md/activities-metadata)))))
+        no-archived-repo-urls  (set (map str/lower-case
+                                         (remove str/blank?
+                                                 (mapcat :github-urls
+                                                         (remove #(= "ARCHIVED" (:state %))
+                                                                 (md/activities-metadata))))))
+        ; TODO - enable it when labels are confirmed
+        ; with-security-issues   (filter #(> (count (gh/issues % "bug")) 0) no-archived-repo-urls)
+        ; with-quality-issues  (filter #(> (count (gh/issues % "docs")) 0) no-archived-repo-urls)
         plus-pmc-repo-urls     (set (flatten (concat metadata-repo-urls (mapcat :pmc-github-urls (md/programs-metadata)))))
-        repos-without-metadata (sort (set/difference github-repo-urls plus-pmc-repo-urls))
+        repos-without-metadata (sort (set/difference no-archived-repo-urls plus-pmc-repo-urls))
         metadatas-without-repo (sort (set/difference plus-pmc-repo-urls github-repo-urls))]
+    ; TODO - enable it when labels are confirmed
+    ; (doall (map #(println (format "⚠️ %s Issues found on repo %s with label `security vulnerability`" (count with-security-issues) %)) with-security-issues))
+    ; (doall (map #(println (format "⚠️ %s Issues found on repo %s with label as `quality checks`" (count with-quality-issues) %)) with-quality-issues))
     (doall (map #(println "⚠️ GitHub repo" % "has no metadata.") repos-without-metadata))
     (doall (map #(println "⚠️ GitHub repo" % "has metadata, but does not exist in GitHub.") metadatas-without-repo))))
 
-(defn- check-github-logins
-  []
-  (let [all-github-logins     (distinct (remove str/blank? (mapcat :github-logins (md/people-metadata))))
-        invalid-github-logins (sort (filter #(nil? (gh/user %)) all-github-logins))]
-    (doall (map #(println "ℹ️ GitHub username" % "is invalid (note: may be preserved for historical purposes).") invalid-github-logins))))
+; DEPRECATED - No need to add to each output
+; (defn- check-github-logins
+;   []
+;   (let [all-github-logins     (distinct (remove str/blank? (mapcat :github-logins (md/people-metadata))))
+;         invalid-github-logins (sort (filter #(nil? (gh/user %)) all-github-logins))]
+;     (doall (map #(println "ℹ️ GitHub username" % "may have changed username, check metrics.finos.org).") invalid-github-logins))))
 
 (defn- check-bitergia-projects
   []
   (let [activity-names                   (set (map :activity-name
-                                                   (remove #(and (nil? (seq (:github-repos           %)))
-                                                                 (nil? (seq (:mailing-list-addresses %)))
-                                                                 (nil? (seq (:confluence-space-keys  %))))
-                                                           (md/activities-metadata))))
+                                                   (remove #(= "ARCHIVED" (:state %))
+                                                           (remove #(and (nil? (seq (:github-repos           %)))
+                                                                         (nil? (seq (:mailing-list-addresses %)))
+                                                                         (nil? (seq (:confluence-space-keys  %))))
+                                                                   (md/activities-metadata)))))
         activities-missing-from-bitergia (sort (set/difference activity-names (bi/all-projects)))]
     (doall (map #(println "ℹ️ Activity" (activity-to-string (md/activity-metadata-by-name %)) "is missing from the Bitergia indexes (this is normal if there's been no activity in GitHub, Confluence, and the mailing lists yet).")
                 activities-missing-from-bitergia))))
@@ -259,11 +301,13 @@
 (defn check-remote
   "Performs checks that require API calls out to GitHub, JIRA, Bitergia, etc. (which may be rate limited)."
   []
-  (check-repo-admins)
+  ; DEPRECATED - FINOS doesn't use repo admins anymore
+  ; (check-repo-admins)
   (check-metadata-for-collaborators)
   (check-github-orgs)
   (check-github-repos)
-  (check-github-logins)
+  ; DEPRECATED - No need to add to each output
+  ; (check-github-logins)
   (check-bitergia-projects))
 
 
