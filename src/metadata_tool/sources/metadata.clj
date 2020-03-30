@@ -304,21 +304,16 @@
   "The metadata for a specific activity, identified by name."
   (memoize activity-metadata-by-name-fn))
 
-(defn- includes?
-  "Returns true if an element is contained in a list"
-  [list element]
-  (not (empty? (filter #(= element %) list))))
-
 (defn filter-activity-by-github-coords
   "Inner code of activity-by-github-coords"
   [activity repo-name org-name]
+  (let [lower-case-repos (map #(str/lower-case %) (:github-repos activity))
+        lower-repo-name (str/lower-case repo-name)]
   (and
-   (includes? 
-    (map #(str/lower-case %) (:github-repos activity))
-    (str/lower-case repo-name))
-   (= 
-    (str/lower-case org-name) 
-    (str/lower-case (:github-org activity)))))
+   (some #(= lower-repo-name %) (set lower-case-repos))
+   (=
+    (str/lower-case org-name)
+    (str/lower-case (:github-org activity))))))
 
 (defn activity-by-github-coords
   "Returns a metadata project, given a GitHub org and repo names"

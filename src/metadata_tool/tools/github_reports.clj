@@ -39,7 +39,7 @@
   {:has-admin "One or more admin collaborators were found in this GitHub repository.. FINOS Governance doesn't allow GitHub users to have Admin rights on repositories, therefore it must be removed."
    :has-user "One or more user collaborators were found in this GitHub repository. FINOS Governance only allows GitHub users to be added via Teams. Please remove it, therefore it must be removed."
    :no-teams "This GitHub repository does not grant permissions to any FINOS Team, although it should be configured to grant access to the program and project specific teams defined in [https://github.com/orgs/finos/teams](https://github.com/orgs/finos/teams). Please email help@finos.org and coordinate changes to the repository access permissions."
-   :no-issues "This GitHub repository does not have GitHub Issues enabled; make sure that there is a documented way to submit questions, feature requests and other communications to the project team."
+   :disabled-issues "This GitHub repository does not have GitHub Issues enabled; make sure that there is a documented way to submit questions, feature requests and other communications to the project team."
    :no-issue-templates "This GitHub repository does not use issue templates; please check the [issue template blueprints](https://github.com/finos/project-blueprint/tree/master/.github/ISSUE_TEMPLATE)."
    :no-contributing "`CONTRIBUTING.md` file is missing; check the [CONTRIBUTING.md template](https://github.com/finos/project-blueprint/blob/master/.github/CONTRIBUTING.md)."
    :no-code-conduct "`CODE_OF_CONDUCT.md` file is missing; check the [CODE_OF_CONDUCT.md template](https://github.com/finos/project-blueprint/blob/master/.github/CODE_OF_CONDUCT.md)."
@@ -106,7 +106,7 @@
                          :is-archivable      (and
                                               (:archived repo)
                                               (not (= "ARCHIVED" (:state project))))
-                         :no-issues          (not (:has_issues repo))
+                         :disabled-issues    (not (:has_issues repo))
                          :no-issue-templates (empty? issue-templates)
                          :no-contributing    (empty? contributing)
                          :no-code-conduct    (empty? code-conduct)
