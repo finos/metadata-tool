@@ -22,6 +22,7 @@
             [lambdaisland.uri      :as uri]
             [clj-jgit.porcelain    :as git]
             [tentacles.repos       :as tr]
+            [tentacles.issues      :as ti]
             [tentacles.orgs        :as to]
             [tentacles.users       :as tu]
             [metadata-tool.config  :as cfg]))
@@ -128,6 +129,16 @@
   "List the logins of the committers of the given repository."
   [repo-url]
   (map :login (committers repo-url)))
+
+(defn issues
+  "List repository issue, optionally filtering by label"
+  [repo-url & [labels]]
+  (let [[org repo] (parse-github-url-path repo-url)
+        label-opts (assoc opts :labels labels)
+        issues (call-gh (ti/issues org repo label-opts))]
+    ; (println "Issues for repo" org "/" repo "-" (count issues))
+    ; (println label-opts)
+    issues))
 
 (defn- org-fn
   "Returns information on the given org, or nil if it doesn't exist."
