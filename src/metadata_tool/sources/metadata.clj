@@ -258,7 +258,7 @@
                      :lead-or-chair-person-id (:lead-or-chair activity)
                      :lead-or-chair           (person-metadata (:lead-or-chair activity))
                      :github-urls             (program-activity-github-urls program activity)
-                     :github-org              (:github-org program)
+                     :github-org              (or (:github-org activity) (:github-org program))
                      :mailing-lists           (map expand-mailing-list-address (:mailing-list-addresses activity))
                      :confluence-spaces       (map expand-confluence-space-key (:confluence-space-keys activity))))
            (program-activities program-id)))))
