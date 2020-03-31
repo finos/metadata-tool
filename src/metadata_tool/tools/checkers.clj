@@ -260,19 +260,18 @@
 
 (defn- check-github-repos
   []
-  (let [github-repo-urls       (set (map str/lower-case (remove str/blank? (mapcat #(gh/repos-urls (:github-url %)) (md/programs-metadata)))))
-        metadata-repo-urls     (set (map str/lower-case (remove str/blank? (mapcat :github-urls (md/activities-metadata)))))
+  (let [github-repo-urls       (set (map str/lower-case (remove str/blank? (mapcat #(gh/repos-urls (:github-url %) true) (md/programs-metadata)))))
         no-archived-repo-urls  (set (map str/lower-case
                                          (remove str/blank?
                                                  (mapcat :github-urls
                                                          (remove #(= "ARCHIVED" (:state %))
                                                                  (md/activities-metadata))))))
+        no-arch-pmc-repo-urls (set (map str/lower-case (flatten (concat no-archived-repo-urls (mapcat :pmc-github-urls (md/programs-metadata))))))
         ; TODO - enable it when labels are confirmed
         ; with-security-issues   (filter #(> (count (gh/issues % "bug")) 0) no-archived-repo-urls)
         ; with-quality-issues  (filter #(> (count (gh/issues % "docs")) 0) no-archived-repo-urls)
-        plus-pmc-repo-urls     (set (flatten (concat metadata-repo-urls (mapcat :pmc-github-urls (md/programs-metadata)))))
-        repos-without-metadata (sort (set/difference no-archived-repo-urls plus-pmc-repo-urls))
-        metadatas-without-repo (sort (set/difference plus-pmc-repo-urls github-repo-urls))]
+        repos-without-metadata (sort (set/difference no-archived-repo-urls no-arch-pmc-repo-urls))
+        metadatas-without-repo (sort (set/difference no-arch-pmc-repo-urls github-repo-urls))]
     ; TODO - enable it when labels are confirmed
     ; (doall (map #(println (format "⚠️ %s Issues found on repo %s with label `security vulnerability`" (count with-security-issues) %)) with-security-issues))
     ; (doall (map #(println (format "⚠️ %s Issues found on repo %s with label as `quality checks`" (count with-quality-issues) %)) with-quality-issues))

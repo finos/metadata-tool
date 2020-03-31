@@ -224,9 +224,13 @@
 
 (defn repos-urls
   "Returns the URLs of all repos in the given org."
-  [org-url]
+  [org-url & [filter-archived]]
   (if org-url
-    (map :html_url (repos org-url))))
+    (let [repos (repos org-url)]
+      (map :html_url
+           (if filter-archived
+             (remove #(:archived %) repos)
+             repos)))))
 
 (defn- repo-fn
   "Retrieve the data for a specific public repo, or nil if it's private or invalid."
