@@ -98,44 +98,34 @@
 (defn content-fn
   "Returns the contents of file"
   [org repo path]
-  (try 
+  (call-gh
     (:body (http/get
-     (str "https://raw.githubusercontent.com/" org "/" repo "/master/" path)))
-    ; TODO - better exception management here! Only catch 404, throw the others
-    (catch Exception _ "")))
+     (str "https://raw.githubusercontent.com/" org "/" repo "/master/" path)))))
 (def content (memoize content-fn))
 
 (defn folder-fn
   "Returns the metadata of a folder in GitHub"
   [org repo path]
-  (try
-    (http/get
-     (str "https://api.github.com/repos/" org "/" repo "/contents/" path))
-    ; TODO - better exception management here! Only catch 404, throw the others
-    (catch Exception _ "")))
+  (call-gh
+    (:body (http/get
+     (str "https://api.github.com/repos/" org "/" repo "/contents/" path)))))
 (def folder (memoize folder-fn))
 
 (defn pending-invitations-fn
   "Returns the list of pending invitations for a given org"
   [org-name]
-  (try
-    (http/get
-     (str "https://api.github.com/orgs/" org-name "invitations"))
-    ; TODO - better exception management here! Only catch 404, throw the others
-    (catch Exception _ "")))
+  (call-gh
+    (:body (http/get
+     (str "https://api.github.com/orgs/" org-name "invitations")))))
 (def pending-invitations (memoize pending-invitations-fn))
 
-(defn invite-member-fn
+(defn invite-member
   "Invites a github user to a given org"
   [org user]
-  (try
     ; TODO - enable it only after notifying the community
-    ; (http/put
-    ;  (str "https://api.github.com/orgs/" org "/memberships/" user))
-    (println "Invited user " user " to github " org " org")
-    ; TODO - better exception management here! Only catch 404, throw the others
-    (catch Exception _ "")))
-(def invite-member (memoize invite-member-fn))
+    ; (call-gh (:body (http/put
+    ;  (str "https://api.github.com/orgs/" org "/memberships/" user)))))
+    (println "Invited user " user " to github " org " org"))
 
 (defn- collaborators-fn
   "Returns the collaborators for the given repo, or nil if the URL is invalid."
