@@ -108,7 +108,8 @@
   [org repo path]
   (call-gh
     (:body (http/get
-     (str "https://api.github.com/repos/" org "/" repo "/contents/" path)))))
+            (str "https://api.github.com/repos/" org "/" repo "/contents/" path)
+            {:basic-auth [username password]}))))
 (def folder (memoize folder-fn))
 
 (defn pending-invitations-fn
@@ -116,7 +117,8 @@
   [org-name]
   (call-gh
     (:body (http/get
-     (str "https://api.github.com/orgs/" org-name "invitations")))))
+            (str "https://api.github.com/orgs/" org-name "invitations")
+            {:basic-auth [username password]}))))
 (def pending-invitations (memoize pending-invitations-fn))
 
 (defn invite-member
