@@ -8,7 +8,7 @@
             [metadata-tool.sources.github   :as gh]
             [metadata-tool.sources.metadata :as md]))
 
-(def notice-finos-terms "This product includes software developed at the Fintech Open Source Foundation")
+(def notice-finos-terms (str/lower-case "This product includes software developed at the Fintech Open Source Foundation"))
 
 (def finos-github-orgs ["finos" "finos-plexus" "HadoukenIO" "symphonyoss"])
 
@@ -89,11 +89,12 @@
         contributing    (gh/content org repo-name ".github/CONTRIBUTING.md")
         code-conduct    (gh/content org repo-name ".github/CODE_OF_CONDUCT.md")
         ws-config       (gh/content org repo-name ".whitesource")
-        readme-content  (str/lower-case readme)
+        notice-content  (if (empty? notice) nil (str/lower-case notice))
+        readme-content  (if (empty? readme) nil (str/lower-case readme))
         validations     {:has-admin          has-admin
                          :has-user           has-user
-                         :no-notice          (empty? notice)
-                         :no-readme          (empty? readme)
+                         :no-notice          (nil? notice-content)
+                         :no-readme          (nil? readme-content)
                          :no-teams           (empty? teams)
                          :is-archivable      (and
                                               (:archived repo)
@@ -111,11 +112,11 @@
                                               (not (nil? project-state))
                                               (not (= (str/lower-case project-state)
                                                       (str/lower-case readme-state))))
-                         :notice-nok         (and (not (empty? notice))
+                         :notice-nok         (and (not (nil? notice-content))
                                                   (not (str/includes?
-                                                        notice
+                                                        notice-content
                                                         notice-finos-terms)))
-                         :readme-nok         (and (not (empty? readme))
+                         :readme-nok         (and (not (nil? readme-content))
                                                   (or
                                                    (not (str/includes?
                                                          readme-content
