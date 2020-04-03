@@ -17,13 +17,22 @@
 (ns metadata-tool.tools.generators
   (:require [clojure.tools.logging            :as log]
             [clojure.string                   :as s]
-            [clojure.pprint                   :as pp]
+            [clojure.set                      :as set]
             [clojure.java.io                  :as io]
             [clj-yaml.core                    :as yaml]
             [metadata-tool.tools.parsers      :as psrs]
             [metadata-tool.template           :as tem]
             [metadata-tool.sources.github     :as gh]
             [metadata-tool.sources.metadata   :as md]))
+
+(defn invite-clas-to-finos-org
+  []
+  (let [cla-ids    (set (map #(first (:github-logins %)) (md/people-with-clas)))
+        gh-members (set (map :login (gh/org-members "finos")))
+        pending    (set (map :login  (gh/pending-invitations "finos")))
+        to-invite  (set/difference cla-ids (set/join gh-members pending))]
+    (println "Inviting " (count to-invite) " CLA signed GitHub users to github.com/orgs/finos/people")
+    (map #(gh/invite-member "finos" %) to-invite)))
 
 (defn gen-clabot-whitelist
   []
@@ -34,7 +43,6 @@
                             (mapcat :domains 
                               (filter :cla-email-whitelist
                                       (md/organizations-metadata))))})))
-
 (defn gen-clabot-ids-whitelist
   []
   (let [names (sort (mapcat :github-logins (md/people-with-clas)))

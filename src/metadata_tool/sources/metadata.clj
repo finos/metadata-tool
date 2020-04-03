@@ -258,6 +258,7 @@
                      :lead-or-chair-person-id (:lead-or-chair activity)
                      :lead-or-chair           (person-metadata (:lead-or-chair activity))
                      :github-urls             (program-activity-github-urls program activity)
+                     :github-org              (or (:github-org activity) (:github-org program))
                      :mailing-lists           (map expand-mailing-list-address (:mailing-list-addresses activity))
                      :confluence-spaces       (map expand-confluence-space-key (:confluence-space-keys activity))))
            (program-activities program-id)))))
@@ -301,6 +302,28 @@
 (def activity-metadata-by-name
   "The metadata for a specific activity, identified by name."
   (memoize activity-metadata-by-name-fn))
+
+(defn filter-activity-by-github-coords
+  "Inner code of activity-by-github-coords"
+  [activity repo-name org-name]
+  (let [lower-case-repos (map #(str/lower-case %) (:github-repos activity))
+        lower-repo-name (str/lower-case repo-name)]
+  (and
+   (some #(= lower-repo-name %) (set lower-case-repos))
+   (=
+    (str/lower-case org-name)
+    (str/lower-case (:github-org activity))))))
+
+(defn activity-by-github-coords
+  "Returns a metadata project, given a GitHub org and repo names"
+  [org-name repo-name]
+  (if-let [repos (filter 
+                  #(filter-activity-by-github-coords
+                    %
+                    repo-name
+                    org-name)
+                  (activities-metadata))]
+    (first repos)))
 
 (defn projects-metadata
   "A seq containing the metadata of all activities of type PROJECT, regardless of program."
