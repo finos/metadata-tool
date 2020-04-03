@@ -183,7 +183,7 @@
   (map :login (committers repo-url)))
 
 (defn issues-fn
-  "Returns all issues across all repos of a given org (max 100)"
+  "Returns first 100 open issues, with a given label, across all repos of a given org"
   [org-name label]
   (let [issues (:items (ts/search-issues ""
                                  {:label (str "\"" label "\"")
