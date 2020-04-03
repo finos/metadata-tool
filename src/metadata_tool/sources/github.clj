@@ -21,6 +21,7 @@
             [mount.core            :as mnt :refer [defstate]]
             [lambdaisland.uri      :as uri]
             [clj-jgit.porcelain    :as git]
+            [clj-http.client       :as http]
             [tentacles.repos       :as tr]
             [tentacles.issues      :as ti]
             [tentacles.orgs        :as to]
@@ -94,16 +95,67 @@
        (if-not (= 404 (:status (ex-data ei#)))
          (throw ei#)))))
 
+(defn content-fn
+  "Returns the contents of file"
+  [org repo path]
+  (call-gh
+    (:body (http/get
+     (str "https://raw.githubusercontent.com/" org "/" repo "/master/" path)))))
+(def content (memoize content-fn))
+
+(defn folder-fn
+  "Returns the metadata of a folder in GitHub"
+  [org repo path]
+  (call-gh
+    (:body (http/get
+     (str "https://api.github.com/repos/" org "/" repo "/contents/" path)))))
+(def folder (memoize folder-fn))
+
+(defn pending-invitations-fn
+  "Returns the list of pending invitations for a given org"
+  [org-name]
+  (call-gh
+    (:body (http/get
+     (str "https://api.github.com/orgs/" org-name "invitations")))))
+(def pending-invitations (memoize pending-invitations-fn))
+
+(defn invite-member
+  "Invites a github user to a given org"
+  [org user]
+    ; TODO - enable it only after notifying the community
+    ; (call-gh (:body (http/put
+    ;  (str "https://api.github.com/orgs/" org "/memberships/" user)))))
+    (println "Invited user " user " to github " org " org"))
+
 (defn- collaborators-fn
   "Returns the collaborators for the given repo, or nil if the URL is invalid."
-  [repo-url]
+  [repo-url & [affiliation]]
   (log/debug "Requesting repository collaborators for" repo-url)
   (if-not (str/blank? repo-url)
-    (let [[org repo] (parse-github-url-path repo-url)]
+    (let [[org repo] (parse-github-url-path repo-url)
+          collab-opts (assoc opts :affiliation affiliation)]
       (if (and (not (str/blank? org))
                (not (str/blank? repo)))
-        (remove #(some #{(:login %)} org-admins) (call-gh (tr/collaborators org repo opts)))))))
+        (remove #(some #{(:login %)} org-admins) (call-gh (tr/collaborators org repo collab-opts)))))))
 (def collaborators (memoize collaborators-fn))
+
+(defn- teams-fn
+  "Returns the teams for the given repo, or nil if the URL is invalid."
+  [repo-url]
+  (log/debug "Requesting repository teams for" repo-url)
+  (if-not (str/blank? repo-url)
+    (let [[org repo] (parse-github-url-path repo-url)]
+          (call-gh (tr/teams org repo opts)))))
+(def teams (memoize teams-fn))
+
+(defn- org-members-fn
+  "Returns the members for the given org, or nil if the URL is invalid."
+  [org-url]
+  (log/debug "Requesting org members for" org-url)
+  (if-not (str/blank? org-url)
+    (let [[org-name] (parse-github-url-path org-url)]
+          (call-gh (to/members org-name opts)))))
+(def org-members (memoize org-members-fn))
 
 (defn collaborator-logins
   "Returns a list containing the logins of all collaborators in the given repo, or for all repos if none is provided."
@@ -162,9 +214,13 @@
 
 (defn repos-urls
   "Returns the URLs of all repos in the given org."
-  [org-url]
+  [org-url & [filter-archived]]
   (if org-url
-    (map :html_url (repos org-url))))
+    (let [repos (repos org-url)]
+      (map :html_url
+           (if filter-archived
+             (remove #(:archived %) repos)
+             repos)))))
 
 (defn- repo-fn
   "Retrieve the data for a specific public repo, or nil if it's private or invalid."

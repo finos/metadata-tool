@@ -15,16 +15,19 @@
 ; limitations under the License.
 ;
 (ns metadata-tool.core
-  (:require [clojure.string                 :as str]
-            [metadata-tool.tools.checkers   :as tch]
-            [metadata-tool.tools.listers    :as tls]
-            [metadata-tool.tools.generators :as tgn]
-            [metadata-tool.tools.reports    :as trp]))
+  (:require [clojure.string                     :as str]
+            [metadata-tool.tools.checkers       :as tch]
+            [metadata-tool.tools.listers        :as tls]
+            [metadata-tool.tools.generators     :as tgn]
+            [metadata-tool.tools.github_reports :as gr]
+            [metadata-tool.tools.reports        :as trp]))
 
 (def ^:private tools
   "Map of (lowercase) tool names to tool fns"
   {"check-local"                    tch/check-local
    "check"                          tch/check
+   "check-project-repos"            gr/check-repos
+   "invite-clas-to-finos-org"       tgn/invite-clas-to-finos-org
    "list-schemas"                   tls/list-schemas
    "list-people-with-clas"          tls/list-people-with-clas
    "gen-meeting-roster-data"        tgn/gen-meeting-roster-data
