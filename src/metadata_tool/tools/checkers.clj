@@ -17,6 +17,7 @@
 (ns metadata-tool.tools.checkers
   (:require [clojure.string                 :as str]
             [clojure.set                    :as set]
+            [clojure.pprint                 :as pp]
             [metadata-tool.exit-code        :as ec]
             [metadata-tool.sources.github   :as gh]
             [metadata-tool.sources.bitergia :as bi]
@@ -258,23 +259,36 @@
     (if (pos? (count programs-with-invalid-github-orgs)) (ec/set-error))
     (doall (map #(println "❌ Program" (:program-name %) "has an invalid GitHub org:" (:github-org %)) programs-with-invalid-github-orgs))))
 
+(defn- check-github-issues
+  []
+  (let [github-orgs      (map :github-org (md/programs-metadata))
+        security-issues  (flatten (mapcat #(gh/issues % "security vulnerability") github-orgs))
+        quality-issues   (flatten (mapcat #(gh/issues % "quality checks") github-orgs))
+        repo-security    (group-by :repository_url security-issues)
+        repo-quality     (group-by :repository_url quality-issues)]
+    (doseq [[k v] repo-security]
+      (println (format "⚠️ %s Issues found on repo %s with label `security vulnerability`" 
+                       (str (count (distinct v)))
+                       (str/replace k "https://api.github.com/repos/" ""))))
+    (doseq [[k v] repo-quality]
+      (println (format "⚠️ %s Issues found on repo %s with label `quality checks`"
+                       (str (count (distinct v)))
+                       (str/replace k "https://api.github.com/repos/" ""))))))
+
 (defn- check-github-repos
   []
-  (let [github-repo-urls       (set (map str/lower-case (remove str/blank? (mapcat #(gh/repos-urls (:github-url %) true) (md/programs-metadata)))))
+  (let [github-repo-urls       (set (map str/lower-case 
+                                         (remove str/blank? 
+                                                 (mapcat #(gh/repos-urls (:github-url %) true) 
+                                                         (md/programs-metadata)))))
         no-archived-repo-urls  (set (map str/lower-case
                                          (remove str/blank?
                                                  (mapcat :github-urls
                                                          (remove #(= "ARCHIVED" (:state %))
                                                                  (md/activities-metadata))))))
         no-arch-pmc-repo-urls (set (map str/lower-case (flatten (concat no-archived-repo-urls (mapcat :pmc-github-urls (md/programs-metadata))))))
-        ; TODO - enable it when labels are confirmed
-        ; with-security-issues   (filter #(> (count (gh/issues % "bug")) 0) no-archived-repo-urls)
-        ; with-quality-issues  (filter #(> (count (gh/issues % "docs")) 0) no-archived-repo-urls)
         repos-without-metadata (sort (set/difference no-archived-repo-urls no-arch-pmc-repo-urls))
         metadatas-without-repo (sort (set/difference no-arch-pmc-repo-urls github-repo-urls))]
-    ; TODO - enable it when labels are confirmed
-    ; (doall (map #(println (format "⚠️ %s Issues found on repo %s with label `security vulnerability`" (count with-security-issues) %)) with-security-issues))
-    ; (doall (map #(println (format "⚠️ %s Issues found on repo %s with label as `quality checks`" (count with-quality-issues) %)) with-quality-issues))
     (doall (map #(println "⚠️ GitHub repo" % "has no metadata.") repos-without-metadata))
     (doall (map #(println "⚠️ GitHub repo" % "has metadata, but does not exist in GitHub.") metadatas-without-repo))))
 
@@ -302,6 +316,7 @@
   []
   ; DEPRECATED - FINOS doesn't use repo admins anymore
   ; (check-repo-admins)
+  (check-github-issues)
   (check-metadata-for-collaborators)
   (check-github-orgs)
   (check-github-repos)

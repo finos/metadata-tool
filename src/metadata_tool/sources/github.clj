@@ -23,7 +23,7 @@
             [clj-jgit.porcelain    :as git]
             [clj-http.client       :as http]
             [tentacles.repos       :as tr]
-            [tentacles.issues      :as ti]
+            [tentacles.search      :as ts]
             [tentacles.orgs        :as to]
             [tentacles.users       :as tu]
             [metadata-tool.config  :as cfg]))
@@ -182,15 +182,15 @@
   [repo-url]
   (map :login (committers repo-url)))
 
-(defn issues
-  "List repository issue, optionally filtering by label"
-  [repo-url & [labels]]
-  (let [[org repo] (parse-github-url-path repo-url)
-        label-opts (assoc opts :labels labels)
-        issues (call-gh (ti/issues org repo label-opts))]
-    ; (println "Issues for repo" org "/" repo "-" (count issues))
-    ; (println label-opts)
+(defn issues-fn
+  "Returns first 100 open issues, with a given label, across all repos of a given org"
+  [org-name label]
+  (let [issues (:items (ts/search-issues ""
+                                 {:label (str "\"" label "\"")
+                                  :state "open"
+                                  :org org-name} opts))]
     issues))
+(def issues (memoize issues-fn))
 
 (defn- org-fn
   "Returns information on the given org, or nil if it doesn't exist."
