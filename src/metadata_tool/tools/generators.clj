@@ -149,24 +149,33 @@
     (let [json    (psrs/get-json "./meeting-attendance.json")
           data    (psrs/string-keys-to-symbols json)
           date    (first (s/split (:date data) #"T"))
-          people  (map #(md/person-metadata-by-github-login (s/trim %))
-                        (s/split (:attendants data) #","))
+          people  (map #(assoc
+                         (md/person-metadata-by-github-login (s/trim %))
+                         :gh-username %)
+                       (s/split (:attendants data) #","))
+          attendants (filter #(not (nil? (:person-id %))) people)
+          not-on-file (map :gh-username (filter #(nil? (:person-id %)) people))
+          not-on-file-ids (map #(str "@" (s/trim %)) not-on-file)
           project (first
-                    (filter #(psrs/match-project % data)
-                            (md/projects-metadata)))
-          roster  (map #(psrs/single-attendance % project date) people)
+                   (filter #(psrs/match-project % data)
+                           (md/projects-metadata)))
+          roster  (map #(psrs/single-attendance % project date) attendants)
           delta   (psrs/get-csv-delta roster)
           exist   (first delta)
           new     (second delta)
           action  (:action data)]
+      (println "WARN - Couldn't find the following GitHub usernames on file:" not-on-file-ids)
+      (if (not (empty? not-on-file-ids))
+        (with-open [writer (psrs/get-writer "./github-finos-meetings-unknowns.txt")]
+          (.write writer (s/join ", " not-on-file-ids))))
       (if (= action "add")
         (with-open [writer (psrs/get-writer "./github-finos-meetings-add.csv")]
           (psrs/write-csv writer new))
         (with-open [reader (psrs/get-reader "./github-finos-meetings.csv")
                     writer (psrs/get-writer "./github-finos-meetings-remove.csv")]
           (->> (psrs/read-csv reader)
-                (psrs/remove-existing-entries exist)
-                (psrs/write-csv writer)))))
+               (psrs/remove-existing-entries exist)
+               (psrs/write-csv writer)))))
     (println "ERROR - Cannot find meeting-attendance.json or github-finos-meetings.csv files")))
 
 (defn- landscape-format
