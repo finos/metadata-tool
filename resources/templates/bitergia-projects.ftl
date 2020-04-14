@@ -46,6 +46,7 @@
   "${activity.activity_name}" : {
     "meta"       : { "title"   : "${activity.activity_name}",
                      "program" : "${activity.program_short_name}",
+                     "contributed" : "${activity.contribution_date}",
                      "state"   : "${activity.state}",
                      "type"    : "${activity.type}" }[#if activity.github_urls?? && activity.github_urls?size > 0],
     [#if activity.confluence_page??]
