@@ -3,8 +3,8 @@
 
   :github
   {
-    :username #env GITHUB_USER
-    :password #env GITHUB_PASSWORD
+    :username #env FINOS_GITHUB_USER
+    :password #env FINOS_GITHUB_TOKEN
   }
 
   :bitergia
