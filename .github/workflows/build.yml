@@ -1,0 +1,31 @@
+name: build-metadata-tool
+
+on:
+  push:
+    paths:
+      - 'project.clj'
+      - 'src/**'
+      - 'resources/**'
+      - 'workflows/build.yml'
+  pull_request:
+    paths:
+      - 'project.clj'
+      - 'src/**'
+      - 'resources/**'
+      - 'workflows/build.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout metadata
+      uses: actions/checkout@v2
+    - name: Lein check
+      run: |
+        cd metadata-tool
+        lein check ; lein ancient &
+    - name: Lein ancient
+      run: |
+        cd metadata-tool
+        lein ancient &
+  
