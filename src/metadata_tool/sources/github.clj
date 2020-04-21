@@ -212,15 +212,24 @@
         (remove #(some #{(:name %)} ignored-repo-names) (remove :private (call-gh (tr/org-repos org-name opts))))))))
 (def repos (memoize repos-fn))
 
+(defn- filter-repo
+  [repo filters]
+  (if (empty? filters)
+    true
+    (let [filter (seq (first filters))
+          curr   (= (get repo (first filter))
+                    (second filter))
+          tail (filter-repo repo (rest filters))]
+      (and curr tail))))
+
 (defn repos-urls
   "Returns the URLs of all repos in the given org."
-  [org-url & [filter-archived]]
+  [org-url & [filters]]
   (if org-url
     (let [repos (repos org-url)]
       (map :html_url
-           (if filter-archived
-             (remove #(:archived %) repos)
-             repos)))))
+           (filter #(filter-repo % filters) 
+                   repos)))))
 
 (defn- repo-fn
   "Retrieve the data for a specific public repo, or nil if it's private or invalid."

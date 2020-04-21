@@ -277,20 +277,31 @@
 
 (defn- check-github-repos
   []
-  (let [github-repo-urls       (set (map str/lower-case 
-                                         (remove str/blank? 
-                                                 (mapcat #(gh/repos-urls (:github-url %) true) 
-                                                         (md/programs-metadata)))))
-        no-archived-repo-urls  (set (map str/lower-case
-                                         (remove str/blank?
-                                                 (mapcat :github-urls
-                                                         (remove #(= "ARCHIVED" (:state %))
-                                                                 (md/activities-metadata))))))
-        no-arch-pmc-repo-urls (set (map str/lower-case (flatten (concat no-archived-repo-urls (mapcat :pmc-github-urls (md/programs-metadata))))))
-        repos-without-metadata (sort (set/difference no-archived-repo-urls no-arch-pmc-repo-urls))
-        metadatas-without-repo (sort (set/difference no-arch-pmc-repo-urls github-repo-urls))]
-    (doall (map #(println "⚠️ GitHub repo" % "has no metadata.") repos-without-metadata))
-    (doall (map #(println "⚠️ GitHub repo" % "has metadata, but does not exist in GitHub.") metadatas-without-repo))))
+  (let [gh-repos (set
+                  (map str/lower-case
+                       (mapcat #(gh/repos-urls
+                                 (:github-url %))
+                               (md/programs-metadata))))
+        no-arch-fork-gh-repos (set
+                          (map str/lower-case
+                               (mapcat #(gh/repos-urls
+                                         (:github-url %) {:fork false :archived false})
+                                       (md/programs-metadata))))        
+        meta-repos (set (concat
+                    (map str/lower-case
+                              (mapcat :github-urls
+                                      (md/activities-metadata)))
+                    (mapcat :pmc-github-urls (md/programs-metadata))))
+        no-arch-meta-repos (set (map str/lower-case
+                                     (mapcat :github-urls
+                                             (remove #(= "ARCHIVED" (:state %))
+                                                     (md/activities-metadata)))))
+        gh-wo-meta (remove str/blank? 
+                           (sort (set/difference no-arch-fork-gh-repos meta-repos)))
+        meta-wo-gh (remove str/blank? 
+                           (sort (set/difference no-arch-meta-repos gh-repos)))]
+    (doall (map #(println "⚠️ GitHub repo" % "has no metadata.") gh-wo-meta))
+    (doall (map #(println "⚠️ GitHub repo" % "has metadata, but does not exist in GitHub.") meta-wo-gh))))
 
 ; DEPRECATED - No need to add to each output
 ; (defn- check-github-logins
@@ -316,9 +327,9 @@
   []
   ; DEPRECATED - FINOS doesn't use repo admins anymore
   ; (check-repo-admins)
-  (check-github-issues)
-  (check-metadata-for-collaborators)
-  (check-github-orgs)
+  ; (check-github-issues)
+  ; (check-metadata-for-collaborators)
+  ; (check-github-orgs)
   (check-github-repos)
   ; DEPRECATED - No need to add to each output
   ; (check-github-logins)
