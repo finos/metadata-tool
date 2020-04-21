@@ -22,7 +22,8 @@
 (defn set-exit-code
   "Sets the exit code to at least the given value."
   [new-exit-code]
-  (swap! exit-code max new-exit-code))
+  (if (integer? new-exit-code)
+    (swap! exit-code max new-exit-code)))
 
 (defn set-warning
   "Set a warning exit code (1)."
