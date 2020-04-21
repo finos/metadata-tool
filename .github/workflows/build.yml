@@ -21,11 +21,7 @@ jobs:
     - name: Checkout metadata
       uses: actions/checkout@v2
     - name: Lein check
-      run: |
-        cd metadata-tool
-        lein check ; lein ancient &
+      run: lein check
     - name: Lein ancient
-      run: |
-        cd metadata-tool
-        lein ancient &
+      run: lein ancient &
   
