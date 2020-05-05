@@ -15,6 +15,8 @@
     "meta"       : { "title" : "Foundation" },
     "mbox"       : [ "announce /home/bitergia/mboxes/barnowl_symphony_announce" ]
   }[#if programs?? && programs?size > 0],[#list programs as program]
+    [#if program.disbanded?? || program.program_short_name == 'TopLevel']
+    [#else]
   "${program.program_short_name} PMC" : {
     "meta"       : { "title"   : "${program.program_short_name} PMC",
     "type"       : "PMC",
@@ -41,7 +43,7 @@
         [/#list]
       ]
     [/#if]
-  }[#if program.program_id != programs?last.program_id],[/#if][/#list][/#if]
+  }[#if program.program_id != programs?last.program_id],[/#if][/#if][/#list][/#if]
   [#if activities?? && activities?size > 0],[#list activities as activity]
   "${activity.activity_name}" : {
     "meta"       : { "title"   : "${activity.activity_name}",
