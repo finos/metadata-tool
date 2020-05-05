@@ -15,8 +15,7 @@
     "meta"       : { "title" : "Foundation" },
     "mbox"       : [ "announce /home/bitergia/mboxes/barnowl_symphony_announce" ]
   }[#if programs?? && programs?size > 0],[#list programs as program]
-    [#if program.disbanded?? || program.program_short_name == 'TopLevel']
-    [#else]
+    [#if program.program_short_name != 'TopLevel']
   "${program.program_short_name} PMC" : {
     "meta"       : { "title"   : "${program.program_short_name} PMC",
     "type"       : "PMC",
