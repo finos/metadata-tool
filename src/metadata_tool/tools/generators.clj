@@ -65,7 +65,7 @@
   []
   (println (tem/render "bitergia-projects.ftl"
                        {:programs   (md/programs-metadata)
-                        :activities (md/activities-metadata)})))
+                        :activities (md/activities-metadata-after-disband)})))
 
 (defn- build-github-repo-data
   [repo-url]
