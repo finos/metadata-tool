@@ -288,6 +288,24 @@
   []
   (sort-by :activity-name (remove nil? (mapcat :activities (programs-metadata)))))
 
+(defn- to-top-level
+  "Cast a program to top-level, if disbanded"
+  [program]
+  (if (:disbanded program)
+    (assoc
+     (program-metadata "top-level")
+     :activities
+     (map #(assoc % :program-short-name "TopLevel") (:activities program)))
+    program))
+
+(defn activities-metadata-after-disband
+  "A seq containing the metadata of all activities, regardless of program, after the program disband."
+  []
+  (sort-by :activity-name 
+           (remove nil? 
+                   (mapcat :activities 
+                           (map #(to-top-level %) (programs-metadata))))))
+
 (defn activity-metadata
   "The metadata for a specific activity."
   [activity-id]
