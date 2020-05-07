@@ -102,15 +102,18 @@
 
 (defn gen-catalogue-data
   []
-  (let [activities-data (for [program-metadata  (md/programs-metadata)
-                              activity-metadata (:activities program-metadata)]
-                          (let [github-repos (keep build-github-repo-data (:github-urls activity-metadata))]
-                            (assoc activity-metadata
-                                   :program-name            (:program-name           program-metadata)
-                                   :program-short-name      (:program-short-name     program-metadata)
-                                   :program-home-page       (:url (:confluence-space program-metadata))
-                                   :github-repos            github-repos
-                                   :cumulative-github-stats (accumulate-github-stats github-repos))))]
+  (let [toplevel-program (md/program-metadata "top-level")
+        activities-data  (for [program-metadata  (md/programs-metadata)
+                               activity-metadata (:activities program-metadata)]
+                           (let [is-toplevel  (:disbanded program-metadata)
+                                 program (if is-toplevel toplevel-program program-metadata)
+                                 github-repos (keep build-github-repo-data (:github-urls activity-metadata))]
+                             (assoc activity-metadata
+                                    :program-name            (:program-name           program)
+                                    :program-short-name      (:program-short-name     program)
+                                    :program-home-page       (:url (:confluence-space program))
+                                    :github-repos            github-repos
+                                    :cumulative-github-stats (accumulate-github-stats github-repos))))]
     (println (tem/render "catalogue.ftl"
                          {:activities activities-data
                           :all-tags   (md/all-activity-tags)}))))
