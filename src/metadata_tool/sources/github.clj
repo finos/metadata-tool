@@ -17,6 +17,7 @@
 (ns metadata-tool.sources.github
   (:require [clojure.string        :as str]
             [clojure.java.io       :as io]
+            [clojure.set           :as set]
             [clojure.tools.logging :as log]
             [mount.core            :as mnt :refer [defstate]]
             [lambdaisland.uri      :as uri]
@@ -24,6 +25,7 @@
             [clj-http.client       :as http]
             [tentacles.repos       :as tr]
             [tentacles.search      :as ts]
+            [tentacles.issues      :as ti]
             [tentacles.orgs        :as to]
             [tentacles.users       :as tu]
             [metadata-tool.config  :as cfg]))
@@ -181,6 +183,15 @@
   "List the logins of the committers of the given repository."
   [repo-url]
   (map :login (committers repo-url)))
+
+(defn issue-commenters-fn
+  "Returns all usernames who commented on a given issue"
+  [issue-number org repo]
+  (set/difference
+   (set (map #(:login (:user %))
+        (ti/issue-comments org repo issue-number opts)))
+   #{"finos-admin" "github-actions[bot]"}))
+(def issue-commenters (memoize issue-commenters-fn))
 
 (defn issues-fn
   "Returns first 100 open issues, with a given label, across all repos of a given org"

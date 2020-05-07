@@ -155,7 +155,13 @@
           people  (map #(assoc
                          (md/person-metadata-by-github-login (s/trim %))
                          :gh-username %)
-                       (s/split (:attendants data) #","))
+                       ; using assignees - deprecated
+                       ;  (s/split (:attendants data) #","))
+                       ; using commenters
+                       (gh/issue-commenters
+                        (:issueNumber data)
+                        (:org data)
+                        (:repo data)))
           attendants (filter #(not (nil? (:person-id %))) people)
           not-on-file (map :gh-username (filter #(nil? (:person-id %)) people))
           not-on-file-ids (map #(str "@" (s/trim %)) not-on-file)
@@ -167,8 +173,9 @@
           exist   (first delta)
           new     (second delta)
           action  (:action data)]
-      (println "WARN - Couldn't find the following GitHub usernames on file:" not-on-file-ids)
-      (if (not (empty? not-on-file-ids))
+      (if (not-empty not-on-file-ids)
+        (println "WARN - Couldn't find the following GitHub usernames on file:" not-on-file-ids))
+      (if (not-empty not-on-file-ids)
         (with-open [writer (psrs/get-writer "./github-finos-meetings-unknowns.txt")]
           (.write writer (s/join ", " not-on-file-ids))))
       (if (= action "add")
