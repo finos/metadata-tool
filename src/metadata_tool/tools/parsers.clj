@@ -251,5 +251,5 @@
   [to-remove current]
   (let [remove-str (set (map #(csv-item-to-str %) to-remove))
         curr-str   (set (map #(csv-item-to-str %) current))
-        diff-str   (set/intersection remove-str curr-str)]
+        diff-str   (set/difference curr-str remove-str)]
     (map #(str-to-csv-item %) diff-str)))
