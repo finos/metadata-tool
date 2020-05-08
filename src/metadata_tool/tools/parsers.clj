@@ -250,6 +250,6 @@
 (defn remove-existing-entries
   [to-remove current]
   (let [remove-str (set (map #(csv-item-to-str %) to-remove))
-        curr-str   (set (map #(csv-item-to-str %) current))
-        diff-str   (set/difference curr-str remove-str)]
+        curr-str   (map #(csv-item-to-str %) current)
+        diff-str   (filter #(contains-not remove-str %) curr-str)]
     (map #(str-to-csv-item %) diff-str)))
