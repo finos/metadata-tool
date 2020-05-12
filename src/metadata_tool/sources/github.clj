@@ -118,7 +118,7 @@
   [org-name]
   (call-gh
     (:body (http/get
-     (str "https://api.github.com/orgs/" org-name "/invitations")))))
+     (str "https://api.github.com/orgs/" org-name "invitations")))))
 (def pending-invitations (memoize pending-invitations-fn))
 
 (defn invite-member
