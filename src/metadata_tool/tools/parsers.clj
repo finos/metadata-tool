@@ -220,13 +220,15 @@
 (defn match-project
   [project data]
   (and
-   (some #(= (:repo data) %)
+   (some #(= (str/lower-case (:repo data)) (str/lower-case %))
          (:github-repos project))
    (some #(str/includes? % (str "/" (:org data) "/"))
          (:github-urls project))))
 
 (defn get-csv-delta
   [new-csv]
+  (println "new-csv")
+  (println new-csv)
   (with-open
    [reader (io/reader "./github-finos-meetings.csv")]
     (let [items     (set (map #(csv-item-to-str %) (csv/read-csv reader)))
