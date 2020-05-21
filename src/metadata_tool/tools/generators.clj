@@ -63,7 +63,11 @@
   (let [emails    (remove nil? (:email-addresses person))
         usernames (remove nil? (:github-logins person))
         gh-emails (map #(str % "@users.noreply.github.com") usernames)
-        email-ids (map #(str (gh/user-id %) "+" % "@users.noreply.github.com") usernames)
+        user-ids  (map #(assoc {}
+                               :user %
+                               :id   (gh/user-id %)) usernames)
+        user-ids-nn (remove #(s/blank? (:id %)) user-ids)
+        email-ids (map #(str (:id %) "+" (:user %) "@users.noreply.github.com") user-ids-nn)
         all-emails (set (concat emails gh-emails email-ids))]
     (assoc person :email-addresses all-emails)))
 
