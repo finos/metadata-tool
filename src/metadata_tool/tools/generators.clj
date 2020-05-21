@@ -68,7 +68,7 @@
                                :id   (gh/user-id %)) usernames)
         user-ids-nn (remove #(s/blank? (str (:id %))) user-ids)
         email-ids (map #(str (:id %) "+" (:user %) "@users.noreply.github.com") user-ids-nn)
-        all-emails (set (concat emails gh-emails email-ids))]
+        all-emails (apply sorted-set (set (concat emails gh-emails email-ids)))]
     (assoc person :email-addresses all-emails)))
 
 (defn gen-bitergia-affiliation-data
