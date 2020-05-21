@@ -23,6 +23,7 @@
             [lambdaisland.uri      :as uri]
             [clj-jgit.porcelain    :as git]
             [clj-http.client       :as http]
+            [clojure.data.json     :as json]
             [tentacles.repos       :as tr]
             [tentacles.search      :as ts]
             [tentacles.issues      :as ti]
@@ -97,6 +98,16 @@
        (if-not (= 404 (:status (ex-data ei#)))
          (throw ei#)))))
 
+(defn user-id-fn
+  "Returns the ID of a given GitHub username"
+  [username]
+  (let [new-opts (assoc opts :basic-auth (:auth opts))
+        url      (str "https://api.github.com/users/" username)]
+    (if-let [payload (call-gh (:body (http/get url new-opts)))]
+      (get (json/read-str payload) "id"))))
+    
+(def user-id (memoize user-id-fn))
+
 (defn content-fn
   "Returns the contents of file"
   [org repo path]
@@ -117,17 +128,21 @@
   "Returns the list of pending invitations for a given org"
   [org-name]
   (call-gh
-    (:body (http/get
-     (str "https://api.github.com/orgs/" org-name "invitations")))))
+   (let [new-opts (assoc opts :basic-auth (:auth opts))
+         url (str "https://api.github.com/orgs/" org-name "/invitations")]
+    (json/read-str (call-gh (:body (http/get url new-opts)))))))
 (def pending-invitations (memoize pending-invitations-fn))
 
 (defn invite-member
   "Invites a github user to a given org"
   [org user]
-    ; TODO - enable it only after notifying the community
-    ; (call-gh (:body (http/put
-    ;  (str "https://api.github.com/orgs/" org "/memberships/" user)))))
-    (println "Invited user " user " to github " org " org"))
+    ; TODO - enable it widely, now only test user is enabled
+    (println "Inviting member " user "to org" org)
+    (if (= "mammamao" user)
+      (let [url (str "https://api.github.com/orgs/" org "/memberships/" user)
+            invite-resp (call-gh (:body (http/put url)))]
+        (println "Invited user " user " to github " org " org")
+        (println invite-resp))))
 
 (defn- collaborators-fn
   "Returns the collaborators for the given repo, or nil if the URL is invalid."

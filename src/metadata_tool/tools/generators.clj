@@ -27,11 +27,18 @@
 
 (defn invite-clas-to-finos-org
   []
-  (let [cla-ids    (set (map #(first (:github-logins %)) (md/people-with-clas)))
+  (let [cla-ids    (set (remove nil? 
+                                (map #(first (:github-logins %))
+                                     (remove #(:is-bot %) (md/people-with-clas)))))
         gh-members (set (map :login (gh/org-members "finos")))
-        pending    (set (map :login  (gh/pending-invitations "finos")))
-        to-invite  (set/difference cla-ids (set/join gh-members pending))]
-    (println "Inviting " (count to-invite) " CLA signed GitHub users to github.com/orgs/finos/people")
+        pending    (set (map #(get % "login")  (gh/pending-invitations "finos")))
+        to-invite  (set/difference cla-ids gh-members)]
+    (println "Inviting CLA signed GitHub users to github.com/orgs/finos/people")
+    (println "Pending invitation: " (count pending))
+    (println "FINOS members: " (count gh-members))
+    (println "CLA covered people: " (count cla-ids))
+    (println "To invite: " (count to-invite))
+    ;; TODO - not working yet 
     (map #(gh/invite-member "finos" %) to-invite)))
 
 (defn gen-clabot-whitelist
@@ -51,10 +58,20 @@
         as-string (str "[" (s/join "," as-strings) "]")]
     (println as-string)))
 
+(defn add-gh-id-email
+  [person]
+  (let [emails    (remove nil? (:email-addresses person))
+        usernames (remove nil? (:github-logins person))
+        gh-emails (map #(str % "@users.noreply.github.com") usernames)
+        email-ids (map #(str (gh/user-id %) "+" % "@users.noreply.github.com") usernames)
+        all-emails (set (concat emails gh-emails email-ids))]
+    (assoc person :email-addresses all-emails)))
+
 (defn gen-bitergia-affiliation-data
   []
   (println (tem/render "bitergia-affiliations.ftl"
-                       {:people (md/people-metadata-with-organizations)})))
+                       {:people (map #(add-gh-id-email %) 
+                                     (md/people-metadata-with-organizations))})))
 
 (defn gen-bitergia-organization-data
   []
