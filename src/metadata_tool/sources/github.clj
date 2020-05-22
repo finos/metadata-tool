@@ -137,12 +137,12 @@
   "Invites a github user to a given org"
   [org user]
     ; TODO - enable it widely, now only test user is enabled
-    (println "Inviting member " user "to org" org)
+    ;; (println "Inviting member " user "to org" org)
     (if (= "mammamao" user)
-      (let [url (str "https://api.github.com/orgs/" org "/memberships/" user)
-            invite-resp (call-gh (:body (http/put url)))]
-        (println "Invited user " user " to github " org " org")
-        (println invite-resp))))
+      (let [new-opts (assoc opts :basic-auth (:auth opts))
+            url (str "https://api.github.com/orgs/" org "/memberships/" user)
+            invite-resp (call-gh (:body (http/put url new-opts)))]
+        (println "Invited user " user " to github " org " org"))))
 
 (defn- collaborators-fn
   "Returns the collaborators for the given repo, or nil if the URL is invalid."

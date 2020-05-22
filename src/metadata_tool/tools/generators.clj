@@ -32,14 +32,15 @@
                                      (remove #(:is-bot %) (md/people-with-clas)))))
         gh-members (set (map :login (gh/org-members "finos")))
         pending    (set (map #(get % "login")  (gh/pending-invitations "finos")))
-        to-invite  (set/difference cla-ids gh-members)]
+        to-flag    (set/difference (set/union pending gh-members) cla-ids)
+        to-invite  (set/difference cla-ids (set/union pending gh-members))]
     (println "Inviting CLA signed GitHub users to github.com/orgs/finos/people")
     (println "Pending invitation: " (count pending))
     (println "FINOS members: " (count gh-members))
     (println "CLA covered people: " (count cla-ids))
+    (println "Members with no CLA: " to-flag)
     (println "To invite: " (count to-invite))
-    ;; TODO - not working yet 
-    (map #(gh/invite-member "finos" %) to-invite)))
+    (doall (for [user to-invite] (gh/invite-member "finos" user)))))
 
 (defn gen-clabot-whitelist
   []
