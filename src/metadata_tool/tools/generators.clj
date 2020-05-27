@@ -17,6 +17,7 @@
 (ns metadata-tool.tools.generators
   (:require [clojure.tools.logging            :as log]
             [clojure.string                   :as s]
+            [clojure.pprint                   :as pp]
             [clojure.set                      :as set]
             [clojure.java.io                  :as io]
             [clj-yaml.core                    :as yaml]
@@ -27,19 +28,22 @@
 
 (defn invite-clas-to-finos-org
   []
-  (let [cla-ids    (set (remove nil? 
+  (let [cla-ids    (set (remove nil?
                                 (map #(first (:github-logins %))
                                      (remove #(:is-bot %) (md/people-with-clas)))))
         gh-members (set (map :login (gh/org-members "finos")))
         pending    (set (map #(get % "login")  (gh/pending-invitations "finos")))
         to-flag    (set/difference (set/union pending gh-members) cla-ids)
         to-invite  (set/difference cla-ids (set/union pending gh-members))]
+        ; invitee-email  (map #(first (:email-addresses (md/person-metadata-by-github-login (s/trim %)))) to-invite)]
     (println "Inviting CLA signed GitHub users to github.com/orgs/finos/people")
     (println "Pending invitation: " (count pending))
     (println "FINOS members: " (count gh-members))
     (println "CLA covered people: " (count cla-ids))
     (println "Members with no CLA: " to-flag)
     (println "To invite: " (count to-invite))
+    ; (println "Invite emails...")
+    ; (doall (for [email invitee-email] (println email ",")))
     (doall (for [user to-invite] (gh/invite-member "finos" user)))))
 
 (defn gen-clabot-whitelist
