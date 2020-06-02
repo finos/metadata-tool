@@ -264,16 +264,36 @@
                :subcategories (get-subcategories (second %)))
        (seq categories)))
 
+(def finos-entry {:item []
+ :name         "FINOS"
+ :homepage_url "https://www.finos.org"
+ :logo         "twitter.svg"
+ :crunchbase   "https://www.crunchbase.com/organization/symphony-software-foundation"
+ :repo_url     "https://github.com/finos/finos-pmcs"})
+
+(def finos-members {:category []
+ :name "FINOS Foundation Member"
+ :subcategories {:subcategory []
+                 :name "General"
+                 :items [finos-entry]}})
+
+(def finos-adopters {:category []
+                    :name "FINOS Adopter"
+                    :subcategories {:subcategory []
+                                    :name "FINOS Adopter"
+                                    :items [finos-entry]}})
+
 (defn gen-project-landscape
   "Generates a landscape.yml, using Programs as categories and tags as subcategories"
   []
   (let [raw (md/activities-metadata)
         projects           (remove nil? (map #(landscape-format %) raw))
         by-category        (group-by :category projects)
-        by-sub-categories  (group-by-sub by-category)]
+        by-sub-categories  (group-by-sub by-category)
+        add-static-entries (concat by-sub-categories [finos-members finos-adopters])]
     ; (pp/pprint (get-projects)))
     (with-open [w (io/writer "landscape.yml" :append true)]
       (.write w 
               (s/replace 
-               (yaml/generate-string {:landscape by-sub-categories})
+               (yaml/generate-string {:landscape add-static-entries})
                " []" "")))))
