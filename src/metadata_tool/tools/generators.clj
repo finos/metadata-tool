@@ -281,7 +281,7 @@
    :name "FINOS Foundation Member"
    :subcategories [{:subcategory []
                     :name "General"
-                    :items [(map #(format-member %) orgs)]}]})
+                    :items (map #(format-member %) orgs)}]})
 
 (defn gen-project-landscape
   "Generates a landscape.yml, using Programs as categories and tags as subcategories"
