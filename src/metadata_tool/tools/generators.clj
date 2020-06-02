@@ -217,17 +217,17 @@
 (defn- landscape-format
   "Returns project metadata in landscape format"
   [project]
-  (apply array-map 
-         (concat [:item nil] 
-                 (flatten 
-                  (seq {:name (:activity-name project)
-                        :homepage_url (first (:github-urls project))
-                        :repo_url (first (:github-urls project))
-                        :logo "project-placeholder.svg"
-                        ; :twitter "https://twitter.com/finosfoundation"
-                        ; :crunchbase nil
-                        :category (:program-name project)
-                        :subcategory (first (:tags project))})))))
+  (if (some? (:category project))
+    {:item ""
+     :name (:activity-name project)
+     :homepage_url (first (:github-urls project))
+     :repo_url (first (:github-urls project))
+     :logo "project-placeholder.svg"
+     ; :twitter "https://twitter.com/finosfoundation"
+     ; :crunchbase nil
+     :category (:category project)
+     :types (:taxonomy-types project)
+     :subcategory (:sub-category project)}))
 
 (defn- clean-item
   ""
@@ -249,7 +249,7 @@
   [category]
   (let [sub-cats (group-by :subcategory category)]
     (map #(assoc {} 
-                 :subcategory nil
+                 :subcategory ""
                  :name (get-name (first %))
                  :items (clean-items (second %))) sub-cats)))
 
@@ -257,23 +257,18 @@
   ""
   [categories]
   (map #(assoc {} 
-               :category nil
+               :category ""
                :name (first %)
                :subcategories (get-subcategories (second %)))
        (seq categories)))
 
-(defn- get-projects
-  "Returns projects"
-  []
-  (let [raw (md/activities-metadata)
-        new-fields         (map #(assoc (landscape-format %) :item nil) raw)
-        by-category        (group-by :category new-fields)
-        by-sub-categories  (group-by-sub by-category)]
-    {:landscape by-sub-categories}))
-
 (defn gen-project-landscape
   "Generates a landscape.yml, using Programs as categories and tags as subcategories"
   []
-  ; (pp/pprint (get-projects)))
-  (with-open [w (io/writer "landscape.yml" :append true)]
-    (.write w (yaml/generate-string (get-projects)))))
+  (let [raw (md/activities-metadata)
+        projects           (remove nil? (map #(landscape-format %) raw))
+        by-category        (group-by :category projects)
+        by-sub-categories  (group-by-sub by-category)]
+    ; (pp/pprint (get-projects)))
+    (with-open [w (io/writer "landscape.yml" :append true)]
+      (.write w (yaml/generate-string {:landscape by-sub-categories})))))
