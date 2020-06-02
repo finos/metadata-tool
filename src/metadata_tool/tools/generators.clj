@@ -26,6 +26,21 @@
             [metadata-tool.sources.github     :as gh]
             [metadata-tool.sources.metadata   :as md]))
 
+(def crunchbase-url "https://www.crunchbase.com/organization/symphony-software-foundation")
+
+(def finos-entry {:item []
+                  :name         "FINOS"
+                  :homepage_url "https://www.finos.org"
+                  :logo         "twitter.svg"
+                  :crunchbase   crunchbase-url
+                  :repo_url     "https://github.com/finos/finos-pmcs"})
+
+(def finos-members {:category []
+                    :name "FINOS Foundation Member"
+                    :subcategories [{:subcategory []
+                                     :name "General"
+                                     :items [finos-entry]}]})
+
 (defn invite-clas-to-finos-org
   []
   (let [cla-ids    (set (remove nil?
@@ -224,8 +239,8 @@
            :homepage_url (first (:github-urls project))
            :repo_url (first (:github-urls project))
            :logo "project-placeholder.svg"
+           :crunchbase crunchbase-url
            ; :twitter "https://twitter.com/finosfoundation"
-           ; :crunchbase nil
            ; TODO - how do we map project types?
            ; :types (:taxonomy-types project)
            :category (:category project)
@@ -264,25 +279,6 @@
                :subcategories (get-subcategories (second %)))
        (seq categories)))
 
-(def finos-entry {:item []
- :name         "FINOS"
- :homepage_url "https://www.finos.org"
- :logo         "twitter.svg"
- :crunchbase   "https://www.crunchbase.com/organization/symphony-software-foundation"
- :repo_url     "https://github.com/finos/finos-pmcs"})
-
-(def finos-members {:category []
- :name "FINOS Foundation Member"
- :subcategories {:subcategory []
-                 :name "General"
-                 :items [finos-entry]}})
-
-(def finos-adopters {:category []
-                    :name "FINOS Adopter"
-                    :subcategories {:subcategory []
-                                    :name "FINOS Adopter"
-                                    :items [finos-entry]}})
-
 (defn gen-project-landscape
   "Generates a landscape.yml, using Programs as categories and tags as subcategories"
   []
@@ -290,7 +286,7 @@
         projects           (remove nil? (map #(landscape-format %) raw))
         by-category        (group-by :category projects)
         by-sub-categories  (group-by-sub by-category)
-        add-static-entries (concat by-sub-categories [finos-members finos-adopters])]
+        add-static-entries (concat by-sub-categories [finos-members])]
     ; (pp/pprint (get-projects)))
     (with-open [w (io/writer "landscape.yml" :append true)]
       (.write w 
