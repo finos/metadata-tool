@@ -218,16 +218,18 @@
   "Returns project metadata in landscape format"
   [project]
   (if (some? (:category project))
-    {:item ""
-     :name (:activity-name project)
-     :homepage_url (first (:github-urls project))
-     :repo_url (first (:github-urls project))
-     :logo "project-placeholder.svg"
-     ; :twitter "https://twitter.com/finosfoundation"
-     ; :crunchbase nil
-     :category (:category project)
-     :types (:taxonomy-types project)
-     :subcategory (:sub-category project)}))
+    (assoc {}
+           :item []
+           :name (:activity-name project)
+           :homepage_url (first (:github-urls project))
+           :repo_url (first (:github-urls project))
+           :logo "project-placeholder.svg"
+           ; :twitter "https://twitter.com/finosfoundation"
+           ; :crunchbase nil
+           ; TODO - how do we map project types?
+           ; :types (:taxonomy-types project)
+           :category (:category project)
+           :subcategory (:sub-category project))))
 
 (defn- clean-item
   ""
@@ -249,7 +251,7 @@
   [category]
   (let [sub-cats (group-by :subcategory category)]
     (map #(assoc {} 
-                 :subcategory ""
+                 :subcategory []
                  :name (get-name (first %))
                  :items (clean-items (second %))) sub-cats)))
 
@@ -257,7 +259,7 @@
   ""
   [categories]
   (map #(assoc {} 
-               :category ""
+               :category []
                :name (first %)
                :subcategories (get-subcategories (second %)))
        (seq categories)))
@@ -271,4 +273,7 @@
         by-sub-categories  (group-by-sub by-category)]
     ; (pp/pprint (get-projects)))
     (with-open [w (io/writer "landscape.yml" :append true)]
-      (.write w (yaml/generate-string {:landscape by-sub-categories})))))
+      (.write w 
+              (s/replace 
+               (yaml/generate-string {:landscape by-sub-categories})
+               " []" "")))))
