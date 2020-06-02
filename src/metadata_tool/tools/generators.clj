@@ -26,20 +26,8 @@
             [metadata-tool.sources.github     :as gh]
             [metadata-tool.sources.metadata   :as md]))
 
-(def crunchbase-url "https://www.crunchbase.com/organization/symphony-software-foundation")
-
-(def finos-entry {:item []
-                  :name         "FINOS"
-                  :homepage_url "https://www.finos.org"
-                  :logo         "twitter.svg"
-                  :crunchbase   crunchbase-url
-                  :repo_url     "https://github.com/finos/finos-pmcs"})
-
-(def finos-members {:category []
-                    :name "FINOS Foundation Member"
-                    :subcategories [{:subcategory []
-                                     :name "General"
-                                     :items [finos-entry]}]})
+(def crunchbase-prefix "https://www.crunchbase.com/organization/")
+(def finos-crunchbase (str crunchbase-prefix "symphony-software-foundation"))
 
 (defn invite-clas-to-finos-org
   []
@@ -239,7 +227,7 @@
            :homepage_url (first (:github-urls project))
            :repo_url (first (:github-urls project))
            :logo "project-placeholder.svg"
-           :crunchbase crunchbase-url
+           :crunchbase finos-crunchbase
            ; :twitter "https://twitter.com/finosfoundation"
            ; TODO - how do we map project types?
            ; :types (:taxonomy-types project)
@@ -279,11 +267,29 @@
                :subcategories (get-subcategories (second %)))
        (seq categories)))
 
+(defn format-member
+  [org]
+  {:item []
+   :name         (:organization-name org)
+   :homepage_url (str "https://www." (first (:domains org)))
+   :logo         "twitter.svg"
+   :crunchbase   (str crunchbase-prefix (:crunchbase org))})
+
+(defn format-members
+  [orgs]
+  {:category []
+   :name "FINOS Foundation Member"
+   :subcategories [{:subcategory []
+                    :name "General"
+                    :items [(map #(format-member %) orgs)]}]})
+
 (defn gen-project-landscape
   "Generates a landscape.yml, using Programs as categories and tags as subcategories"
   []
   (let [raw (md/activities-metadata)
         projects           (remove nil? (map #(landscape-format %) raw))
+        members            (remove #(nil? (:membership %)) (md/organizations-metadata))
+        finos-members      (format-members members)
         by-category        (group-by :category projects)
         by-sub-categories  (group-by-sub by-category)
         add-static-entries (concat by-sub-categories [finos-members])]
