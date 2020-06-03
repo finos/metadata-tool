@@ -277,7 +277,8 @@
 (def toplevel-program-metadata
   {:program-id "toplevel"
    :program-name "Top Level"
-   :program-short-name "TopLevel"})
+   :program-short-name "TopLevel"
+   :github-org "finos"})
 
 (defn- program-metadata-fn
   "Program metadata of the given program-id, or nil if there is none."
