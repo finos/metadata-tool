@@ -62,6 +62,12 @@
 (defstate github-revision
   :start (:github-revision cfg/config))
 
+(defstate projects-directory
+  :start (if-not (str/blank? (:projects-directory cfg/config))
+           (do
+             (log/info "Using local projects metadata directory at" (:projects-directory cfg/config))
+             (:projects-directory cfg/config))))
+
 (defstate metadata-directory
   :start (if-not (str/blank? (:metadata-directory cfg/config))
            (do

@@ -129,9 +129,15 @@
      :open-issues   (apply +                      (map :open-issues   github-repos))
      :languages     (apply (partial merge-with +) (map :languages     github-repos))}))
 
+(defn- get-home-page
+  [program]
+  (if (some? (:confluence-space program))
+    (:url (:confluence-space program))
+    "https://finos.org"))
+
 (defn gen-catalogue-data
   []
-  (let [toplevel-program (md/program-metadata "top-level")
+  (let [toplevel-program (md/program-metadata "toplevel")
         activities-data  (for [program-metadata  (md/programs-metadata)
                                activity-metadata (:activities program-metadata)]
                            (let [is-toplevel  (:disbanded program-metadata)
@@ -140,7 +146,7 @@
                              (assoc activity-metadata
                                     :program-name            (:program-name           program)
                                     :program-short-name      (:program-short-name     program)
-                                    :program-home-page       (:url (:confluence-space program))
+                                    :program-home-page       (get-home-page program)
                                     :github-repos            github-repos
                                     :cumulative-github-stats (accumulate-github-stats github-repos))))]
     (println (tem/render "catalogue.ftl"
@@ -269,11 +275,14 @@
 
 (defn format-member
   [org]
-  {:item []
-   :name         (:organization-name org)
-   :homepage_url (str "https://www." (first (:domains org)))
-   :logo         "twitter.svg"
-   :crunchbase   (str crunchbase-prefix (:crunchbase org))})
+  (let [item {:item []
+              :name         (:organization-name org)
+              :homepage_url (str "https://www." (first (:domains org)))
+              :logo         "twitter.svg"
+              :crunchbase   (str crunchbase-prefix (:crunchbase org))}]
+  (if (contains? org :stock-ticker)
+    (assoc item :stock_ticker (:stock-ticker org))
+    item)))
 
 (defn format-members
   [orgs]
