@@ -81,7 +81,7 @@
 
 ; Note: functions that call GitHub APIs are memoized, so that when tools are "stacked" they benefit from cached GitHub API calls
 
-(defn- parse-github-url-path
+(defn parse-github-url-path
   "Parses the path elements of a GitHub URL - useful for retrieving org name (first position) and repo name (optional second position)."
   [url]
   (if-not (str/blank? url)
@@ -181,6 +181,16 @@
   "List the logins of the committers of the given repository."
   [repo-url]
   (map :login (committers repo-url)))
+
+(defn commits-fn
+  "Returns commits for a given repo"
+  [org repo & [since]]
+  (let [params (if (str/blank? since)
+                 opts
+                 (assoc opts
+                        :since (str since "T00:00:00Z")))]
+    (call-gh (tr/commits org repo params))))
+(def commits (memoize commits-fn))
 
 (defn issues-fn
   "Returns first 100 open issues, with a given label, across all repos of a given org"

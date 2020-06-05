@@ -198,9 +198,6 @@
   (check-mailing-list-addresses))
 
 
-
-
-
 ; Local and remote (filesystem and/or API call) checks
 
 
@@ -275,6 +272,74 @@
                        (str (count (distinct v)))
                        (str/replace k "https://api.github.com/repos/" ""))))))
 
+; (defn- get-repo
+;   [commit]
+;   (let [url (:url (:commit commit))
+;         sub1 (first (str/split url #"\/git\/commits"))
+;         sub2 (first (str/split sub1 #"\/commits\/"))
+;         repo (str/replace sub2 "https://api.github.com/repos" "")]
+;   repo))
+
+(defn- add-cla-data
+  [commit]
+  (let [name  (or (:name (:author (:commit commit)))
+                  (:name (:committer (:commit commit))))
+        email (or (:email (:author (:commit commit)))
+                  (:email (:committer (:commit commit))))
+        person (or (md/person-metadata-by nil name email))
+        person-id (:person-id person)
+        has-not-cla (not (md/has-cla? person-id))]
+    (if has-not-cla
+      {:commit commit
+       :name name
+      ;  :repo (get-repo commit)
+       :email email
+       :person-id (or person-id "no-metadata")
+       :no-cla has-not-cla})))
+
+(defn- get-repo-commits
+  [repo-url]
+  (let [[org repo] (gh/parse-github-url-path repo-url)
+        project (md/activity-by-github-coords org repo)]
+    (map #(add-cla-data %)
+         (gh/commits org repo (:contribution-date project)))))
+
+(defn- print-repo-violations
+  [repo people commits all-commits]
+  (println "⚠️ Found"
+           (str commits "/" all-commits)
+           "commits with IP violations on repo " repo "-"))
+          ;  (str/join ", "
+          ;            (map #(str
+          ;                   (:person-id (first (second %)))
+          ;                   "(" (count (second %)) ")")
+          ;                 people))))
+
+(defn- check-repo-commits
+  []
+  (let [urls (set
+              (map str/lower-case
+                   (mapcat #(gh/repos-urls
+                             (:github-url %))
+                           (md/programs-metadata))))
+        test-repos ["https://github.com/finos/perspective"]
+        repo-commits (map #(assoc {}
+                                  :repo %
+                                  :commits (get-repo-commits %))
+                          test-repos)
+        repos (group-by :repo repo-commits)]
+    (println (count repo-commits))
+    (println repos)
+    (println (:repo (first repos)))
+    (map #(println %) repos)
+    (map
+     #(print-repo-violations
+       (first %)
+       (group-by :person-id (:commits %))
+       (count (remove nil? (:commits %)))
+       (count (:commits %)))
+     repos)))
+
 (defn- check-github-repos
   []
   (let [gh-repos (set
@@ -325,12 +390,13 @@
 (defn check-remote
   "Performs checks that require API calls out to GitHub, JIRA, Bitergia, etc. (which may be rate limited)."
   []
+  (check-repo-commits)
+  ; (check-github-issues)
+  ; (check-metadata-for-collaborators)
+  ; (check-github-orgs)
+  ; (check-github-repos)
   ; DEPRECATED - FINOS doesn't use repo admins anymore
   ; (check-repo-admins)
-  (check-github-issues)
-  (check-metadata-for-collaborators)
-  (check-github-orgs)
-  (check-github-repos)
   ; DEPRECATED - No need to add to each output
   ; (check-github-logins)
   (check-bitergia-projects))
