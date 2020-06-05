@@ -21,7 +21,4 @@ jobs:
     - name: Checkout metadata
       uses: actions/checkout@v2
     - name: Lein check
-      run: lein check
-    - name: Lein ancient
-      run: lein ancient &
-  
+      run: lein check  

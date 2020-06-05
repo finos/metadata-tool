@@ -184,7 +184,7 @@
   (check-duplicate-github-logins)
   (check-affiliation-references)
   (check-approved-contributor-references)
-  (check-missing-pmc-lead)
+  ; (check-missing-pmc-lead)
   (check-pmc-lead-references)
   (check-missing-lead-or-chair)
   (check-lead-or-chair-references)
@@ -327,7 +327,7 @@
   []
   ; DEPRECATED - FINOS doesn't use repo admins anymore
   ; (check-repo-admins)
-  (check-github-issues)
+  ; (check-github-issues)
   (check-metadata-for-collaborators)
   (check-github-orgs)
   (check-github-repos)

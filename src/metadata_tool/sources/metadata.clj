@@ -28,6 +28,10 @@
 (defstate ^:private organization-metadata-directory :start (str gh/metadata-directory "/organizations"))
 (defstate ^:private people-metadata-directory       :start (str gh/metadata-directory "/people"))
 (defstate ^:private program-metadata-directory      :start (str gh/metadata-directory "/programs"))
+(defstate ^:private projects-metadata-directory     
+  :start (if (some? gh/projects-directory)
+           gh/projects-directory
+           (str gh/metadata-directory "/toplevel")))
 
 (def ^:private organization-filename "organization-metadata.json")
 (def ^:private person-filename       "person-metadata.json")
@@ -65,7 +69,7 @@
 
 (defstate organizations :start (doall (sort (map #(.getName ^java.io.File %) (list-subdirs (io/file organization-metadata-directory))))))
 (defstate people        :start (doall (sort (map #(.getName ^java.io.File %) (list-subdirs (io/file people-metadata-directory))))))
-(defstate programs      :start (doall (sort (map #(.getName ^java.io.File %) (list-subdirs (io/file program-metadata-directory))))))
+(defstate programs      :start (concat (doall (sort (map #(.getName ^java.io.File %) (list-subdirs (io/file program-metadata-directory))))) ["toplevel"]))
 
 (defn- clojurise-json-key
   "Converts nasty JSON String keys (e.g. \"fullName\") to nice Clojure keys (e.g. :full-name)."
@@ -205,7 +209,11 @@
 (defn- program-activities
   "A seq of the ids of all activities in the given program."
   [program-id]
-  (sort (map #(.getName ^java.io.File %) (list-subdirs (io/file (str program-metadata-directory "/" program-id))))))
+  (sort (map #(.getName ^java.io.File %)
+             (list-subdirs (io/file
+                            (if (= "toplevel" program-id)
+                              (str projects-metadata-directory)
+                              (str program-metadata-directory "/" program-id)))))))
 
 (defn- get-gh-org
   [activity-gh-org program]
@@ -245,9 +253,12 @@
 (defn- program-activities-metadata
   "A seq containing the metadata of all activities in the given program."
   [program]
-  (let [program-id (:program-id program)]
+  (let [program-id (:program-id program)
+        prj-folder (if (= "toplevel" program-id)
+             projects-metadata-directory
+             (str program-metadata-directory "/" program-id))]
     (seq
-     (keep #(if-let [activity (read-metadata-file (str program-metadata-directory "/" program-id "/" % "/" activity-filename))]
+     (keep #(if-let [activity (read-metadata-file (str prj-folder "/" % "/" activity-filename))]
               (assoc activity
                      :program-id              program-id
                      :program-name            (:program-name program)
@@ -263,19 +274,28 @@
                      :confluence-spaces       (map expand-confluence-space-key (:confluence-space-keys activity))))
            (program-activities program-id)))))
 
+(def toplevel-program-metadata
+  {:program-id "toplevel"
+   :program-name "Top Level"
+   :program-short-name "TopLevel"
+   :github-org "finos"})
+
 (defn- program-metadata-fn
   "Program metadata of the given program-id, or nil if there is none."
   [program-id]
-  (if-let [program (read-metadata-file (str program-metadata-directory "/" program-id "/" program-filename))]
-    (let [program (assoc program :program-id program-id)]   ; Note: this assoc has to happen first, since (program-activities-metadata) depends on it.
-      (assoc program
-             :github-url               (if (:github-org program) (str "https://github.com/" (:github-org program)))
-             :pmc-github-urls          (pmc-github-urls program)
-             :activities               (program-activities-metadata program)
-             :pmc-mailing-list         (expand-mailing-list-address (:pmc-mailing-list-address         program))
-             :pmc-private-mailing-list (expand-mailing-list-address (:pmc-private-mailing-list-address program))
-             :program-mailing-list     (expand-mailing-list-address (:program-mailing-list-address     program))
-             :confluence-space         (expand-confluence-space-key (:confluence-space-key             program))))))
+  (if (= "toplevel" program-id)
+    (assoc toplevel-program-metadata
+     :activities (program-activities-metadata toplevel-program-metadata))
+    (if-let [program (read-metadata-file (str program-metadata-directory "/" program-id "/" program-filename))]
+      (let [program (assoc program :program-id program-id)]   ; Note: this assoc has to happen first, since (program-activities-metadata) depends on it.
+        (assoc program
+               :github-url               (if (:github-org program) (str "https://github.com/" (:github-org program)))
+               :pmc-github-urls          (pmc-github-urls program)
+               :activities               (program-activities-metadata program)
+               :pmc-mailing-list         (expand-mailing-list-address (:pmc-mailing-list-address         program))
+               :pmc-private-mailing-list (expand-mailing-list-address (:pmc-private-mailing-list-address program))
+               :program-mailing-list     (expand-mailing-list-address (:program-mailing-list-address     program))
+               :confluence-space         (expand-confluence-space-key (:confluence-space-key             program)))))))
 (def program-metadata (memoize program-metadata-fn))
 
 (defn programs-metadata
@@ -287,6 +307,24 @@
   "A seq containing the metadata of all activities, regardless of program."
   []
   (sort-by :activity-name (remove nil? (mapcat :activities (programs-metadata)))))
+
+(defn- to-top-level
+  "Cast a program to top-level, if disbanded"
+  [program]
+  (if (:disbanded program)
+    (assoc
+     (program-metadata "toplevel")
+     :activities
+     (map #(assoc % :program-short-name "TopLevel") (:activities program)))
+    program))
+
+(defn activities-metadata-after-disband
+  "A seq containing the metadata of all activities, regardless of program, after the program disband."
+  []
+  (sort-by :activity-name 
+           (remove nil? 
+                   (mapcat :activities 
+                           (map #(to-top-level %) (programs-metadata))))))
 
 (defn activity-metadata
   "The metadata for a specific activity."

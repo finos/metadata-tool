@@ -17,6 +17,7 @@
 (ns metadata-tool.tools.generators
   (:require [clojure.tools.logging            :as log]
             [clojure.string                   :as s]
+            [clojure.pprint                   :as pp]
             [clojure.set                      :as set]
             [clojure.java.io                  :as io]
             [clj-yaml.core                    :as yaml]
@@ -25,14 +26,28 @@
             [metadata-tool.sources.github     :as gh]
             [metadata-tool.sources.metadata   :as md]))
 
+(def crunchbase-prefix "https://www.crunchbase.com/organization/")
+(def finos-crunchbase (str crunchbase-prefix "symphony-software-foundation"))
+
 (defn invite-clas-to-finos-org
   []
-  (let [cla-ids    (set (map #(first (:github-logins %)) (md/people-with-clas)))
+  (let [cla-ids    (set (remove nil?
+                                (map #(first (:github-logins %))
+                                     (remove #(:is-bot %) (md/people-with-clas)))))
         gh-members (set (map :login (gh/org-members "finos")))
-        pending    (set (map :login  (gh/pending-invitations "finos")))
-        to-invite  (set/difference cla-ids (set/join gh-members pending))]
-    (println "Inviting " (count to-invite) " CLA signed GitHub users to github.com/orgs/finos/people")
-    (map #(gh/invite-member "finos" %) to-invite)))
+        pending    (set (map #(get % "login")  (gh/pending-invitations "finos")))
+        to-flag    (set/difference (set/union pending gh-members) cla-ids)
+        to-invite  (set/difference cla-ids (set/union pending gh-members))]
+        ; invitee-email  (map #(first (:email-addresses (md/person-metadata-by-github-login (s/trim %)))) to-invite)]
+    (println "Inviting CLA signed GitHub users to github.com/orgs/finos/people")
+    (println "Pending invitation: " (count pending))
+    (println "FINOS members: " (count gh-members))
+    (println "CLA covered people: " (count cla-ids))
+    (println "Members with no CLA: " to-flag)
+    (println "To invite: " (count to-invite))
+    ; (println "Invite emails...")
+    ; (doall (for [email invitee-email] (println email ",")))
+    (doall (for [user to-invite] (gh/invite-member "finos" user)))))
 
 (defn gen-clabot-whitelist
   []
@@ -51,10 +66,24 @@
         as-string (str "[" (s/join "," as-strings) "]")]
     (println as-string)))
 
+(defn add-gh-id-email
+  [person]
+  (let [emails    (remove nil? (:email-addresses person))
+        usernames (remove nil? (:github-logins person))
+        gh-emails (map #(str % "@users.noreply.github.com") usernames)
+        user-ids  (map #(assoc {}
+                               :user %
+                               :id   (gh/user-id %)) usernames)
+        user-ids-nn (remove #(s/blank? (str (:id %))) user-ids)
+        email-ids (map #(str (:id %) "+" (:user %) "@users.noreply.github.com") user-ids-nn)
+        all-emails (apply sorted-set (set (concat emails gh-emails email-ids)))]
+    (assoc person :email-addresses all-emails)))
+
 (defn gen-bitergia-affiliation-data
   []
   (println (tem/render "bitergia-affiliations.ftl"
-                       {:people (md/people-metadata-with-organizations)})))
+                       {:people (map #(add-gh-id-email %) 
+                                     (md/people-metadata-with-organizations))})))
 
 (defn gen-bitergia-organization-data
   []
@@ -65,7 +94,7 @@
   []
   (println (tem/render "bitergia-projects.ftl"
                        {:programs   (md/programs-metadata)
-                        :activities (md/activities-metadata)})))
+                        :activities (md/activities-metadata-after-disband)})))
 
 (defn- build-github-repo-data
   [repo-url]
@@ -100,17 +129,26 @@
      :open-issues   (apply +                      (map :open-issues   github-repos))
      :languages     (apply (partial merge-with +) (map :languages     github-repos))}))
 
+(defn- get-home-page
+  [program]
+  (if (some? (:confluence-space program))
+    (:url (:confluence-space program))
+    "https://finos.org"))
+
 (defn gen-catalogue-data
   []
-  (let [activities-data (for [program-metadata  (md/programs-metadata)
-                              activity-metadata (:activities program-metadata)]
-                          (let [github-repos (keep build-github-repo-data (:github-urls activity-metadata))]
-                            (assoc activity-metadata
-                                   :program-name            (:program-name           program-metadata)
-                                   :program-short-name      (:program-short-name     program-metadata)
-                                   :program-home-page       (:url (:confluence-space program-metadata))
-                                   :github-repos            github-repos
-                                   :cumulative-github-stats (accumulate-github-stats github-repos))))]
+  (let [toplevel-program (md/program-metadata "toplevel")
+        activities-data  (for [program-metadata  (md/programs-metadata)
+                               activity-metadata (:activities program-metadata)]
+                           (let [is-toplevel  (:disbanded program-metadata)
+                                 program (if is-toplevel toplevel-program program-metadata)
+                                 github-repos (keep build-github-repo-data (:github-urls activity-metadata))]
+                             (assoc activity-metadata
+                                    :program-name            (:program-name           program)
+                                    :program-short-name      (:program-short-name     program)
+                                    :program-home-page       (get-home-page program)
+                                    :github-repos            github-repos
+                                    :cumulative-github-stats (accumulate-github-stats github-repos))))]
     (println (tem/render "catalogue.ftl"
                          {:activities activities-data
                           :all-tags   (md/all-activity-tags)}))))
@@ -152,7 +190,13 @@
           people  (map #(assoc
                          (md/person-metadata-by-github-login (s/trim %))
                          :gh-username %)
-                       (s/split (:attendants data) #","))
+                       ; using assignees - deprecated
+                       ;  (s/split (:attendants data) #","))
+                       ; using commenters
+                       (gh/issue-commenters
+                        (:issueNumber data)
+                        (:org data)
+                        (:repo data)))
           attendants (filter #(not (nil? (:person-id %))) people)
           not-on-file (map :gh-username (filter #(nil? (:person-id %)) people))
           not-on-file-ids (map #(str "@" (s/trim %)) not-on-file)
@@ -164,8 +208,9 @@
           exist   (first delta)
           new     (second delta)
           action  (:action data)]
-      (println "WARN - Couldn't find the following GitHub usernames on file:" not-on-file-ids)
-      (if (not (empty? not-on-file-ids))
+      (if (not-empty not-on-file-ids)
+        (println "WARN - Couldn't find the following GitHub usernames on file:" not-on-file-ids))
+      (if (not-empty not-on-file-ids)
         (with-open [writer (psrs/get-writer "./github-finos-meetings-unknowns.txt")]
           (.write writer (s/join ", " not-on-file-ids))))
       (if (= action "add")
@@ -181,17 +226,19 @@
 (defn- landscape-format
   "Returns project metadata in landscape format"
   [project]
-  (apply array-map 
-         (concat [:item nil] 
-                 (flatten 
-                  (seq {:name (:activity-name project)
-                        :homepage_url (first (:github-urls project))
-                        :repo_url (first (:github-urls project))
-                        :logo "project-placeholder.svg"
-                        ; :twitter "https://twitter.com/finosfoundation"
-                        ; :crunchbase nil
-                        :category (:program-name project)
-                        :subcategory (first (:tags project))})))))
+  (if (some? (:category project))
+    (assoc {}
+           :item []
+           :name (:activity-name project)
+           :homepage_url (first (:github-urls project))
+           :repo_url (first (:github-urls project))
+           :logo "project-placeholder.svg"
+           :crunchbase finos-crunchbase
+           ; :twitter "https://twitter.com/finosfoundation"
+           ; TODO - how do we map project types?
+           ; :types (:taxonomy-types project)
+           :category (:category project)
+           :subcategory (:sub-category project))))
 
 (defn- clean-item
   ""
@@ -213,7 +260,7 @@
   [category]
   (let [sub-cats (group-by :subcategory category)]
     (map #(assoc {} 
-                 :subcategory nil
+                 :subcategory []
                  :name (get-name (first %))
                  :items (clean-items (second %))) sub-cats)))
 
@@ -221,23 +268,45 @@
   ""
   [categories]
   (map #(assoc {} 
-               :category nil
+               :category []
                :name (first %)
                :subcategories (get-subcategories (second %)))
        (seq categories)))
 
-(defn- get-projects
-  "Returns projects"
-  []
-  (let [raw (md/activities-metadata)
-        new-fields         (map #(assoc (landscape-format %) :item nil) raw)
-        by-category        (group-by :category new-fields)
-        by-sub-categories  (group-by-sub by-category)]
-    {:landscape by-sub-categories}))
+(defn format-member
+  [org]
+  (let [item {:item []
+              :name         (:organization-name org)
+              :homepage_url (str "https://www." (first (:domains org)))
+              :logo         "twitter.svg"
+              :crunchbase   (str crunchbase-prefix (:crunchbase org))}]
+  (if (contains? org :stock-ticker)
+    (assoc item :stock_ticker (:stock-ticker org))
+    item)))
+
+(defn format-members
+  [orgs]
+  {:category []
+   :name "FINOS Foundation Member"
+   :subcategories [{:subcategory []
+                    :name "General"
+                    :items (map #(format-member %) orgs)}]})
 
 (defn gen-project-landscape
   "Generates a landscape.yml, using Programs as categories and tags as subcategories"
   []
-  ; (pp/pprint (get-projects)))
-  (with-open [w (io/writer "landscape.yml" :append true)]
-    (.write w (yaml/generate-string (get-projects)))))
+  (let [raw (md/activities-metadata)
+        projects           (remove nil? (map #(landscape-format %) raw))
+        members            (remove #(nil? (:membership %)) (md/organizations-metadata))
+        finos-members      (format-members members)
+        by-category        (group-by :category projects)
+        by-sub-categories  (group-by-sub by-category)
+        add-static-entries (concat by-sub-categories [finos-members])]
+    ; (pp/pprint (get-projects)))
+    (with-open [w (io/writer "landscape.yml" :append true)]
+      (.write w 
+              (str 
+               "# NOTE! This file is automatically generated by github.com/finos/metadata-tool AND pushed to GitHub; any manual change could be overridden at any time.\n\n"
+              (s/replace 
+               (yaml/generate-string {:landscape add-static-entries})
+               " []" ""))))))

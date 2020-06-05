@@ -1,0 +1,16 @@
+name: dependency-updates
+
+on:
+  # Scan for updated dependencies weekly
+  schedule:
+    - cron:  '0 0 * * 0'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout metadata
+      uses: actions/checkout@v2
+    - name: Lein ancient
+      run: lein ancient &
+  
