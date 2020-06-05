@@ -42,7 +42,7 @@
         [/#list]
       ]
     [/#if]
-  }[#if program.program_id != programs?last.program_id],[/#if][/#if][/#list][/#if]
+  }[#if program.program_id != programs?last.program_id && program.program_id !=  "toplevel"],[/#if][/#if][/#list][/#if]
   [#if activities?? && activities?size > 0],[#list activities as activity]
   "${activity.activity_name}" : {
     "meta"       : { "title"   : "${activity.activity_name}",
