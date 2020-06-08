@@ -27,7 +27,6 @@
             [metadata-tool.sources.metadata   :as md]))
 
 (def crunchbase-prefix "https://www.crunchbase.com/organization/")
-(def finos-crunchbase (str crunchbase-prefix "symphony-software-foundation"))
 
 (defn invite-clas-to-finos-org
   []
@@ -233,7 +232,6 @@
            :homepage_url (first (:github-urls project))
            :repo_url (first (:github-urls project))
            :logo "project-placeholder.svg"
-           :crunchbase finos-crunchbase
            ; :twitter "https://twitter.com/finosfoundation"
            ; TODO - how do we map project types?
            ; :types (:taxonomy-types project)
@@ -285,9 +283,9 @@
     item)))
 
 (defn format-members
-  [orgs]
+  [orgs tier]
   {:category []
-   :name "FINOS Foundation Member"
+   :name (str "FINOS " tier " Member")
    :subcategories [{:subcategory []
                     :name "General"
                     :items (map #(format-member %) orgs)}]})
@@ -297,11 +295,13 @@
   []
   (let [raw (md/activities-metadata)
         projects           (remove nil? (map #(landscape-format %) raw))
-        members            (remove #(nil? (:membership %)) (md/organizations-metadata))
-        finos-members      (format-members members)
+        orgs               (md/organizations-metadata)
+        plat-members       (format-members (filter #(= "platinum" (:membership %)) orgs) "Platinum")
+        gold-members       (format-members (filter #(= "gold" (:membership %)) orgs) "Gold")
+        silv-members       (format-members (filter #(= "silver" (:membership %)) orgs) "Silver")
         by-category        (group-by :category projects)
         by-sub-categories  (group-by-sub by-category)
-        add-static-entries (concat by-sub-categories [finos-members])]
+        add-static-entries (concat by-sub-categories [plat-members gold-members silv-members])]
     ; (pp/pprint (get-projects)))
     (with-open [w (io/writer "landscape.yml" :append true)]
       (.write w 
