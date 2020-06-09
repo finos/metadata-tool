@@ -273,7 +273,7 @@
 
 (defn format-member
   [org]
-  (let [item {:item []
+  (let [item {:organization []
               :name         (:organization-name org)
               :homepage_url (str "https://www." (first (:domains org)))
               :logo         "twitter.svg"
