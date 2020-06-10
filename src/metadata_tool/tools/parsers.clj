@@ -227,8 +227,6 @@
 
 (defn get-csv-delta
   [new-csv]
-  (println "new-csv")
-  (println new-csv)
   (with-open
    [reader (io/reader "./github-finos-meetings.csv")]
     (let [items     (set (map #(csv-item-to-str %) (csv/read-csv reader)))
@@ -240,14 +238,19 @@
 
 (defn single-attendance
   [person project meeting-date]
-  {:email (first (:email-addresses person))
-   :name (:full-name person)
-   :org (or (:organization-name (first (md/current-affiliations (:person-id person)))))
-   :ghid (or (first (:github-logins person)))
-   :program (:program-short-name project)
-   :activity (:activity-name project)
-   :type (:type project)
-   :meeting-date meeting-date})
+  (if-let [email
+           (cond
+             (> (count (:email-addresses person)) 0) (first (:email-addresses person))
+             (> (count (:github-logins person)) 0) (str (first (:github-logins person))
+                                                        "@users.noreply.github.com"))]
+    {:email email
+     :name (:full-name person)
+     :org (or (:organization-name (first (md/current-affiliations (:person-id person)))))
+     :ghid (or (first (:github-logins person)))
+     :program (:program-short-name project)
+     :activity (:activity-name project)
+     :type (:type project)
+     :meeting-date meeting-date}))
 
 (defn remove-existing-entries
   [to-remove current]
