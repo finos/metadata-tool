@@ -20,6 +20,7 @@
             [clojure.pprint                   :as pp]
             [clojure.set                      :as set]
             [clojure.java.io                  :as io]
+            [metadata-tool.config             :as cfg]
             [clj-yaml.core                    :as yaml]
             [metadata-tool.tools.parsers      :as psrs]
             [metadata-tool.template           :as tem]
@@ -35,15 +36,19 @@
                                      (remove #(:is-bot %) (md/people-with-clas)))))
         gh-members (set (map :login (gh/org-members "finos")))
         pending    (set (map #(get % "login")  (gh/pending-invitations "finos")))
+        skip-email (set (:org-invite-bl cfg/config))
+        skip-ppl   (map #(md/person-metadata-by-email-address-fn %) skip-email)
+        skip-users (set (flatten (map #(first (:github-logins %)) skip-ppl)))
         to-flag    (set/difference (set/union pending gh-members) cla-ids)
-        to-invite  (set/difference cla-ids (set/union pending gh-members))]
+        to-invite  (set/difference cla-ids (set/union pending gh-members skip-users))]
         ; invitee-email  (map #(first (:email-addresses (md/person-metadata-by-github-login (s/trim %)))) to-invite)]
     (println "Inviting CLA signed GitHub users to github.com/orgs/finos/people")
-    (println "Pending invitation: " (count pending))
-    (println "FINOS members: " (count gh-members))
-    (println "CLA covered people: " (count cla-ids))
-    (println "Members with no CLA: " to-flag)
-    (println "To invite: " (count to-invite))
+    (println "Blacklisted users:" (count skip-users))
+    (println "Pending invitation:" (count pending))
+    (println "FINOS members:" (count gh-members))
+    (println "CLA covered people:" (count cla-ids))
+    (println "Members with no CLA -" (count to-flag) "-" to-flag)
+    (println "To invite:" (count to-invite))
     ; (println "Invite emails...")
     ; (doall (for [email invitee-email] (println email ",")))
     (doall (for [user to-invite] (gh/invite-member "finos" user)))))
