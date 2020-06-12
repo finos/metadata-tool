@@ -236,7 +236,7 @@
            :name (:activity-name project)
            :homepage_url (first (:github-urls project))
            :repo_url (first (:github-urls project))
-           :logo "project-placeholder.svg"
+           :logo (str (:activity-name project) ".svg")
            ; :twitter "https://twitter.com/finosfoundation"
            ; TODO - how do we map project types?
            ; :types (:taxonomy-types project)
@@ -278,11 +278,12 @@
 
 (defn format-member
   [org]
-  (let [item {:organization []
+  (let [item {:item []
               :name         (:organization-name org)
               :homepage_url (str "https://www." (first (:domains org)))
               :logo         "twitter.svg"
-              :crunchbase   (str crunchbase-prefix (:crunchbase org))}]
+              :crunchbase   (str crunchbase-prefix (:crunchbase org))
+              :organization {:name (:organization-name org)}}]
   (if (contains? org :stock-ticker)
     (assoc item :stock_ticker (:stock-ticker org))
     item)))
