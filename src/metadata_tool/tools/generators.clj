@@ -20,6 +20,7 @@
             [clojure.pprint                   :as pp]
             [clojure.set                      :as set]
             [clojure.java.io                  :as io]
+            [metadata-tool.sources.bitergia   :as bi]
             [metadata-tool.config             :as cfg]
             [clj-yaml.core                    :as yaml]
             [metadata-tool.tools.parsers      :as psrs]
@@ -247,7 +248,8 @@
            ; TODO - how do we map project types?
            ; :types (:taxonomy-types project)
            :category (:category project)
-           :subcategory (:sub-category project))))
+           :subcategory (:sub-category project)
+           :organization {:name "FINOS"})))
 
 (defn- clean-item
   ""
@@ -288,9 +290,7 @@
               :name         (:organization-name org)
               :homepage_url (str "https://www." (first (:domains org)))
               :logo         "twitter.svg"
-              :crunchbase   (str crunchbase-prefix (:crunchbase org))
-              :organization {
-                             :name (:organization-name org)}}]
+              :crunchbase   (str crunchbase-prefix (:crunchbase org))}]
   (if (contains? org :stock-ticker)
     (assoc item :stock_ticker (:stock-ticker org))
     item)))
@@ -303,6 +303,17 @@
                     :name "General"
                     :items (map #(format-member %) orgs)}]})
 
+(def finos-cat
+  {:category []
+   :name "FINOS"
+   :subcategories [{:subcategory []
+                    :name "General"
+                    :items [{:item []
+                             :name         "FINOS"
+                             :homepage_url "https://www.finos.org"
+                             :logo         "twitter.svg"
+                             :crunchbase   "https://www.crunchbase.com/organization/symphony-software-foundation"}]}]})
+
 (defn gen-project-landscape
   "Generates a landscape.yml, using Programs as categories and tags as subcategories"
   []
@@ -314,7 +325,7 @@
         silv-members       (format-members (filter #(= "silver" (:membership %)) orgs) "Silver")
         by-category        (group-by :category projects)
         by-sub-categories  (group-by-sub by-category)
-        add-static-entries (concat by-sub-categories [plat-members gold-members silv-members])]
+        add-static-entries (concat by-sub-categories [finos-cat plat-members gold-members silv-members])]
     ; (pp/pprint (get-projects)))
     (with-open [w (io/writer "landscape.yml" :append true)]
       (.write w 
