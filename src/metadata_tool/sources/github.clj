@@ -132,11 +132,20 @@
 
 (defn pending-invitations-fn
   "Returns the list of pending invitations for a given org"
-  [org-name]
-  (call-gh
-   (let [new-opts (assoc opts :basic-auth (:auth opts))
-         url (str "https://api.github.com/orgs/" org-name "/invitations")]
-    (json/read-str (call-gh (:body (http/get url new-opts)))))))
+  ([org-name] (pending-invitations-fn org-name 0))
+  ([org-name & [page]]
+   (call-gh
+    (let [new-opts (assoc opts
+                          :basic-auth (:auth opts)
+                          :per-page 100)
+          url      (str "https://api.github.com/orgs/" org-name "/invitations?page=" page)
+          items    (json/read-str (call-gh (:body (http/get url new-opts))))]
+      (if (empty? items)
+        []
+        (flatten (concat 
+                  items 
+                  (pending-invitations-fn org-name (inc page)))))))))
+
 (def pending-invitations (memoize pending-invitations-fn))
 
 (defn invite-member
