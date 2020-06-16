@@ -44,7 +44,7 @@
         to-invite  (set/difference cla-ids (set/union pending gh-members skip-users))]
         ; invitee-email  (map #(first (:email-addresses (md/person-metadata-by-github-login (s/trim %)))) to-invite)]
     (println "Inviting CLA signed GitHub users to github.com/orgs/finos/people")
-    (println "Blacklisted users:" (count skip-users))
+    (println "Invitations to skip:" (count skip-users))
     (println "Pending invitation:" (count pending))
     (println "FINOS members:" (count gh-members))
     (println "CLA covered people:" (count cla-ids))
