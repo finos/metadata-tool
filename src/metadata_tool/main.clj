@@ -72,9 +72,9 @@
     (if (.exists (io/file path))
       (a/read-config path))))
 
-(defn- get-org-invite-bl
+(defn- get-invite-config
   [options]
-  (let [path (str (:metadata-directory options) "/gh-org-invite-bl.edn")]
+  (let [path (str (:metadata-directory options) "/gh-org-invite.edn")]
     (if (.exists (io/file path))
       (a/read-config path))))
 
@@ -82,7 +82,8 @@
   [& args]
   (log/info "metadata-tool started")
   (try
-    (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-opts)]
+    (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-opts)
+          invite-config (get-invite-config options)]
       (cond
         (:help options)    (exit 0 (usage summary))
         (empty? arguments) (exit 1 (usage summary))
@@ -93,7 +94,8 @@
                                                  :metadata-directory (:metadata-directory options)
                                                  :projects-directory (:projects-directory options)
                                                  :meetings (get-meetings-config options)
-                                                 :org-invite-bl      (get-org-invite-bl options)
+                                                 :skip-invites       (:skip-invitations invite-config)
+                                                 :enable-auto-invite (:enabled invite-config)
                                                  :github-revision    (:github-revision    options)
                                                  :email-override     (boolean (:email-override options)))))
       (let [tools-to-run (map str/lower-case arguments)]

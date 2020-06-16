@@ -32,27 +32,36 @@
 
 (defn invite-clas-to-finos-org
   []
-  (let [cla-ids    (set (remove nil?
+  (let [member-ids (set (remove nil?
                                 (map #(first (:github-logins %))
                                      (remove #(:is-bot %) (md/people-with-clas)))))
+        all-ids    (set (remove nil?
+                                (map #(first (:github-logins %))
+                                     (md/people-with-clas))))
         gh-members (set (map :login (gh/org-members "finos")))
         pending    (set (map #(get % "login")  (gh/pending-invitations "finos")))
-        skip-email (set (:org-invite-bl cfg/config))
+        skip-email (set (:skip-invites cfg/config))
         skip-ppl   (map #(md/person-metadata-by-email-address-fn %) skip-email)
         skip-users (set (flatten (map #(first (:github-logins %)) skip-ppl)))
-        to-flag    (set/difference (set/union pending gh-members) cla-ids)
-        to-invite  (set/difference cla-ids (set/union pending gh-members skip-users))]
-        ; invitee-email  (map #(first (:email-addresses (md/person-metadata-by-github-login (s/trim %)))) to-invite)]
+        to-flag    (set/difference (set/union pending gh-members) all-ids)
+        to-invite  (set/difference member-ids (set/union pending gh-members skip-users))]
+        ;; Extract emails
+        ;; invitee-email  (map #(first (:email-addresses (md/person-metadata-by-github-login (s/trim %)))) to-invite)]
     (println "Inviting CLA signed GitHub users to github.com/orgs/finos/people")
     (println "Invitations to skip:" (count skip-users))
     (println "Pending invitation:" (count pending))
     (println "FINOS members:" (count gh-members))
-    (println "CLA covered people:" (count cla-ids))
+    (println "CLA covered people:" (count member-ids))
+    (println "All CLAs on file (includes bots):" (count all-ids))
     (println "Members with no CLA -" (count to-flag) "-" to-flag)
-    (println "To invite:" (count to-invite))
-    ; (println "Invite emails...")
-    ; (doall (for [email invitee-email] (println email ",")))
-    (doall (for [user to-invite] (gh/invite-member "finos" user)))))
+    (println (str "To invite: (" (count to-invite) ") " to-invite))
+    (println "Invitation enabled?" (:enable-auto-invite cfg/config))
+    ;; Extract emails
+    ;; (println "Invite emails...")
+    ;; (doall (for [email invitee-email] (println email ",")))
+    (if (:enable-auto-invite cfg/config)
+      (doall (for [user to-invite] (gh/invite-member "finos" user)))
+      (println "Skipping invitation sending by configuration"))))
 
 (defn gen-clabot-whitelist
   []
