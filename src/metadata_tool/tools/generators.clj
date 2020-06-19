@@ -243,6 +243,12 @@
       logo
       "project-placeholder.svg"))
 
+(defn- get-org-logo
+  [org]
+    (if-let [logo (:logo org)]
+      logo
+      "finos.svg"))
+
 (defn- landscape-format
   "Returns project metadata in landscape format"
   [project]
@@ -253,8 +259,6 @@
            :homepage_url (first (:github-urls project))
            :repo_url (first (:github-urls project))
            :logo (get-project-logo project)
-           ; :twitter "https://twitter.com/finosfoundation"
-           ; TODO - how do we map project types?
            ; :types (:taxonomy-types project)
            :category (:category project)
            :subcategory (:sub-category project)
@@ -298,7 +302,7 @@
   (let [item {:item []
               :name         (:organization-name org)
               :homepage_url (str "https://www." (first (:domains org)))
-              :logo         "twitter.svg"
+              :logo         (get-org-logo org)
               :crunchbase   (str crunchbase-prefix (:crunchbase org))}]
   (if (contains? org :stock-ticker)
     (assoc item :stock_ticker (:stock-ticker org))
@@ -320,7 +324,7 @@
                     :items [{:item []
                              :name         "FINOS"
                              :homepage_url "https://www.finos.org"
-                             :logo         "twitter.svg"
+                             :logo         "finos.svg"
                              :crunchbase   "https://www.crunchbase.com/organization/symphony-software-foundation"}]}]})
 
 (defn gen-project-landscape
