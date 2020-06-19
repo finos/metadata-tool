@@ -241,7 +241,7 @@
   [project]
     (if-let [logo (:logo project)]
       logo
-      "project-placeholder.svg"))
+      "finos.svg"))
 
 (defn- get-org-logo
   [org]
