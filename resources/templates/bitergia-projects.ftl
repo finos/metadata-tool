@@ -42,7 +42,8 @@
         [/#list]
       ]
     [/#if]
-  }[#if program.program_id != programs?last.program_id || program.program_id != "toplevel"],[/#if][/#if][/#list][/#if]
+  }[#if program.program_id != programs?last.program_id || program.program_id != "toplevel"],
+  [/#if][/#if][/#list][/#if]
   [#if activities?? && activities?size > 0][#list activities as activity]
   "${activity.activity_name}" : {
     "meta"       : { "title"   : "${activity.activity_name}",
@@ -77,5 +78,6 @@
                      [@bitergia_address mailing_list_address=mailing_list_address /][#if mailing_list_address != activity.mailing_list_addresses?last],[/#if]
       [/#list]
                    ][/#if]
-  }[#if activity.activity_id != activities?last.activity_id],[/#if][/#list][/#if]
+  }[#if activity.activity_id != activities?last.activity_id],
+  [/#if][/#list][/#if]
 }
