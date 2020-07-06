@@ -18,6 +18,7 @@
   (:require [clojure.string                :as str]
             [clojure.tools.logging         :as log]
             [clojure.java.io               :as io]
+            [clojure.pprint                :as pp]
             [mount.core                    :as mnt :refer [defstate]]
             [cheshire.core                 :as ch]
             [clj-time.core                 :as tm]
@@ -325,6 +326,26 @@
            (remove nil? 
                    (mapcat :activities 
                            (map #(to-top-level %) (programs-metadata))))))
+
+(defn project-lead
+  "Returns a project and lead data"
+  [project]
+  (let [lead-raw   (:lead-or-chair project)
+        ret (assoc {}
+                   :project (:activity-name project)
+                   :state (:state project)
+                   :full-name (:full-name lead-raw)
+                   :email (first (:email-addresses lead-raw))
+                   :github (first (:github-logins lead-raw)))]
+        ret))
+(defn project-leads
+  "Returns the list of projects and lead data"
+  []
+  (let [projects   (activities-metadata-after-disband)
+        with-leads (map #(project-lead %)
+                        (remove #(= (:state %) "ARCHIVED") projects))]
+    ;; with-leads))
+    (map :github with-leads)))
 
 (defn activity-metadata
   "The metadata for a specific activity."

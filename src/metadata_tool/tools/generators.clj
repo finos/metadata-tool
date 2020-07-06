@@ -347,3 +347,8 @@
               (s/replace 
                (yaml/generate-string {:landscape add-static-entries} :dumper-options {:flow-style :block})
                " []" ""))))))
+
+(defn list-project-leads
+  "Returns the list of projects and lead data"
+  []
+  (println (psrs/to-json (md/project-leads))))

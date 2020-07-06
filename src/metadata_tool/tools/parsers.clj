@@ -195,6 +195,10 @@
   [path]
   (json/read-str (slurp path)))
 
+(defn to-json
+  [o]
+  (json/write-str o))
+
 (defn get-reader
   [path]
   (io/reader path))
