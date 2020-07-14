@@ -252,17 +252,21 @@
 (defn- landscape-format
   "Returns project metadata in landscape format"
   [project]
-  (if (some? (:category project))
-    (assoc {}
-           :item []
-           :name (:activity-name project)
-           :homepage_url (first (:github-urls project))
-           :repo_url (first (:github-urls project))
-           :logo (get-project-logo project)
-           ; :types (:taxonomy-types project)
-           :category (:category project)
-           :subcategory (:sub-category project)
-           :organization {:name "FINOS"})))
+  (if-let [cat  (:category project)]
+    (let [repos (:github-urls project)
+          addit (rest repos)
+          raw   (assoc {}
+                        :item []
+                        :name (:activity-name project)
+                        :homepage_url (or (:homepage project) (first repos))
+                        :repo_url (first repos)
+                        :logo (get-project-logo project)
+                        ; :types (:taxonomy-types project)
+                        :category cat
+                        :subcategory (:sub-category project)
+                        :organization {:name "FINOS"})
+          final (if (empty? addit) raw (assoc raw :additional_repos addit))]
+      final)))
 
 (defn- clean-item
   ""
