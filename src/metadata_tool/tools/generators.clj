@@ -315,7 +315,7 @@
 (defn format-member-tier
   [orgs tier]
   {:subcategory []
-   :name (str "FINOS " tier " Members")
+   :name (str tier)
    :items (map #(format-member %) orgs)})
 
 (defn format-members
