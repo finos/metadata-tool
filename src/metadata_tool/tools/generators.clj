@@ -254,7 +254,7 @@
   [project]
   (if-let [cat  (:category project)]
     (let [repos (:github-urls project)
-          addit (rest repos)
+          addit (map #(assoc {} :repo_url %) (rest repos))
           raw   (assoc {}
                         :item []
                         :name (:activity-name project)
