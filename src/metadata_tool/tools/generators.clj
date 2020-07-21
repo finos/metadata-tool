@@ -264,7 +264,7 @@
                         ; :types (:taxonomy-types project)
                         :category cat
                         :subcategory (:sub-category project)
-                        :organization {:name "FINOS"})
+                        :organization {:name "Finos"})
           final (if (empty? addit) raw (assoc raw :additional_repos addit))]
       final)))
 
@@ -328,11 +328,11 @@
 
 (def finos-cat
   {:category []
-   :name "FINOS"
+   :name "Finos"
    :subcategories [{:subcategory []
                     :name "General"
                     :items [{:item []
-                             :name         "FINOS"
+                             :name         "Finos"
                              :homepage_url "https://www.finos.org"
                              :logo         "finos.svg"
                              :crunchbase   "https://www.crunchbase.com/organization/symphony-software-foundation"}]}]})
