@@ -335,7 +335,7 @@
                              :name         "Finos"
                              :homepage_url "https://www.finos.org"
                              :logo         "finos.svg"
-                             :crunchbase   "https://www.crunchbase.com/organization/symphony-software-foundation"}]}]})
+                             :crunchbase   "https://www.crunchbase.com/organization/finos-foundation"}]}]})
 
 (defn gen-project-landscape
   "Generates a landscape.yml, using Programs as categories and tags as subcategories"
