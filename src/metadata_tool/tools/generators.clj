@@ -249,7 +249,7 @@
       logo
       "finos.svg"))
 
-(defn- landscape-format
+(defn- format-project
   "Returns project metadata in landscape format"
   [project]
   (if-let [cat  (:category project)]
@@ -259,6 +259,7 @@
                         :item []
                         :name (:activity-name project)
                         :homepage_url (or (:homepage project) (first repos))
+                        :project (s/lower-case (:state project))
                         :repo_url (first repos)
                         :logo (get-project-logo project)
                         ; :types (:taxonomy-types project)
@@ -341,7 +342,7 @@
   "Generates a landscape.yml, using Programs as categories and tags as subcategories"
   []
   (let [raw (md/activities-metadata)
-        projects           (remove nil? (map #(landscape-format %) raw))
+        projects           (remove nil? (map #(format-project %) raw))
         orgs               (md/organizations-metadata)
         members            (format-members orgs)
         by-category        (group-by :category projects)
