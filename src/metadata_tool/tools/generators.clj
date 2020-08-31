@@ -256,16 +256,18 @@
     (let [repos (:github-urls project)
           addit (map #(assoc {} :repo_url %) (rest repos))
           raw   (assoc {}
-                        :item []
-                        :name (:activity-name project)
-                        :homepage_url (or (:homepage project) (first repos))
-                        :project (s/lower-case (:state project))
-                        :repo_url (first repos)
-                        :logo (get-project-logo project)
+                       :item []
+                       :name (:activity-name project)
+                       :homepage_url (or (:homepage project) (first repos))
+                       :project (s/lower-case (:state project))
+                       :repo_url (first repos)
+                       :logo (get-project-logo project)
                         ; :types (:taxonomy-types project)
-                        :category cat
-                        :subcategory (:sub-category project)
-                        :organization {:name "FINOS"})
+                       :category cat
+                       :subcategory (:sub-category project)
+                       :crunchbase "https://www.crunchbase.com/organization/finos-foundation")
+                        ; Doesn't work with project badges - https://github.com/finos/finos-landscape/pull/56
+                        ; :organization {:name "FINOS"})
           final (if (empty? addit) raw (assoc raw :additional_repos addit))]
       final)))
 
