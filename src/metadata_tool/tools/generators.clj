@@ -334,3 +334,9 @@
               (s/replace 
                (yaml/generate-string {:landscape add-static-entries} :dumper-options {:flow-style :block})
                " []" ""))))))
+
+; WIP - see https://github.com/finos/open-developer-platform/issues/107
+(defn gen-project-reports
+  "Generates a report - in Markdown file - for each project, contained into reports/<project name>.md"
+  []
+  (pp/pprint (bi/project "Alloy")))

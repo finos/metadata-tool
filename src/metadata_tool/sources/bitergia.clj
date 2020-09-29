@@ -21,7 +21,8 @@
             [qbits.spandex         :as es]
             [metadata-tool.config  :as cfg]))
 
-(def ^:private bitergia-url                 "https://symphonyoss.biterg.io")   ; Note: no trailing / or spandex will assplode!
+(def ^:private bitergia-url                 "https://metrics.finos.org")   ; Note: no trailing / or spandex will assplode!
+(def ^:private global-search-endpoint       "/data/affiliations_custom/_search")
 (def ^:private git-search-endpoint          "/data/git/_search")
 (def ^:private github-search-endpoint       "/data/github_issues/_search")
 (def ^:private wiki-search-endpoint         "/data/confluence/_search")
@@ -39,7 +40,7 @@
 (def ^:private query-all-projects
   "This ElasticSearch query returns all projects known to Bitergia."
   {:size 0
-   :aggs {:projects {:terms {:field "project"
+   :aggs {:projects {:terms {:field "cm_title"
                              :size  1000}}}})
 
 (defn- all-projects-for-endpoint
@@ -50,6 +51,27 @@
               (:buckets (:projects (:aggregations (:body (es/request client {:url    endpoint
                                                                              :method :get
                                                                              :body   query-all-projects})))))))))
+
+(defn- project-contributors-query
+  "Returns an ElasticSearch query for all project contributors"
+  [project]
+  {:size 0
+   :_source {:includes [ "actor_name" "actor_org_name" "actor_org_name"]}
+  ;  :query {:constant_score {:filter {:term {:project project}}}}
+   :aggs {:contributor {:terms {:field "actor_uuid"
+                          :size 1000}}}})
+
+(defn project
+  "Returns the set of project names with activity tracked in Bitergia."
+  [project-name]
+  (set
+ (map #(str/trim (:key %))
+      (:buckets
+       (:projects
+        (:aggregations
+         (:body (es/request client {:url    global-search-endpoint
+                                    :method :get
+                                    :body   (project-contributors-query project-name)}))))))))
 
 (defn all-projects
   "Returns the set of project names with activity tracked in Bitergia."
