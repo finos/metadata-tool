@@ -48,6 +48,9 @@
   "${activity.activity_name}" : {
     "meta"       : { "title"   : "${activity.activity_name}",
                      "program" : "${activity.program_short_name}",
+                     [#if activity.formation_date??]
+                     "formed" : "${activity.formation_date}",
+                     [/#if]
                      "contributed" : "${activity.contribution_date}",
                      "state"   : "${activity.state}",
                      "type"    : "${activity.type}" }[#if activity.github_urls?? && activity.github_urls?size > 0],
