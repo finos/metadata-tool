@@ -346,11 +346,12 @@
   (let [raw (md/activities-metadata)
         projects           (remove nil? (map #(format-project %) raw))
         orgs               (md/organizations-metadata)
-        members            (format-members orgs)
+        ; members            (format-members orgs)
         by-category        (group-by :category projects)
         by-sub-categories  (group-by-sub by-category)
         add-static-entries (concat by-sub-categories 
-                                   [finos-cat members])
+                                  ;  [finos-cat members])
+                                   [finos-cat])
         yaml (yaml/generate-string {:landscape add-static-entries}
                                    :dumper-options {:flow-style :block})]
     ; (pp/pprint (get-projects)))
