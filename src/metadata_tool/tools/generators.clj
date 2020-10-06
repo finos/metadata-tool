@@ -344,7 +344,9 @@
   "Generates a landscape.yml, using Programs as categories and tags as subcategories"
   []
   (let [raw (md/activities-metadata)
-        projects           (remove nil? (map #(format-project %) raw))
+        projects           (remove #(= "archived" (:project %)) 
+                                   (remove nil? 
+                                           (map #(format-project %) raw)))
         orgs               (md/organizations-metadata)
         ; members            (format-members orgs)
         by-category        (group-by :category projects)
