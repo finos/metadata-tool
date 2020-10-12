@@ -370,4 +370,4 @@
 (defn list-project-leads
   "Returns the list of projects and lead data"
   []
-  (println (psrs/to-json (md/project-leads))))
+  (println (distinct (md/project-leads))))
