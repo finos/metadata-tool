@@ -31,6 +31,7 @@
    "list-schemas"                   tls/list-schemas
    "list-people-with-clas"          tls/list-people-with-clas
    "list-project-leads"             tgn/list-project-leads
+   "list-project-leads-emails"      tgn/list-project-leads-emails
    "gen-meeting-roster-data"        tgn/gen-meeting-roster-data
    "gen-meeting-github-roster-data" tgn/gen-meeting-github-roster-data
    "gen-bitergia-affiliation-data"  tgn/gen-bitergia-affiliation-data

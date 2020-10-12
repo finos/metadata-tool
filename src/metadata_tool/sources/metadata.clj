@@ -340,12 +340,14 @@
         ret))
 (defn project-leads
   "Returns the list of projects and lead data"
-  []
+  [& [use-emails]]
   (let [projects   (activities-metadata-after-disband)
         with-leads (map #(project-lead %)
                         (remove #(= (:state %) "ARCHIVED") projects))]
     ;; with-leads))
-    (map :github with-leads)))
+    (if use-emails
+      (map :email with-leads)
+      (map :github with-leads))))
 
 (defn activity-metadata
   "The metadata for a specific activity."

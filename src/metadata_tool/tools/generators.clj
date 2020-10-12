@@ -371,3 +371,8 @@
   "Returns the list of projects and lead data"
   []
   (println (distinct (md/project-leads))))
+
+(defn list-project-leads-emails
+  "Returns the list of project lead's main email address"
+  []
+  (println (distinct (md/project-leads true))))
