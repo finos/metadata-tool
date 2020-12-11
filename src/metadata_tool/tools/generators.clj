@@ -255,11 +255,13 @@
   (if-let [cat  (:category project)]
     (let [repos (:github-urls project)
           addit (map #(assoc {} :repo_url %) (rest repos))
+          state (s/lower-case (:state project))
+          badge (if (= "SIG" (:type project)) "sig" state)
           raw   (assoc {}
                        :item []
                        :name (:activity-name project)
                        :homepage_url (or (:homepage project) (first repos))
-                       :project (s/lower-case (:state project))
+                       :project badge
                        :repo_url (first repos)
                        :logo (get-project-logo project)
                         ; :types (:taxonomy-types project)
