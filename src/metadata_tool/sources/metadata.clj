@@ -389,6 +389,16 @@
   []
   (filter #(= (:type %) "PROJECT") (activities-metadata)))
 
+(defn sigs-metadata
+  "A seq containing the metadata of all activities of type SIG, regardless of program."
+  []
+  (filter #(= (:type %) "SIG") (activities-metadata)))
+
+(defn projects-sigs-metadata
+  "A seq containing the metadata of all activities of type PROJECT or SIG, regardless of program."
+  []
+  (flatten [(projects-metadata) (sigs-metadata)]))
+
 (defn working-groups-metadata
   "A seq containing the metadata of all activities of type WORKING_GROUP, regardless of program."
   []

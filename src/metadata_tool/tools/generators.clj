@@ -216,7 +216,7 @@
           not-on-file-ids (map #(str "@" (s/trim %)) not-on-file)
           project (first
                    (filter #(psrs/match-project % data)
-                           (md/projects-metadata)))
+                           (md/projects-sigs-metadata)))
           roster  (remove nil? (map #(psrs/single-attendance % project date) attendants))
           delta   (psrs/get-csv-delta roster)
           exist   (first delta)
