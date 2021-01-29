@@ -26,3 +26,6 @@ github-finos-meetings-remove.csv
 github-finos-meetings.csv
 landscape.yml
 meeting-attendance.json
+.clj-kondo
+.lsp
+cclas.json

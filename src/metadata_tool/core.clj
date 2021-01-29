@@ -27,6 +27,7 @@
   {"check-local"                    tch/check-local
    "check"                          tch/check
    "check-project-repos"            gr/check-repos
+   "export-cclas"                   tgn/export-cclas
    "invite-clas-to-finos-org"       tgn/invite-clas-to-finos-org
    "list-schemas"                   tls/list-schemas
    "list-people-with-clas"          tls/list-people-with-clas

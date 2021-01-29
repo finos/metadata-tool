@@ -30,6 +30,11 @@
 
 (def crunchbase-prefix "https://www.crunchbase.com/organization/")
 
+(defn export-cclas
+  []
+  (println (tem/render "export-cclas.ftl"
+                       {:organizations (md/organizations-metadata)})))
+
 (defn invite-clas-to-finos-org
   []
   (let [member-ids (set (remove nil?
