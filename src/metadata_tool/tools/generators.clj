@@ -286,10 +286,10 @@
     :name (:name initiative)
     :homepage_url (:homepage initiative)
     :project (:state initiative)
-    :repo_url (md/gitlab-url (:gitlab-repo initiative))
+    :repo_url (:github-repo initiative)
     :logo (:logo initiative)
     :category "Legend"
-    :subcategory "Model"
+    :subcategory "Modeling Initiatives"
     :crunchbase "https://www.crunchbase.com/organization/finos-foundation"
   })
 
