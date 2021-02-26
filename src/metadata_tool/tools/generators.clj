@@ -286,7 +286,7 @@
     :name (:name initiative)
     :homepage_url (:homepage initiative)
     :project (:state initiative)
-    :repo_url (:github-repo initiative)
+    :repo_url (:github-url initiative)
     :logo (:logo initiative)
     :category "Legend"
     :subcategory "Modeling Initiatives"
