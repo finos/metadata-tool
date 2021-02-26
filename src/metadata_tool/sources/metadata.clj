@@ -226,6 +226,11 @@
   [program repos & [activity-gh-org]]
   (seq (map #(str "https://github.com/" (get-gh-org activity-gh-org program) "/" %) repos)))
 
+(defn gitlab-url
+  [repo]
+  ;; TODO - change to gitlab.com/finos - when migration is completed
+  (str "https://gitlab.legend.finos.org/" repo))
+
 (defn- program-activity-github-urls
   [program activity]
   (github-urls program (:github-repos activity) (:github-org activity)))
