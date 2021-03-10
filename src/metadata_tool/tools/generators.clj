@@ -375,7 +375,9 @@
         legend-models      (map #(format-legend-model %) legend-initiatives)
         orgs               (md/organizations-metadata)
         members            (format-members orgs)
-        by-category        (group-by :category (concat projects legend-models))
+        ;; TODO - enable when https://github.com/cncf/landscapeapp/issues/712 is fixed
+        ;; by-category        (group-by :category (concat projects legend-models))
+        by-category        (group-by :category projects)
         by-sub-categories  (group-by-sub by-category)
         add-static-entries (concat by-sub-categories
                                    [finos-cat members])
