@@ -32,8 +32,6 @@
 (def crunchbase-prefix "https://www.crunchbase.com/organization/")
 
 (def landscape-yaml "https://raw.githubusercontent.com/finos/finos-landscape/master/landscape.yml")
-;; (def landscape-yaml "https://raw.githubusercontent.com/jmertic/finos-landscape/add-members/landscape.yml")
-
 
 (defn export-cclas
   []
@@ -329,40 +327,12 @@
                :subcategories (get-subcategories (second %)))
        (seq categories)))
 
-;; (defn format-member
-;;   [org]
-;;   (let [item {:item []
-;;               :name         (:organization-name org)
-;;               :homepage_url (str "https://www." (first (:domains org)))
-;;               :logo         (get-org-logo org)
-;;               :crunchbase   (str crunchbase-prefix (:crunchbase org))}]
-;;     (if (contains? org :stock-ticker)
-;;       (assoc item :stock_ticker (:stock-ticker org))
-;;       item)))
-
-;; (defn format-member-tier
-;;   [orgs tier]
-;;   {:subcategory []
-;;    :name (str tier)
-;;    :items []})
-;;   ;  :items (map #(format-member %) orgs)})
-
 (defn format-members
   [orgs]
 (let [raw (http/get landscape-yaml {})
       body (:body raw)
       yml (yaml/parse-string body)]
   (last yml)))
-
-;; DEPRECATED
-;; 
-;; (defn format-members
-;;   [orgs]
-;;   {:category []
-;;    :name (str "FINOS Members")
-;;    :subcategories [(format-member-tier (filter #(= "platinum" (:membership %)) orgs) "Platinum")
-;;                    (format-member-tier (filter #(= "gold" (:membership %)) orgs) "Gold")
-;;                    (format-member-tier (filter #(= "silver" (:membership %)) orgs) "Silver")]})
 
 (def finos-cat
   {:category []
