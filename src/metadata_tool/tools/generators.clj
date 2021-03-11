@@ -285,8 +285,8 @@
     :item []
     :name (:name initiative)
     :homepage_url (:homepage initiative)
-    :project (:state initiative)
-    :repo_url (:github-url initiative)
+    :project (s/lower-case (:state initiative))
+    :other_repo_url (md/gitlab-url (:gitlab-url initiative))
     :logo (:logo initiative)
     :category "Legend"
     :subcategory "Modeling Initiatives"
@@ -375,9 +375,7 @@
         legend-models      (map #(format-legend-model %) legend-initiatives)
         orgs               (md/organizations-metadata)
         members            (format-members orgs)
-        ;; TODO - enable when https://github.com/cncf/landscapeapp/issues/712 is fixed
-        ;; by-category        (group-by :category (concat projects legend-models))
-        by-category        (group-by :category projects)
+        by-category        (group-by :category (concat projects legend-models))
         by-sub-categories  (group-by-sub by-category)
         add-static-entries (concat by-sub-categories
                                    [finos-cat members])
