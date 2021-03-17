@@ -53,6 +53,7 @@
                      [/#if]
                      "contributed" : "${activity.contribution_date}",
                      "state"   : "${activity.state}",
+                     [#if activity.slack_channels?? && activity.slack_channels?size > 0]"slack"   : [[#list activity.slack_channels as channel]"${channel}"[#if channel != activity.slack_channels?last],[/#if][/#list]],[/#if]
                      "type"    : "${activity.type}" }[#if activity.github_urls?? && activity.github_urls?size > 0],
     [#if activity.confluence_page??]
     "confluence" : [ "https://finosfoundation.atlassian.net/wiki/ --filter-raw=data.ancestors._links.webui:${activity.confluence_page}"],
