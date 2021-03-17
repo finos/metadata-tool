@@ -332,7 +332,8 @@
 (let [raw (http/get landscape-yaml {})
       body (:body raw)
       yml (yaml/parse-string body)]
-  (last yml)))
+  (println (last (first yml)))
+  (last (first yml))))
 
 (def finos-cat
   {:category []
