@@ -288,7 +288,7 @@
    :name (:name initiative)
    :homepage_url (:homepage initiative)
    :project (s/lower-case (:state initiative))
-   :other_repo_url (md/gitlab-url (:gitlab-url initiative))
+   :other_repo_url (md/gitlab-url (:gitlab-repo initiative))
    :logo (:logo initiative)
    :category "Legend"
    :subcategory "Modeling Initiatives"
@@ -332,7 +332,7 @@
 (let [raw (http/get landscape-yaml {})
       body (:body raw)
       yml (yaml/parse-string body)]
-  (last yml)))
+  (last (last (first yml)))))
 
 (def finos-cat
   {:category []
