@@ -115,7 +115,7 @@
 
 (defn- check-project-states
   []
-  (let [projects-with-invalid-states (remove #(boolean (some #{(:state %)} ["ACTIVE" "INCUBATING" "RELEASED" "ARCHIVED"])) (md/projects-metadata))]
+  (let [projects-with-invalid-states (remove #(boolean (some #{(:state %)} ["FORMATION" "ACTIVE" "INCUBATING" "RELEASED" "ARCHIVED"])) (md/projects-metadata))]
     (if (pos? (count projects-with-invalid-states)) (ec/set-error))
     (doall (map #(println "❌ Project" (activity-to-string %) "has an invalid state:" (:state %)) projects-with-invalid-states))))
 
