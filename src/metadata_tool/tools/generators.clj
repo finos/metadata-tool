@@ -349,7 +349,7 @@
   "Generates a landscape.yml, using Programs as categories and tags as subcategories"
   []
   (let [raw (md/activities-metadata)
-        projects           (remove #(contains? ["archived" "formation"] (:project %))
+        projects           (remove #(contains? #{"archived" "formation"} (:project %))
                                    (remove nil?
                                            (map #(format-project %) raw)))
         legend-initiatives (flatten (map #(:legend-initiatives %)
