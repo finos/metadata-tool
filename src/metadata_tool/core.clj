@@ -34,6 +34,7 @@
    "list-project-leads"             tgn/list-project-leads
    "list-project-leads-emails"      tgn/list-project-leads-emails
    "gen-meeting-roster-data"        tgn/gen-meeting-roster-data
+   "gen-easycla-export"             tgn/gen-easycla-export
    "gen-meeting-github-roster-data" tgn/gen-meeting-github-roster-data
    "gen-bitergia-affiliation-data"  tgn/gen-bitergia-affiliation-data
    "gen-bitergia-organization-data" tgn/gen-bitergia-organization-data
