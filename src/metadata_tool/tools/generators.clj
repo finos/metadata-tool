@@ -115,8 +115,8 @@
 (defn- is-cla-manager?
   [person]
   (let [org (first (md/current-affiliations (:person-id person)))
-        manager (:cla-manager org)]
-    (= (:person-id person) manager)))
+        managers (:cla-managers org)]
+    (in? managers (:person-id person))))
 
 (defn- schedule-a?
   [org]
