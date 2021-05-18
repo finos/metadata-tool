@@ -29,3 +29,4 @@ meeting-attendance.json
 .clj-kondo
 .lsp
 cclas.json
+easycla-export.csv
