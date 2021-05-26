@@ -151,13 +151,12 @@
                                                (get-affiliation %))
                                              (md/people-metadata)))
         export (map #(easycla-person-export %) all-orgs-people)
-        with-headers (conj export [
-                                   :organization-name
+        with-headers (conj export [:organization-name
                                    :full-name
                                    :emails
                                    :github-logins
-                                   :is-manager
                                    :corporate-contributor
+                                   :is-manager
                                    :domains])]
     (with-open [writer (psrs/get-writer "./easycla-export.csv")]
       (psrs/write-csv writer with-headers))))
