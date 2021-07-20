@@ -330,10 +330,10 @@
   ; (check-github-issues)
   (check-metadata-for-collaborators)
   (check-github-orgs)
-  (check-github-repos)
+  (check-github-repos))
   ; DEPRECATED - No need to add to each output
   ; (check-github-logins)
-  (check-bitergia-projects))
+  ;; (check-bitergia-projects))
 
 
 
