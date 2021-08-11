@@ -229,7 +229,7 @@
 (defn gitlab-url
   [repo]
   ;; TODO - change to gitlab.com/finos - when migration is completed
-  (str "https://gitlab.legend.finos.org/" repo))
+  (str "https://gitlab.com/finosfoundation" repo))
 
 (defn- program-activity-github-urls
   [program activity]
