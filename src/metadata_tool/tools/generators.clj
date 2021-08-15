@@ -418,6 +418,13 @@
                              :logo         "finos.svg"
                              :crunchbase   "https://www.crunchbase.com/organization/finos-foundation"}]}]})
 
+(defn gen-icla-recipients
+  []
+  (let [iclas-raw (filter #(= (:has-icla %) true) (md/people-metadata))
+        iclas (remove #(= (:is-bot %) true) iclas-raw)
+        emails (remove nil? (map #(first (:email-addresses %)) iclas))]
+    (println (s/join " , " emails))))
+
 (defn gen-project-landscape
   "Generates a landscape.yml, using Programs as categories and tags as subcategories"
   []

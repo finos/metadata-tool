@@ -43,6 +43,7 @@
    "gen-clabot-ids-whitelist"       tgn/gen-clabot-ids-whitelist
    "gen-catalogue-data"             tgn/gen-catalogue-data
    "gen-project-landscape"          tgn/gen-project-landscape
+   "gen-icla-recipients"            tgn/gen-icla-recipients
    "email-pmc-reports"              trp/email-pmc-reports})
 
 (def tool-names (sort (keys tools)))
