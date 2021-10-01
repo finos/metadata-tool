@@ -418,6 +418,19 @@
                              :logo         "finos.svg"
                              :crunchbase   "https://www.crunchbase.com/organization/finos-foundation"}]}]})
 
+(def members-cat
+  {:category []
+   :name "FINOS Members"
+   :subcategories [{:subcategory []
+                    :name "Platinum"
+                    :items []}
+                  {:subcategory []
+                    :name "Gold"
+                    :items []}
+                  {:subcategory []
+                    :name "Silver"
+                    :items []}]})
+
 (defn gen-icla-recipients
   []
   (let [iclas-raw (filter #(= (:has-icla %) true) (md/people-metadata))
@@ -436,11 +449,11 @@
                                          (filter #(some? (:legend-initiatives %)) raw)))
         legend-models      (map #(format-legend-model %) legend-initiatives)
         orgs               (md/organizations-metadata)
-        members            (format-members orgs)
+        ;; members            (format-members orgs)
         by-category        (group-by :category (concat projects legend-models))
         by-sub-categories  (group-by-sub by-category)
         add-static-entries (concat by-sub-categories
-                                   [finos-cat members])
+                                   [finos-cat members-cat])
         yaml (yaml/generate-string {:landscape add-static-entries}
                                    :dumper-options {:flow-style :block})]
     ; (pp/pprint (get-projects)))
