@@ -328,7 +328,7 @@
   ; DEPRECATED - FINOS doesn't use repo admins anymore
   ; (check-repo-admins)
   ; (check-github-issues)
-  (check-metadata-for-collaborators)
+  ; (check-metadata-for-collaborators)
   (check-github-orgs)
   (check-github-repos))
   ; DEPRECATED - No need to add to each output
