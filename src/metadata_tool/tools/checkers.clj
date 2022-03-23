@@ -115,7 +115,7 @@
 
 (defn- check-project-states
   []
-  (let [projects-with-invalid-states (remove #(boolean (some #{(:state %)} ["ACTIVE" "INCUBATING" "RELEASED" "ARCHIVED"])) (md/projects-metadata))]
+  (let [projects-with-invalid-states (remove #(boolean (some #{(:state %)} ["FORMATION" "ACTIVE" "INCUBATING" "RELEASED" "ARCHIVED"])) (md/projects-metadata))]
     (if (pos? (count projects-with-invalid-states)) (ec/set-error))
     (doall (map #(println "❌ Project" (activity-to-string %) "has an invalid state:" (:state %)) projects-with-invalid-states))))
 
@@ -328,12 +328,12 @@
   ; DEPRECATED - FINOS doesn't use repo admins anymore
   ; (check-repo-admins)
   ; (check-github-issues)
-  (check-metadata-for-collaborators)
+  ; (check-metadata-for-collaborators)
   (check-github-orgs)
-  (check-github-repos)
+  (check-github-repos))
   ; DEPRECATED - No need to add to each output
   ; (check-github-logins)
-  (check-bitergia-projects))
+  ;; (check-bitergia-projects))
 
 
 

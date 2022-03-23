@@ -88,6 +88,79 @@
         as-string (str "[" (s/join "," as-strings) "]")]
     (println as-string)))
 
+(defn in? 
+  "true if coll contains elm"
+  [coll elm]
+  ;; (println "Is " elm " in " coll " ?")
+  (some #(= elm %) coll))
+
+(defn- person-ids
+  [people]
+  (map #(:person-id %) people))
+
+(defn- org-ids
+  [orgs]
+  (map #(:organization-id %) orgs))
+
+(defn- get-affiliation
+  [person]
+  (first (org-ids (md/current-affiliations (:person-id person)))))
+
+(defn- is-approved?
+  [person]
+  (let [org (get-affiliation person)
+        approved-list (person-ids (md/current-approved-contributors org))]
+    (in? approved-list (:person-id person))))
+
+(defn- is-cla-manager?
+  [person]
+  (let [org (first (md/current-affiliations (:person-id person)))
+        managers (:cla-managers org)]
+    (in? managers (:person-id person))))
+
+(defn- schedule-a?
+  [org]
+  (< (count (:approved-contributors org)) 1))
+
+(defn- emails
+  [person]
+  (remove #(s/includes? % "...@") (:email-addresses person)))
+
+(defn- easycla-person-export
+  [person]
+  (let [org-id (get-affiliation person)
+        org (md/organization-metadata org-id)
+        fields (-> []
+                   (conj (:organization-name org))
+                   (conj (:full-name person))
+                   (conj (s/join "|" (emails person)))
+                   (conj (s/join "|" (:github-logins person)))
+                   (conj (is-approved? person))
+                   (conj (is-cla-manager? person)))]
+        (if 
+         (schedule-a? org) 
+          (conj fields (s/join "|" (:domains org)))
+          (conj fields ""))))
+
+(defn gen-easycla-export
+  []
+  (let [all-ccla-orgs (remove nil? (filter #(:has-ccla %) (md/organizations-metadata)))
+        orgs (remove #(= "finos" (:organization-id %)) all-ccla-orgs)
+        all-orgs-people (remove nil? (filter #(in?
+                                               (org-ids orgs)
+                                               (get-affiliation %))
+                                             (md/people-metadata)))
+        export (map #(easycla-person-export %) all-orgs-people)
+        with-headers (conj export [:organization-name
+                                   :full-name
+                                   :emails
+                                   :github-logins
+                                   :corporate-contributor
+                                   :is-manager
+                                   :domains])]
+    (with-open [writer (psrs/get-writer "./easycla-export.csv")]
+      (psrs/write-csv writer with-headers))))
+
 (defn add-gh-id-email
   [person]
   (let [emails    (remove nil? (:email-addresses person))
@@ -290,7 +363,7 @@
    :name (:name initiative)
    :homepage_url (:homepage initiative)
    :project (s/lower-case (:state initiative))
-   :other_repo_url (md/gitlab-url (:gitlab-repo initiative))
+   :repo_url (md/gitlab-url (:gitlab-repo initiative))
    :logo (:logo initiative)
    :category "Legend"
    :subcategory "Modeling Initiatives"
@@ -332,11 +405,11 @@
        (seq categories)))
 
 (defn format-members
-  [orgs]
+  [orgs])
 (let [raw (http/get landscape-yaml {})
       body (:body raw)
       yml (yaml/parse-string body)]
-  (last (last (first yml)))))
+  (last (last (first yml))))
 
 (def finos-cat
   {:category []
@@ -349,22 +422,42 @@
                              :logo         "finos.svg"
                              :crunchbase   "https://www.crunchbase.com/organization/finos-foundation"}]}]})
 
+(def members-cat
+  {:category []
+   :name "FINOS Members"
+   :subcategories [{:subcategory []
+                    :name "Platinum"
+                    :items []}
+                  {:subcategory []
+                    :name "Gold"
+                    :items []}
+                  {:subcategory []
+                    :name "Silver"
+                    :items []}]})
+
+(defn gen-icla-recipients
+  []
+  (let [iclas-raw (filter #(= (:has-icla %) true) (md/people-metadata))
+        iclas (remove #(= (:is-bot %) true) iclas-raw)
+        emails (remove nil? (map #(first (:email-addresses %)) iclas))]
+    (println (s/join " , " emails))))
+
 (defn gen-project-landscape
   "Generates a landscape.yml, using Programs as categories and tags as subcategories"
   []
   (let [raw (md/activities-metadata)
-        projects           (remove #(= "archived" (:project %))
+        projects           (remove #(contains? #{"archived" "formation"} (:project %))
                                    (remove nil?
                                            (map #(format-project %) raw)))
         legend-initiatives (flatten (map #(:legend-initiatives %)
                                          (filter #(some? (:legend-initiatives %)) raw)))
         legend-models      (map #(format-legend-model %) legend-initiatives)
         orgs               (md/organizations-metadata)
-        members            (format-members orgs)
+        ;; members            (format-members orgs)
         by-category        (group-by :category (concat projects legend-models))
         by-sub-categories  (group-by-sub by-category)
         add-static-entries (concat by-sub-categories
-                                   [finos-cat members])
+                                   [finos-cat members-cat])
         yaml (yaml/generate-string {:landscape add-static-entries}
                                    :dumper-options {:flow-style :block})]
     ; (pp/pprint (get-projects)))
