@@ -265,6 +265,7 @@
           addit (map #(assoc {} :repo_url %) (rest repos))
           state (s/lower-case (:state project))
           badge (if (= "SIG" (:type project)) "sig" state)
+          license (:license project)
           raw   (assoc {}
                        :item []
                        :name (:activity-name project)
@@ -278,13 +279,14 @@
                        :crunchbase "https://www.crunchbase.com/organization/finos-foundation")
                         ; Doesn't work with project badges - https://github.com/finos/finos-landscape/pull/56
                         ; :organization {:name "FINOS"})
-          final (if (empty? addit) raw (assoc raw :additional_repos addit))]
+          with_license (if (empty? license) raw (assoc raw :license license))
+          final (if (empty? addit) with_license (assoc with_license :additional_repos addit))]
       final)))
 
 (defn- format-legend-model
   "Returns a Legend modeling initiative in landscape format"
   [initiative]
-  {:item []
+  (let [raw {:item []
    :name (:name initiative)
    :homepage_url (:homepage initiative)
    :project (s/lower-case (:state initiative))
@@ -292,7 +294,9 @@
    :logo (:logo initiative)
    :category "Legend"
    :subcategory "Modeling Initiatives"
-   :crunchbase "https://www.crunchbase.com/organization/finos-foundation"})
+   :crunchbase "https://www.crunchbase.com/organization/finos-foundation"}
+   license (:license initiative)]
+   (if (empty? license) raw (assoc raw :license license))))
 
 (defn- clean-item
   ""

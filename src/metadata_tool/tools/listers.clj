@@ -27,4 +27,6 @@
   []
   (doall (map #(pp/pprint (:full-name %)) (sort-by :full-name (md/people-with-clas)))))
 
-
+(defn gs-approved-contributors
+  []
+  (doall (map #(pp/pprint (str (:full-name %) ", " (first (:email-addresses %)) ", " (first (:github-logins %)))) (sort-by :full-name (md/current-approved-contributors "goldman-sachs")))))

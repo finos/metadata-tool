@@ -31,6 +31,7 @@
    "invite-clas-to-finos-org"       tgn/invite-clas-to-finos-org
    "list-schemas"                   tls/list-schemas
    "list-people-with-clas"          tls/list-people-with-clas
+   "gs-approved-contributors"       tls/gs-approved-contributors
    "list-project-leads"             tgn/list-project-leads
    "list-project-leads-emails"      tgn/list-project-leads-emails
    "gen-meeting-roster-data"        tgn/gen-meeting-roster-data
